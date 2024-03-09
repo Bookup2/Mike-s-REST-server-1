@@ -22,6 +22,9 @@ var
 
 implementation
 
+uses
+  Winsock;
+
 {%CLASSGROUP 'FMX.Controls.TControl'}
 
 {$R *.dfm}
@@ -42,5 +45,7 @@ begin
   Response.ContentType := 'application/json;charset=utf-8';
   Response.Content := 'pv e4 e6'; // Random(200).ToString;
 end;
+
+
 
 end.

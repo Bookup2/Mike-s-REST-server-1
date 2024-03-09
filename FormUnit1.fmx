@@ -62,4 +62,14 @@ object Form1: TForm1
     TextSettings.Trimming = None
     OnClick = ButtonOpenBrowserClick
   end
+  object EditLocalIP: TEdit
+    Touch.InteractiveGestures = [LongTap, DoubleTap]
+    TabOrder = 7
+    ReadOnly = True
+    Position.X = 16.000000000000000000
+    Position.Y = 184.000000000000000000
+    Size.Width = 337.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+  end
 end
