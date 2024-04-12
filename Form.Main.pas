@@ -266,7 +266,7 @@ begin
 
     end;
 
-  gChessEngineControllers[K].SetLogFileName('Engine1LogFile.txt');
+  gChessEngineControllers[1].SetLogFileName('Engine1LogFile.txt');
 
   RequestsMemo.Lines.Add(gNumberOfEnginesRunning.ToString + ' engines started.');
 
