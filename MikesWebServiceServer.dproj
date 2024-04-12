@@ -239,8 +239,8 @@
         <DelphiCompile Include="$(MainSource)">
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
-        <DCCReference Include="FormUnit1.pas">
-            <Form>Form1</Form>
+        <DCCReference Include="Form.Main.pas">
+            <Form>MainForm</Form>
             <FormType>fmx</FormType>
         </DCCReference>
         <DCCReference Include="WebModuleUnit1.pas">

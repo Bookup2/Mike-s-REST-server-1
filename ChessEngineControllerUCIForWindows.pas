@@ -1,0 +1,659 @@
+unit ChessEngineControllerUCIForWindows;
+
+interface
+
+uses
+  Windows,
+
+  System.Classes,  // TThread.GetTickCount
+  System.UITypes,  // MessageDlg
+  System.SysUtils, // Sleep()
+
+  FMX.Memo,
+  FMX.Types,
+  FMX.Dialogs,  // ShowMessage()
+
+  Globals,
+  gTypes,
+  Utils,
+
+  Parser,
+  DiagramTypes,
+  ChessPosition,
+  PositionInformation,
+
+  ChessEngineController,
+  ChessEngineControllerUCI;
+
+{$DEFINE ENGINEDEBUG}
+
+const
+
+  kBufferSize = 5000;
+
+
+type
+
+  TChessEngineControllerUCIForWindows = class(TChessEngineControllerUCI)
+    constructor Create;
+
+    destructor Destroy; override;
+
+    procedure Disconnect(AbortConnection: Boolean); override;
+
+    procedure SendCommand(theCommandString: AnsiString); override;
+
+    procedure CheckPipes; override;
+
+    private
+
+    fBuffer: array[1..kBufferSize] of AnsiChar;
+    fAlreadyHadPeekNamedPipeError: Boolean;
+
+    hChildStdinRd,
+    hChildStdinWr,
+    hChildStdoutRd,
+    hChildStdoutWr,
+    hChildStdinWrDup,
+    hChildStdoutRdDup: THandle; // Cardinal;
+
+    // function ConnectViaPipes: Boolean;
+    procedure DisconnectViaPipes; override;
+    function StartEngineViaPipes: Boolean; override;
+  end;
+
+
+
+implementation
+
+
+
+
+const
+  kLineFeed = #10;
+
+
+constructor TChessEngineControllerUCIForWindows.Create;
+begin
+  inherited Create;
+
+  fNumberOfOverdrives := 0;
+
+  fUCIInitialized := False;
+  fUCIReady := False;
+
+  // fEngineScore := kNoNumericAssessment;
+  // fEnginePrincipleVariation := '';    FIXEDIN build 197
+  fEngineSecondaryVariation := '';
+  fEngineSearchTime := 0;
+  fEngineSearchStartTime := 0;
+  fEngineNodeCount := 0;
+  fEngineDepth := 0;
+  fEngineNodesPerSecond := 0;
+  // fNumberOfMovesUntilMate := 9999;
+
+  fAlreadyHadPeekNamedPipeError := False;
+
+  {
+  fPipeCheckingTimer := TTimer.Create(COWMainForm);
+  fPipeCheckingTimer.Enabled := False;
+  fPipeCheckingTimer.Interval := 1000;
+  }
+end;
+
+
+
+destructor TChessEngineControllerUCIForWindows.Destroy;
+begin
+
+  inherited Destroy;
+end;
+
+
+
+procedure TChessEngineControllerUCIForWindows.SendCommand(theCommandString: AnsiString);
+var
+  theNumberOfBytesToWrite,
+  theNumberOfBytesWritten: Cardinal;
+  theLastError: DWord;
+  // theChars : array [0..255] of char;
+
+begin
+  // inherited;   No point in calling the inherited method.
+
+
+    { Test code }
+  { Exit; }
+
+  Assert(Length(theCommandString) > 0);
+
+  if (Length(theCommandString) < 1)
+    then Exit;
+
+  Assert(Connected);
+
+  if not Connected
+    then Exit;
+
+  {$IFDEF ENGINEDEBUG}
+  WriteToLog(True, theCommandString);
+  {$ENDIF}
+
+   { BOOL WriteFile(
+    HANDLE hFile,	// handle to file to write to
+    LPCVOID lpBuffer,	// pointer to data to write to file
+    DWORD nNumberOfBytesToWrite,	// number of bytes to write
+    LPDWORD lpNumberOfBytesWritten,	// pointer to number of bytes written
+    LPOVERLAPPED lpOverlapped 	// pointer to structure needed for overlapped I/O
+   ); }
+
+    //  From winboard.c
+    //  if (WriteFile(((ChildProc *)pr)->hTo, message, count,
+    //		  &dOutCount, NULL))
+
+    // engines expect linefeeds at the end of each command.
+  theCommandString := theCommandString + kLineFeed;
+
+  theNumberOfBytesToWrite := Length(theCommandString);
+
+  if not WriteFile(hChildStdinWrDup,
+                   theCommandString[1],
+                   theNumberOfBytesToWrite,
+                   theNumberOfBytesWritten,
+                   nil)
+    then
+      begin
+        theLastError := GetLastError;
+        MessageDlg(Format('Problem with WriteFile(hChildStdinWrDup...)  GetLastError=%d', [theLastError]),
+                   TMsgDlgType.mtInformation,
+                   [TMsgDlgBtn.mbOk], 0);
+
+        Exit;
+      end;
+
+  {  causes hanging?
+  if not FlushFileBuffers(hChildStdinWrDup)
+    then
+      begin
+        theLastError := GetLastError;
+        sMessageDlg(Format('Problem with FlushFileBuffers(hChildStdinWrDup...)  GetLastError=%d', [theLastError]),
+                   mtInformation,
+                   [mbOk], 0);
+
+        Exit;
+      end;
+  }
+
+  Assert(theNumberOfBytesWritten = theNumberOfBytesToWrite, 'Did not write all bytes to engine!');
+end;
+
+
+
+procedure TChessEngineControllerUCIForWindows.CheckPipes;
+var
+  // theStartingTime: LongInt;
+
+  Successful: Boolean;
+  theNumberOfBytesToRead,
+  theNumberOfBytesRead: Cardinal;
+  theLastError: DWord;
+  theTotalBytesAvailable: Cardinal;
+  K: Integer;
+
+begin
+  // This is now handled by a separate thread.
+  // Assert(fProcessing);   // No one should call this method unless this flag is on.
+
+  if not Connected
+    then Exit;
+
+    // If we've been waiting for the engine to catch up for more than 3 seconds...
+  {
+  if fWaitingForEngineToCatchUp and
+     (GetTickCount > fWaitingForEngineToCatchUpSince + 3000)
+    then
+      begin
+        fWaitingForEngineToCatchUp := False;
+
+        ResetRunningEngine;
+
+        Exit;
+      end;
+  }
+
+  // theStartingTime := TThread.GetTickCount;
+
+    // This call "blocks" until it returns some data. It must
+    // be called in its own thread where just that thread will be blocked
+    // while it waits.
+  // ConsoleOutput := LPipeOutput.fileHandleForReading.availableData;  MacOS way
+
+  // OutputText := StringOf(BytesOf(ConsoleOutput.bytes, ConsoleOutput.length));  MacOS way
+
+  // if (TThread.GetTickCount - theStartingTime > 100)
+  //   then ShowMessage('LPipeOutput.fileHandleForReading.availableData took more than 100ms.');
+
+  // if (OutputText = '')
+  //   then ShowMessage('Output text was blank - and that is okay.');  // This never fires.
+
+  { BOOL ReadFile(
+
+    HANDLE hFile,	// handle of file to read
+    LPVOID lpBuffer,	// address of buffer that receives data
+    DWORD nNumberOfBytesToRead,	// number of bytes to read
+    LPDWORD lpNumberOfBytesRead,	// address of number of bytes read
+    LPOVERLAPPED lpOverlapped 	// address of structure for data
+   ); }
+
+  Inc(fNumberOfPipeChecks);
+
+  Successful := PeekNamedPipe(hChildStdoutRdDup,
+                              nil,
+                              0,
+                              nil,
+                              @theTotalBytesAvailable,
+                              nil);
+
+  if not Successful
+    then
+      begin
+        theLastError := GetLastError;
+
+        if not fAlreadyHadPeekNamedPipeError
+          then MessageDlg(Format('Problem with PeekNamedPipe(...)  GetLastError=%d', [theLastError]),
+                          TMsgDlgType.mtInformation,
+                          [TMsgDlgBtn.mbOk], 0);
+
+        fAlreadyHadPeekNamedPipeError := True;
+
+        Exit;
+      end;
+
+  if (theTotalBytesAvailable < 1)
+    then Exit;
+
+  theNumberOfBytesToRead := kBufferSize;
+  if (theNumberOfBytesToRead > theTotalBytesAvailable)
+    then theNumberOfBytesToRead := theTotalBytesAvailable;
+
+  Successful := ReadFile(hChildStdoutRdDup,
+                         fBuffer,
+                         theNumberOfBytesToRead,
+                         theNumberOfBytesRead,
+                         nil);
+
+  if not Successful
+    then
+      begin
+        theLastError := GetLastError;
+        MessageDlg(Format('Problem in CheckPipes() with ReadFile(...)  GetLastError=%d', [theLastError]),
+                          TMsgDlgType.mtInformation,
+                          [TMsgDlgBtn.mbOk], 0);
+
+        Exit;
+      end;
+
+  fNumberOfBytesInBuffer := theNumberOfBytesRead;
+  if (theNumberOfBytesRead > kBufferSize)
+    then theNumberOfBytesRead := kBufferSize;
+
+  for K := 1 to theNumberOfBytesRead do
+    EngineOutputBuffer := EngineOutputBuffer + fBuffer[K];
+
+  ProcessCommands;
+
+  fEngineSentSomething := True;
+end;
+
+
+
+function TChessEngineControllerUCIForWindows.StartEngineViaPipes: Boolean;
+var
+  theEngineDirectory,
+  theCurrentDirectory: String;
+  StartUpInfo: TStartUpInfo;
+  ProcessInfo: TProcessInformation;
+  theLastError: DWord;
+
+  Successful: LongBool;
+  saAttr: TSecurityAttributes;
+
+begin
+  Result := False;  { an assumption }
+
+  Successful := False;  { an assumption }
+
+  if not FileExists(fEngineFileName)
+    then
+      begin
+        MessageDlg('The engine file could not be found. ' + fEngineFileName,
+                   TMsgDlgType.mtInformation,
+                   [TMsgDlgBtn.mbOk], 0);
+
+        Exit;
+      end;
+
+
+  theEngineDirectory := ExtractFilePath(fEngineFileName);
+
+  try
+    // StrPCopy(theCString, fEngineFileName);   { No parameters if using DDE! }
+
+    { theResult := WinExec (@theCString,
+                          SW_SHOW); }
+
+    { theResult := WinExec (@theCString,
+                          SW_SHOWMINIMIZED); }
+
+    saAttr.nLength := sizeof(TSecurityAttributes);
+    saAttr.bInheritHandle := True;
+    saAttr.lpSecurityDescriptor := nil;
+
+      // Create a pipe for the child's STDOUT.
+    if not CreatePipe(hChildStdoutRd,
+                      hChildStdoutWr,
+                      @saAttr,
+                      0)
+      then
+        begin
+          theLastError := GetLastError;
+          MessageDlg(Format('Problem with CreatePipe(hChildStdoutRd...)  GetLastError=%d', [theLastError]),
+                     TMsgDlgType.mtInformation,
+                     [TMsgDlgBtn.mbOk], 0);
+
+          Exit;
+        end;
+
+      // Duplicate the read handle to the pipe, so it is not inherited.
+    Successful := DuplicateHandle(GetCurrentProcess, hChildStdoutRd,
+                                  GetCurrentProcess, @hChildStdoutRdDup,
+                                  0,
+			          False,  // not inherited
+			          DUPLICATE_SAME_ACCESS);
+
+    if not Successful
+      then
+        begin
+          theLastError := GetLastError;
+          MessageDlg(Format('Problem with DuplicateHandle(...hChildStdoutRd...)  GetLastError=%d', [theLastError]),
+                     TMsgDlgType.mtInformation,
+                     [TMsgDlgBtn.mbOk], 0);
+
+          Exit;
+        end;
+
+    if not CloseHandle(hChildStdoutRd)
+      then
+        begin
+          theLastError := GetLastError;
+          MessageDlg(Format('Problem with CloseHandle(hChildStdoutRd)  GetLastError=%d', [theLastError]),
+                     TMsgDlgType.mtInformation,
+                     [TMsgDlgBtn.mbOk], 0);
+
+          Exit;
+        end;
+
+      // Create a pipe for the child's STDIN.
+    if not CreatePipe(hChildStdinRd,
+                      hChildStdinWr,
+                      @saAttr,
+                      0)
+      then
+        begin
+          theLastError := GetLastError;
+          MessageDlg(Format('Problem with CreatePipe(hChildStdinRd...)  GetLastError=%d', [theLastError]),
+                     TMsgDlgType.mtInformation,
+                     [TMsgDlgBtn.mbOk], 0);
+
+          Exit;
+        end;
+
+
+      // Duplicate the write handle to the pipe, so it is not inherited.
+    Successful := DuplicateHandle(GetCurrentProcess, hChildStdinWr,
+                                  GetCurrentProcess, @hChildStdinWrDup,
+                                  0,
+			          False,  // not inherited
+			          DUPLICATE_SAME_ACCESS);
+
+    if not Successful
+      then
+        begin
+          theLastError := GetLastError;
+          MessageDlg(Format('Problem with DuplicateHandle(...hChildStdinWr...)  GetLastError=%d', [theLastError]),
+                     TMsgDlgType.mtInformation,
+                     [TMsgDlgBtn.mbOk], 0);
+
+          Exit;
+        end;
+
+
+    if not CloseHandle(hChildStdinWr)
+      then
+        begin
+          theLastError := GetLastError;
+          MessageDlg(Format('Problem with CloseHandle(hChildStdinWr)  GetLastError=%d', [theLastError]),
+                     TMsgDlgType.mtInformation,
+                     [TMsgDlgBtn.mbOk], 0);
+
+          Exit;
+        end;
+
+  {  from winboard.c
+  siStartInfo.cb = sizeof(STARTUPINFO);
+  siStartInfo.lpReserved = NULL;
+  siStartInfo.lpDesktop = NULL;
+  siStartInfo.lpTitle = NULL;
+  siStartInfo.dwFlags = STARTF_USESTDHANDLES;
+  siStartInfo.cbReserved2 = 0;
+  siStartInfo.lpReserved2 = NULL;
+  siStartInfo.hStdInput = hChildStdinRd;
+  siStartInfo.hStdOutput = hChildStdoutWr;
+  siStartInfo.hStdError = hChildStdoutWr;
+  }
+
+      // Clear the StartupInfo structure.
+    FillChar(StartupInfo, SizeOf(TStartupInfo), 0);
+
+    with StartupInfo do
+      begin
+        cb := SizeOf(TStartupInfo);
+        lpReserved := nil;
+        lpDesktop := nil;
+        lpTitle := nil;
+        // dwFlags := STARTF_USESHOWWINDOW or STARTF_FORCEONFEEDBACK;  from Delphi 4 book example
+        dwFlags := STARTF_USESTDHANDLES;  // from winboard.c
+        cbReserved2 := 0;
+        lpReserved2 := nil;
+
+        // wShowWindow := SW_SHOW;  from Delphi 4 book example
+
+        hStdInput := hChildStdinRd;
+        hStdOutput := hChildStdoutWr;
+        hStdError := hChildStdoutWr;
+      end;
+
+      // From the _Delphi 4 Developer's Guide...
+      // Create the process by calling CreateProcess() which fills
+      // the ProcessInfo structure with information about the new
+      // process and its primary thread.  Detailed information is
+      // provided in the Win32 online help for the TProcessInfo
+      // structure under PROCESS_INFORMATION.
+
+      // Example from Delphi 4 book.
+    { theResult := CreateProcess(PChar(fEngineFileName),
+                               nil,
+                               nil,
+                               nil,
+                               False,
+                               NORMAL_PRIORITY_CLASS,
+                               nil,
+                               nil,
+                               StartupInfo,
+                               ProcessInfo); }
+
+    // from winboard.c
+  { fSuccess = CreateProcess(NULL,
+			   cmdLine,	   /* command line */
+			   NULL,	   /* process security attributes */
+			   NULL,	   /* primary thread security attrs */
+			   TRUE,	   /* handles are inherited */
+			   DETACHED_PROCESS|CREATE_NEW_PROCESS_GROUP,
+			   NULL,	   /* use parent's environment */
+			   NULL,
+			   &siStartInfo, /* STARTUPINFO pointer */
+			   &piProcInfo); /* receives PROCESS_INFORMATION */ }
+
+
+    try
+
+      GetDir(0, theCurrentDirectory);
+
+      ChDir(theEngineDirectory);
+
+      Successful := CreateProcess(PChar(fEngineFileName),
+                                  nil,
+                                  nil,
+                                  nil,
+                                  True,
+                                  DETACHED_PROCESS or CREATE_NEW_PROCESS_GROUP,
+                                  nil,
+                                  nil,
+                                  StartupInfo,
+                                  ProcessInfo);
+
+
+
+    finally
+
+      ChDir(theCurrentDirectory);
+    end;
+
+  except
+      { 631 = 'There was a problem loading the engine from %s. (%d)' }
+    theLastError := GetLastError;
+    MessageDlg(Format ('There was a problem loading the engine from %s. (%d)', [theEngineDirectory, theLastError]),
+               TMsgDlgType.mtInformation,
+               [TMsgDlgBtn.mbOk], 0);
+
+  end;
+
+  if not Successful
+    then
+      begin
+        theLastError := GetLastError;
+
+        case theLastError of
+          2 :
+            begin
+                { 632 = 'Could not find the engine in %s. (%d)' }
+              MessageDlg(Format ('Could not find the engine in %s. (%d)', [theEngineDirectory, theLastError]),
+                         TMsgDlgType.mtInformation,
+                         [TMsgDlgBtn.mbOk], 0);
+
+              // EngineLoadingForm.Hide;
+
+              Exit;
+            end;
+
+          8 :
+            begin
+                { 633 = 'There was not enough memory to run the engine.' }
+              MessageDlg('There was not enough memory to run the engine.',
+                         TMsgDlgType.mtInformation,
+                         [TMsgDlgBtn.mbOk], 0);
+
+              // EngineLoadingForm.Hide;
+
+              Exit;
+            end;
+
+          16 :
+            begin
+                { 634 = 'Engine is already running.' }
+              MessageDlg('Engine is already running.',
+                         TMsgDlgType.mtInformation,
+                         [TMsgDlgBtn.mbOk], 0);
+            end;
+
+          else
+            begin
+                { 635 = 'Could not run the engine from %s. (%d)' }
+              MessageDlg(Format('Could not run the engine from %s. (%d)', [theEngineDirectory, theLastError]),
+                         TMsgDlgType.mtInformation,
+                         [TMsgDlgBtn.mbOk], 0);
+
+              // EngineLoadingForm.Hide;
+
+              Exit;
+            end;
+        end;
+      end;
+
+    // Close the handles we don't need in the parent. (per winboard.c)
+  CloseHandle(hChildStdinRd);
+  CloseHandle(hChildStdoutWr);
+
+  Result := True;  // The engine started.
+end;
+
+
+
+procedure TChessEngineControllerUCIForWindows.DisconnectViaPipes;
+var
+  theLastError: DWord;
+
+begin
+  Assert(Connected);
+
+  if not Connected
+    then Exit;
+
+  fConnected := False;
+
+  if not CloseHandle(hChildStdinWrDup)
+    then
+      begin
+        theLastError := GetLastError;
+        MessageDlg(Format('Problem with CloseHandle(hChildStdinWrDup)  GetLastError=%d', [theLastError]),
+                   TMsgDlgType.mtInformation,
+                   [TMsgDlgBtn.mbOk], 0);
+      end;
+
+  if not CloseHandle(hChildStdoutRdDup)
+    then
+      begin
+        theLastError := GetLastError;
+        MessageDlg(Format('Problem with CloseHandle(hChildStdoutRdDup)  GetLastError=%d', [theLastError]),
+                         TMsgDlgType.mtInformation,
+                         [TMsgDlgBtn.mbOk], 0);
+      end;
+end;
+
+
+
+procedure TChessEngineControllerUCIForWindows.Disconnect(AbortConnection: Boolean);
+begin
+  Assert(Connected);
+
+  if not Connected
+    then Exit;
+
+  if not AbortConnection
+    then SendCommand('quit');
+
+  // fProcessing := True;  // thwart all timer activity
+
+  DisconnectViaPipes;
+
+  // PipeCheckingTimer.Enabled := False;
+  fConnected := False;
+
+  // ConnectedLabel.Caption := LocalizedString (625);  { 'Disconnected'; }
+
+  fEPDPosition := '';
+end;
+
+
+
+end.

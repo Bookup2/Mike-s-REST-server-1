@@ -109,10 +109,19 @@ end;
 
 
 procedure TForm1.FormCreate(Sender: TObject);
+var
+  TESTMemoryLeak: TButton;
+
 begin
   EditLocalIP.Text := GetLocalIP;
   FServer := TIdHTTPWebBrokerBridge.Create(Self);
   Application.OnIdle := ApplicationIdle;
+
+  TESTMemoryLeak := TButton.Create(nil);
+
+  {$IFDEF DEBUG}
+  System.ReportMemoryLeaksOnShutdown := True;
+  {$ENDIF}
 end;
 
 
