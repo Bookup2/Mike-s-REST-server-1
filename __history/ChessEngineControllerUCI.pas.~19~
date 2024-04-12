@@ -38,8 +38,8 @@ type
     procedure SendEPDPositionToEngine(theEPDString : String;
                                       theNumberOfPliesPlayed : Integer;
                                       theWhiteOnMove : Boolean;
-                                      IgnoreIfAlreadyAnalyzingThisPosition : Boolean);  override;
-
+                                      IgnoreIfAlreadyAnalyzingThisPosition : Boolean;
+                                      theClientID: String);  override;
 
     protected
 
@@ -55,6 +55,7 @@ type
 
     fNumberOfPipeChecks: Integer;
 
+    function GetMultiPVNumber(theLine: String): Integer;     // FIXEDIN build 197
 
     procedure ProcessCommands; override;
 
@@ -81,6 +82,7 @@ type
 
 
 implementation
+
 
 
 const
@@ -189,6 +191,7 @@ end;
 
 
 
+
 procedure TChessEngineControllerUCI.Disconnect(AbortConnection: Boolean);
 begin
   Assert(Connected, 'ChessEngineController.Disconnect() called when already disconnected.');
@@ -216,6 +219,9 @@ end;
 
 
 procedure TChessEngineControllerUCI.ProcessCommandLine(theCommand: String);
+var
+  theMultiPVNumber: Integer;
+
 begin
   {$IFDEF ENGINEDEBUG}
   // DebugMemo.Lines.Add(theCommand);
@@ -286,6 +292,11 @@ begin
         Inc(fNumberOfCommandsProcessed);
         {$ENDIF}
 
+          // FIXEDIN build 197
+        theMultiPVNumber := GetMultiPVNumber(theCommand);
+
+        fEngineTotalPrincipleVariations := theMultiPVNumber;
+
         if (Pos(' pv ', theCommand) > 0)
           then ParsePrincipleVariation(theCommand);
 
@@ -296,7 +307,12 @@ begin
           then ParseDepth(theCommand);
 
         if (Pos(' mate ', theCommand) > 0)
-          then ParseMateIn(theCommand);
+          then ParseMateIn(theCommand)
+          else
+            begin
+              fEngineIsMating[theMultiPVNumber] := False;
+              fEngineNumberOfMovesUntilMate[theMultiPVNumber] := 9999;
+            end;
 
         if (Pos(' cp ', theCommand) > 0)
           then ParseScore(theCommand);
@@ -340,6 +356,7 @@ begin
      fUCIReady  // added in build 37 for Macintosh
     then
       begin
+        SendCommand('setoption name MultiPV value 3');  // FIXEDIN build 197
         SendCommand('position fen ' + fQueuedPositionEPD + ' 0 0');
         fQueuedPositionEPD := '';
         fBestMove := '';
@@ -353,6 +370,10 @@ begin
   while (Pos(kLineFeed, EngineOutputBuffer) > 0) do
     begin
       theCommand := Copy(EngineOutputBuffer, 1, Pos(kLineFeed, EngineOutputBuffer) - 1);
+
+        // FIXEDIN build 197
+      if (Pos(kCarriageReturn, theCommand) > 0)
+        then theCommand := Copy(theCommand, 1, Pos(kCarriageReturn, theCommand) - 1);
 
       EngineOutputBuffer := Copy(EngineOutputBuffer, Pos(kLineFeed, EngineOutputBuffer) + 1, 9999);
 
@@ -401,12 +422,16 @@ end;
 procedure TChessEngineControllerUCI.SendEPDPositionToEngine(theEPDString: String;
                                                                      theNumberOfPliesPlayed: Integer;
                                                                      theWhiteOnMove,
-                                                                     IgnoreIfAlreadyAnalyzingThisPosition: Boolean);
+                                                                     IgnoreIfAlreadyAnalyzingThisPosition: Boolean;
+                                                                     theClientID: String);
 var
   theChessPosition: TChessPosition;
+  K: Integer;
 
 begin
   inherited;
+
+  fClientID := theClientID;
 
   if not Connected
     then Exit;
@@ -424,9 +449,10 @@ begin
 
   fBestLine := '';
   fHintMove := '';
+  fEngineTotalPrincipleVariations := 0;  // FIXEDIN build 197
 
   fNumberOfPliesPlayed := theNumberOfPliesPlayed;
-  fEnginePrincipleVariation := '';
+  for K := 1 to kMaximumVariations do fEnginePrincipleVariation[K] := '';    // FIXEDIN build 197
   fEngineSecondaryVariation := '';
   fEngineNodeCount := 0;
   fEngineDepth := 0;
@@ -470,6 +496,7 @@ begin
         fQueuedPositionEPD := '';
         fBestMove := '';
         SendCommand('stop');
+        SendCommand('setoption name MultiPV value 3');  // FIXEDIN build 197
         SendCommand('position fen ' + theEPDString + ' 0 0');
         fEngineIsAnalyzing := True;
         SendCommand('go infinite');
@@ -481,16 +508,25 @@ end;
 
 
 procedure TChessEngineControllerUCI.SetAnalysisToBlank;
+var
+  K: Integer;
+
 begin
-  fEngineScore := kNoNumericAssessment;
-  fEnginePrincipleVariation := '';
+    // FIXEDIN build 197
+  for K := 1 to kMaximumVariations do
+    begin
+      fEngineIsMating[K] := False;
+      fEngineScore[K] := kNoNumericAssessment;
+      fEnginePrincipleVariation[K] := '';
+      fEngineNumberOfMovesUntilMate[K] := 9999;
+    end;
+
   fEngineSecondaryVariation := '';
   fEngineSearchTime := 0;
   fEngineSearchStartTime := 0;
   fEngineNodeCount := 0;
   fEngineDepth := 0;
   fEngineNodesPerSecond := 0;
-  fNumberOfMovesUntilMate := 9999;
 end;
 
 
@@ -514,13 +550,16 @@ var
   theLetter : String[1];
   theScoreString: String;
   theChessPosition: TChessPosition;
+  theMultiPV: Integer;
 
 begin
   Assert(Pos(' cp ', theLine) > 0);
 
+  theMultiPV := GetMultiPVNumber(theLine);
+
   theScoreString := Copy(theLine, Pos(' cp ', theLine) + 4, 999);
 
-  fEngineScore := kNoNumericAssessment;  // an assumption
+  fEngineScore[theMultiPV] := kNoNumericAssessment;  // an assumption
 
     { Remove leading spaces. }
   while (Length (theScoreString) > 0) and
@@ -534,12 +573,12 @@ begin
     then theScoreString := Copy(theScoreString, 1, Pos(' ', theScoreString) - 1);
 
 
-  Val(theScoreString, fEngineScore, theErrorCode);
+  Val(theScoreString, fEngineScore[theMultiPV], theErrorCode);
 
   if (theErrorCode <> 0)
     then
       begin
-        fEngineScore := kNoNumericAssessment;
+        fEngineScore[theMultiPV] := kNoNumericAssessment;
 
         Exit;
       end;
@@ -554,7 +593,7 @@ begin
     theChessPosition.SetBoard(fBoard);
 
     if not theChessPosition.WhiteOnMove
-      then fEngineScore := fEngineScore * -1;      // Convert it to positive for White.
+      then fEngineScore[theMultiPV] := fEngineScore[theMultiPV] * -1;      // Convert it to positive for White.
 
   finally
 
@@ -592,6 +631,7 @@ begin
       begin
         // WaitingLabel.Caption := '';
 
+        SendCommand('setoption name MultiPV value 3');  // FIXEDIN build 197
         SendCommand('position fen ' + fQueuedPositionEPD + ' 0 0');
         fQueuedPositionEPD := '';
         fBestMove := '';
@@ -604,7 +644,6 @@ begin
   WriteToLog(False, 'Self.Caption updated with the mate in string.');
   {$ENDIF}
 end;
-
 
 
 
@@ -644,11 +683,16 @@ var
   theMateInString: String;
   theErrorCode: Integer;
   theChessPosition: TChessPosition;
+  theMultiPVNumber: Integer;
 
 begin
   Assert(Pos(' mate ', theLine) > 0);
 
   theMateInString := Copy(theLine, Pos(' mate ', theLine) + 6, 999);
+
+  theMultiPVNumber := GetMultiPVNumber(theLine);
+
+  fEngineIsMating[theMultiPVNumber] := True;
 
     { Remove leading spaces. }
   while (Length (theMateInString) > 0) and
@@ -661,15 +705,15 @@ begin
   if (Pos(' ', theMateInString) > 0)
     then theMateInString := Copy(theMateInString, 1, Pos(' ', theMateInString) - 1);
 
-    // ********* what should the score be for this mate?
-  Val(theMateInString, fNumberOfMovesUntilMate, theErrorCode);
+    // ******* What should the score be for this mate?
+  Val(theMateInString, fEngineNumberOfMovesUntilMate[theMultiPVNumber], theErrorCode);
 
   if (theErrorCode <> 0)
     then
       begin
-        fNumberOfMovesUntilMate := 9999;
+        fEngineNumberOfMovesUntilMate[theMultiPVNumber] := 9999;
 
-        fEngineScore := kNoNumericAssessment;
+        fEngineScore[theMultiPVNumber] := kNoNumericAssessment;
 
         Exit;
       end;
@@ -683,15 +727,15 @@ begin
     if theChessPosition.WhiteOnMove
       then
         begin
-          if (fNumberOfMovesUntilMate > 0)
-            then fEngineScore := 9999
-            else fEngineScore := -9999;
+          if (fEngineNumberOfMovesUntilMate[theMultiPVNumber] > 0)
+            then fEngineScore[theMultiPVNumber] := 9999
+            else fEngineScore[theMultiPVNumber] := -9999;
         end
       else
         begin
-          if (fNumberOfMovesUntilMate > 0)
-            then fEngineScore := -9999
-            else fEngineScore := 9999;
+          if (fEngineNumberOfMovesUntilMate[theMultiPVNumber] > 0)
+            then fEngineScore[theMultiPVNumber] := -9999
+            else fEngineScore[theMultiPVNumber] := 9999;
         end;
 
   finally
@@ -701,7 +745,7 @@ begin
 
 
     // Remove the sign.
-  fNumberOfMovesUntilMate := Abs(fNumberOfMovesUntilMate);
+  // fNumberOfMovesUntilMate := Abs(fNumberOfMovesUntilMate);     FIXEDIN build 197
 
   {$IFDEF ENGINEDEBUG}
   // WriteLn(fLogFile, '--> ', EngineTimeStamp, ' ', 'Self.Caption updated with the mate in string.');
@@ -788,11 +832,41 @@ end;
 
 
 
+function TChessEngineControllerUCI.GetMultiPVNumber(theLine: String): Integer;
+var
+  theRestOfTheLine,
+  theMultiPVNumberString: String;
+  theMultiPVNumber: Integer;
+  theErrorCode: Integer;
+
+begin
+    // Which pv is it?
+  Assert(Pos('multipv', theLine) > 0, 'GetMultiPVNumber() called without a multipv');
+
+  if (Pos('multipv', theLine) > 0)
+    then
+      begin
+        theRestOfTheLine := Copy(theLine, Pos('multipv ', theLine) + 8, 999);
+
+        theMultiPVNumberString := Copy(theRestOfTheLine, 1, Pos(' ', theRestOfTheLine) - 1);
+
+        Val(theMultiPVNumberString, theMultiPVNumber, theErrorCode);
+
+        if (theErrorCode <> 0)
+          then theMultiPVNumber := 1;
+      end;
+
+  Result := theMultiPVNumber;
+end;
+
+
+
 procedure TChessEngineControllerUCI.ParsePrincipleVariation(theLine: String);
 var
   theMoveNumber : Integer;
   thePlies : Integer;
   thePV,
+  theLongAlgebraicPV,
   theEnhancedLine,
   theUnenhancedLine: AnsiString;
   theWhiteMoveIsNext : Boolean;
@@ -800,7 +874,7 @@ var
   theSnippet : String;
   theMoveNumberString : String;
   theBlankPosition : Integer;
-  theLastPrincipleVariation: String;
+  // theLastPrincipleVariation: String;
   {
   theTimeString,
   theDepthString,
@@ -809,23 +883,31 @@ var
   theErrorCode: Integer;
   }
 
+  {
   MoveNumberA,
   MoveNumberB: String[5];
   MoveNumberAHasAnEllipsis,
   MoveNumberBHasAnEllipsis: Boolean;
+  }
 
   theNodeCountBeforeThePV: Int64; // FIXEDIN build 103
-  theScoreBeforeThePV: LongInt;
+  // theScoreBeforeThePV: LongInt;
+  {$IFDEF ENGINEDEBUG}
   theFirstMove: String;
+  {$ENDIF ENGINEDEBUG}
   theShortAlgebraicNotation: String;
+
+  theMultiPVNumber: Integer;
 
 begin
   Assert(Pos(' pv ', theLine) > 0);
 
+  theMultiPVNumber := GetMultiPVNumber(theLine);
+
     // Keep track in case these will be needed for the moving the current
     // analysis to the second pv memo.
   theNodeCountBeforeThePV := fEngineNodeCount;
-  theScoreBeforeThePV := fEngineScore;
+  // theScoreBeforeThePV := fEngineScore;
 
   theWhiteMoveIsNext := fWhiteOnMove;
 
@@ -850,8 +932,8 @@ begin
   // if (fBestMove > '')
   //   then thePV := fBestMove + ' ' + thePV;
 
-  theLastPrincipleVariation := fEnginePrincipleVariation;
-  fEnginePrincipleVariation := '';
+  // fEnginePrincipleVariation[theMultiPVNumber] := '';
+  theLongAlgebraicPV := '';
   theSnippet := '';
 
   while (Length(thePV) > 0) do
@@ -863,10 +945,10 @@ begin
         then
           begin
               // separate the moves with one space
-            if (Length(fEnginePrincipleVariation) > 0)
-              then fEnginePrincipleVariation := fEnginePrincipleVariation + ' ';
+            if (Length(theLongAlgebraicPV) > 0)
+              then theLongAlgebraicPV := theLongAlgebraicPV + ' ';
 
-            fEnginePrincipleVariation := fEnginePrincipleVariation + theSnippet;
+            theLongAlgebraicPV := theLongAlgebraicPV + theSnippet;
             theSnippet := '';
           end
         else
@@ -881,24 +963,24 @@ begin
     then
       begin
           // separate the moves with one space
-        if (Length(fEnginePrincipleVariation) > 0)
-          then fEnginePrincipleVariation := fEnginePrincipleVariation + ' ';
+        if (Length(theLongAlgebraicPV) > 0)
+          then theLongAlgebraicPV := theLongAlgebraicPV + ' ';
 
-        fEnginePrincipleVariation := fEnginePrincipleVariation + theSnippet;
+        theLongAlgebraicPV := theLongAlgebraicPV + theSnippet;
         theSnippet := '';
       end;
 
     // Remove all leading blanks.
-  while (Length(fEnginePrincipleVariation) > 0) and
-        (fEnginePrincipleVariation[1] = ' ') do
-    fEnginePrincipleVariation := Copy(fEnginePrincipleVariation, 2, 999);
+  while (Length(theLongAlgebraicPV) > 0) and
+        (theLongAlgebraicPV = ' ') do
+    theLongAlgebraicPV := Copy(theLongAlgebraicPV, 2, 999);
 
-  if (Length(fEnginePrincipleVariation) < 1)
+  if (Length(theLongAlgebraicPV) < 1)
     then Exit;
 
-  if (Pos(' ', fEnginePrincipleVariation) = 0)
-    then theFirstMove := fEnginePrincipleVariation
-    else theFirstMove := Copy(fEnginePrincipleVariation, 1, Pos(' ', fEnginePrincipleVariation) - 1);
+  if (Pos(' ', theLongAlgebraicPV) = 0)
+    then theFirstMove := theLongAlgebraicPV
+    else theFirstMove := Copy(theLongAlgebraicPV, 1, Pos(' ', theLongAlgebraicPV) - 1);
 
   {$IFDEF ENGINEDEBUG}
   // if (theFirstMove = 'd8h4')
@@ -913,7 +995,7 @@ begin
   if not (theShortAlgebraicNotation > '')
     then
       begin
-        fEnginePrincipleVariation := '';
+        fEnginePrincipleVariation[theMultiPVNumber] := '';
         fEngineSecondaryVariation := '';
 
         {$IFDEF ENGINEDEBUG}
@@ -935,13 +1017,13 @@ begin
     // our own.
   theUnenhancedLine := '';
 
-  while (Length(fEnginePrincipleVariation) > 0) do
+  while (Length(theLongAlgebraicPV) > 0) do
     begin
-      theBlankPosition := Pos(' ', fEnginePrincipleVariation);
+      theBlankPosition := Pos(' ', theLongAlgebraicPV);
 
       if (theBlankPosition > 0)
-        then theSnippet := Copy(fEnginePrincipleVariation, 1, theBlankPosition)
-        else theSnippet := fEnginePrincipleVariation;
+        then theSnippet := Copy(theLongAlgebraicPV, 1, theBlankPosition)
+        else theSnippet := theLongAlgebraicPV;
 
         // Keep this snippet only if it does not look like a move number.
       if (Pos('.', theSnippet) = 0) and
@@ -968,7 +1050,7 @@ begin
 
                   WriteToLog(True, 'ParsePrincipleVariation() Notation is illegal. >' + theShortAlgebraicNotation + '<');
 
-                  // Assert(False, 'Bad Notation');   // ****** remove in shipping version
+                  // Assert(False, 'Bad Notation');   // TESTING remove in shipping version
                   { $ENDIF}
                 end;
 
@@ -979,20 +1061,25 @@ begin
           end;
 
       if (theBlankPosition > 0)
-        then fEnginePrincipleVariation := Copy(fEnginePrincipleVariation, theBlankPosition + 1, 9999)
-        else fEnginePrincipleVariation := '';
+        then theLongAlgebraicPV := Copy(theLongAlgebraicPV, theBlankPosition + 1, 9999)
+        else theLongAlgebraicPV := '';
     end;
 
 
   LocalizePV(theUnenhancedLine);
 
-  fBestLine := theUnenhancedLine;
+    // FIXEDIN build 197
+  if (theMultiPVNumber = 1)
+    then
+      begin
+        fBestLine := theUnenhancedLine;
 
-  if (Pos(' ', theUnenhancedLine) = 0)
-    then fHintMove := theUnenhancedLine
-    else fHintMove := Copy(theUnenhancedLine,
-                           1,
-                           Pos(' ', theUnenhancedLine) - 1);
+        if (Pos(' ', theUnenhancedLine) = 0)
+          then fHintMove := theUnenhancedLine
+          else fHintMove := Copy(theUnenhancedLine,
+                                 1,
+                                 Pos(' ', theUnenhancedLine) - 1);
+      end;
 
   theMoveNumber := (thePlies div 2) + 1;
 
@@ -1042,42 +1129,9 @@ begin
         else theUnenhancedLine := '';
     end;
 
-    { Should this new enhanced line be moved to the pvmemo2?  }
-  MoveNumberA := Copy(theEnhancedLine,
-                      1,
-                      Pos('.', theEnhancedLine));
-  MoveNumberB := Copy(theLastPrincipleVariation,
-                      1,
-                      Pos('.',theLastPrincipleVariation));
+  fEnginePrincipleVariation[theMultiPVNumber] := theEnhancedLine;
 
-  MoveNumberAHasAnEllipsis := (Pos('...', theEnhancedLine) > 0);
-  MoveNumberBHasAnEllipsis := (Pos('...', theLastPrincipleVariation) > 0);
-
-    { If the move number or the ellipsis is changing then
-      assume the position has changed and clear the second memo. }
-  if (MoveNumberA <> MoveNumberB) or
-     (MoveNumberAHasAnEllipsis <> MoveNumberBHasAnEllipsis)
-    then
-      begin
-        fEngineSecondaryVariation := '';
-      end;
-
-    { The first move must be different and
-      their move numbers must match and
-      they both have to have an ellipsis or not. }
-  if (Copy(theEnhancedLine,1,6) <> Copy(theLastPrincipleVariation,1,6)) and
-     (MoveNumberA = MoveNumberB) and
-     (MoveNumberAHasAnEllipsis = MoveNumberBHasAnEllipsis)
-    then
-      begin
-          { tack on the nodecount and assessment }
-        fEngineSecondaryVariation := theLastPrincipleVariation + ' [' + IntToStr(theScoreBeforeThePV) +
-                        '/' + IntToStr(theNodeCountBeforeThePV) + ']';
-      end;
-
-  fEnginePrincipleVariation := theEnhancedLine;
-
-  Assert(fEnginePrincipleVariation > '', 'fEnginePrincipleVariation was blank at the end of ' + kLineFeed +
+  Assert(fEnginePrincipleVariation[theMultiPVNumber] > '', 'fEnginePrincipleVariation was blank at the end of ' + kLineFeed +
                                          'TChessEngineControllerUCI.ParsePrincipleVariation()');
 end;
 
@@ -1107,6 +1161,9 @@ end;
 
 
 function TChessEngineControllerUCI.ConnectViaPipes: Boolean;
+var
+  K: Integer;
+
 begin
   Result := False;  // an assumption
 
@@ -1118,14 +1175,20 @@ begin
   fNumberOfBytesInBuffer := 0;
   fLastCommandFragment := '';
 
-  fEngineScore := kNoNumericAssessment;
-  fEnginePrincipleVariation := '';
+    // FIXEDIN build 197
+  for K := 1 to kMaximumVariations do
+    begin
+      fEngineIsMating[K] := False;
+      fEngineScore[K] := kNoNumericAssessment;
+      fEnginePrincipleVariation[K] := '';
+      fEngineNumberOfMovesUntilMate[K] := 9999;
+    end;
+
   fEngineSecondaryVariation := '';
   fEngineSearchTime := 0;
   fEngineNodeCount := 0;
   fEngineDepth := 0;
   fEngineNodesPerSecond := 0;
-  fNumberOfMovesUntilMate := 9999;
 
   if not StartEngineViaPipes
     then

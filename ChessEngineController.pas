@@ -37,6 +37,9 @@ type
     // fLogFileIsOpen: Boolean;
     { $ENDIF}
 
+
+    fTicksAtStartOfAnalysis: Int64;
+
     fCurrentClientWindow: TForm;
 
     fNumberOfOverdrives: Integer;
@@ -147,6 +150,8 @@ type
     procedure ProcessCommands; virtual; abstract;
 
     procedure CheckPipes; virtual; abstract;   // This method should be called in its own thread in case it blocks.
+
+    function GetTimeSpentAnalyzing: Int64;
 
     function GetNumberOfOverdrives: Integer; virtual;
 
@@ -362,6 +367,13 @@ begin
   // Assert(theMultiPVNumber <= GetTotalPrincipleVariations, 'GetScore() has an out of range MultiPV');
 
   Result := fEngineScore[theMultiPVNumber];
+end;
+
+
+
+function TChessEngineController.GetTimeSpentAnalyzing: Int64;
+begin
+  Result := TThread.GetTickCount64 -fTicksAtStartOfAnalysis;
 end;
 
 

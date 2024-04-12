@@ -330,11 +330,51 @@ EditViewName=C:\dev\COW Desktop\COW Pro desktop master\GTypes.pas
 
 [ClosedView_QzpcZGV2XENPVyBSRVNUIEVuZ2luZSBTZXJ2ZXJcRm9ybS5NYWluLnBhcw==]
 Module=C:\dev\COW REST Engine Server\Form.Main.pas
-CursorX=36
-CursorY=269
-TopLine=251
+CursorX=13
+CursorY=414
+TopLine=395
 LeftCol=1
 Elisions=
 Bookmarks=
 EditViewName=C:\dev\COW REST Engine Server\Form.Main.pas
+
+[ClosedView_QzpcZGV2XENPVyBSRVNUIEVuZ2luZSBTZXJ2ZXJcQ2hlc3NFbmdpbmVDb250cm9sbGVyLnBhcw==]
+Module=C:\dev\COW REST Engine Server\ChessEngineController.pas
+CursorX=1
+CursorY=41
+TopLine=23
+LeftCol=1
+Elisions=
+Bookmarks=
+EditViewName=C:\dev\COW REST Engine Server\ChessEngineController.pas
+[ClosedView_QzpcZGV2XENPVyBSRVNUIEVuZ2luZSBTZXJ2ZXJcQ2hlc3NFbmdpbmVDb250cm9sbGVyVUNJLnBh
+cw==]
+Module=C:\dev\COW REST Engine Server\ChessEngineControllerUCI.pas
+CursorX=47
+CursorY=101
+TopLine=32
+LeftCol=1
+Elisions=
+Bookmarks=
+EditViewName=C:\dev\COW REST Engine Server\ChessEngineControllerUCI.pas
+[ClosedView_QzpcZGV2XENPVyBSRVNUIEVuZ2luZSBTZXJ2ZXJcQ2hlc3NFbmdpbmVDb250cm9sbGVyVUNJLnBh
+cw==]
+Module=C:\dev\COW REST Engine Server\ChessEngineControllerUCI.pas
+CursorX=1
+CursorY=46
+TopLine=32
+LeftCol=1
+Elisions=
+Bookmarks=
+EditViewName=C:\dev\COW REST Engine Server\ChessEngineControllerUCI.pas
+[ClosedView_QzpcZGV2XENPVyBSRVNUIEVuZ2luZSBTZXJ2ZXJcQ2hlc3NFbmdpbmVDb250cm9sbGVyVUNJLnBh
+cw==]
+Module=C:\dev\COW REST Engine Server\ChessEngineControllerUCI.pas
+CursorX=1
+CursorY=46
+TopLine=32
+LeftCol=1
+Elisions=
+Bookmarks=
+EditViewName=C:\dev\COW REST Engine Server\ChessEngineControllerUCI.pas
 

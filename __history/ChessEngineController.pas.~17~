@@ -9,6 +9,7 @@ uses
   System.Classes,
   System.SysUtils,
 
+
   gTypes,
   Parser,
   DiagramTypes,
@@ -119,6 +120,8 @@ type
 
     public
 
+    function GetEPDBeingAnalyzed: String;
+
     function GetTotalPrincipleVariations: Integer;
 
     function Connected: Boolean;   virtual;
@@ -136,7 +139,8 @@ type
     procedure SendEPDPositionToEngine(theEPDString : String;
                                       theNumberOfPliesPlayed : Integer;
                                       theWhiteOnMove : Boolean;
-                                      IgnoreIfAlreadyAnalyzingThisPosition : Boolean);  virtual; abstract;
+                                      IgnoreIfAlreadyAnalyzingThisPosition : Boolean;
+                                      theClientID: String);  virtual; abstract;
 
     procedure StopAnalyzing; virtual; abstract;
 
@@ -160,11 +164,19 @@ type
     function GetBestLine: String;
     function GetCopyright: String;
 
+    function GetClientID: String;
+
     procedure SetPieceLetters(theKingLetter,
                               theQueenLetter,
                               theRookLetter,
                               theBishopLetter,
                               theKnightLetter: Char);
+
+    protected
+
+      fClientID: String;
+
+
   end;
 
 
@@ -199,6 +211,7 @@ end;
 constructor TChessEngineController.Create;
 var
   K: Integer;
+
 begin
   inherited Create;
 
@@ -207,6 +220,8 @@ begin
   fLogFileName := '';
   fLogFileIsOpen := False;
   { $ENDIF}
+
+  fClientID := '';
 
   fCurrentClientWindow := nil;
 
@@ -316,6 +331,7 @@ end;
 
 procedure TChessEngineController.StartTalkingWithThisWindow(theForm: TForm);
 begin
+  Assert(False, 'Not in use');
 end;
 
 
@@ -323,6 +339,13 @@ end;
 function TChessEngineController.Connected: Boolean;
 begin
   Result := fConnected;
+end;
+
+
+
+function TChessEngineController.GetClientID: String;
+begin
+  Result := fClientID;
 end;
 
 
@@ -390,6 +413,13 @@ end;
 function TChessEngineController.GetEngineNickname: String;
 begin
   Result := fEngineNickname;
+end;
+
+
+
+function TChessEngineController.GetEPDBeingAnalyzed: String;
+begin
+  Result := fEPDPosition;
 end;
 
 

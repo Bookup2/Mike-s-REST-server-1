@@ -93,6 +93,8 @@ constructor TChessEngineControllerUCI.Create;
 begin
   inherited Create;
 
+  fTicksAtStartOfAnalysis := TThread.GetTickCount;
+
   fEngineSentSomething := False;
 
   fNumberOfPipeChecks := 0;
@@ -458,6 +460,8 @@ begin
   fEngineDepth := 0;
 
   fEPDPosition := theEPDString;
+
+  fTicksAtStartOfAnalysis := TThread.GetTickCount;
 
   theChessPosition := TChessPosition.Create;
 

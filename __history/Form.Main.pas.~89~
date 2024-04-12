@@ -31,6 +31,11 @@ type
     EngineEXEFilenameLabel: TLabel;
     EngineStatusPanel: TPanel;
     EngineStatusMemo: TMemo;
+    EngineCutoffTimer: TTimer;
+    NodeCountCutOffSpinBox: TSpinBox;
+    Label2: TLabel;
+    SpinBox1: TSpinBox;
+    Label3: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure ButtonStartClick(Sender: TObject);
     procedure ButtonStopClick(Sender: TObject);
@@ -38,6 +43,7 @@ type
     procedure StartEnginesButtonClick(Sender: TObject);
     procedure StopEnginesButtonClick(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
+    procedure EngineCutoffTimerTimer(Sender: TObject);
 
   private
 
@@ -54,6 +60,7 @@ type
 
     procedure StartServer;
     procedure ApplicationIdle(Sender: TObject; var Done: Boolean);
+    procedure LookForEnginesToCutOff;
 
   public
 
@@ -122,9 +129,13 @@ var
   theEPDBeingAnalyzed: String;
   theClientIDBeingServed: String;
   theScore: Integer;
+  theNodeCount: Cardinal;
+  theDepth: Integer;
 
 begin
-  RequestsMemo.Lines.Add(theClientID  + theFEN);
+  if (RequestsMemo.Lines.Count > 50) then RequestsMemo.Text := '';
+
+  RequestsMemo.Lines.Add(theClientID  + ' ' + theFEN);
 
   theEngineNumber := 0;
 
@@ -160,22 +171,30 @@ begin
      (theEPDBeingAnalyzed = theFEN)
     then
       begin
-        theReplyForTheClient := 'pv1=' + gChessEngineControllers[theEngineNumber].GetPrincipleVariation(1);
+        theReplyForTheClient := '';
 
-        theScore := gChessEngineControllers[theEngineNumber].GetScore(1);
-
-        theReplyForTheClient := theReplyForTheClient + '&score1=' + theScore.ToString;
-
-        for K := 2 to gChessEngineControllers[theEngineNumber].GetTotalPrincipleVariations do
+        for K := 1 to gChessEngineControllers[theEngineNumber].GetTotalPrincipleVariations do
           begin
-            theReplyForTheClient := theReplyForTheClient + '&pv' + K.ToString + '=' + gChessEngineControllers[theEngineNumber].GetPrincipleVariation(K);
+            theReplyForTheClient := theReplyForTheClient +
+              'pv' + K.ToString + '=' + gChessEngineControllers[theEngineNumber].GetPrincipleVariation(K);
 
             theScore := gChessEngineControllers[theEngineNumber].GetScore(K);
 
-            theReplyForTheClient := theReplyForTheClient + '&score' + theScore.ToString + '=' + theScore.ToString;
+            theReplyForTheClient := theReplyForTheClient +
+              '&score' + K.ToString + '=' + theScore.ToString;
+
+            if (K < gChessEngineControllers[theEngineNumber].GetTotalPrincipleVariations)
+              then theReplyForTheClient := theReplyForTheClient + '&';
           end;
 
-        EngineStatusMemo.Lines[theEngineNumber] := 'Engine-' + theEngineNumber.ToString + ' (' + fNumberOfRequestsServed.ToString +  ')'  + + theReplyForTheClient;
+        theNodeCount := gChessEngineControllers[theEngineNumber].GetNodeCount;
+
+        theDepth := gChessEngineControllers[theEngineNumber].GetDepth;
+
+        theReplyForTheClient := theReplyForTheClient +
+              '&depth=' + theDepth.ToString + '&nodecount=' + theNodeCount.ToString;
+
+        EngineStatusMemo.Lines[theEngineNumber] := 'Engine-' + theEngineNumber.ToString + ' (' + fNumberOfRequestsServed.ToString +  ') ' + theClientID + ' ' + theReplyForTheClient;
 
         Exit;
       end;
@@ -221,12 +240,19 @@ begin
 end;
 
 
+
 procedure TMainForm.StartEnginesButtonClick(Sender: TObject);
 var
   K: Integer;
 
 begin
-  if (gNumberOfEnginesRunning > 0) then Exit;
+  if (gNumberOfEnginesRunning > 0)
+    then
+      begin
+        RequestsMemo.Lines.Add('*** Engines are already running - command ignored ***');
+
+        Exit;
+      end;
 
     // Create some engine instances.
   gNumberOfEnginesRunning := Trunc(NumberOfEnginesSpinBox.Value);
@@ -255,6 +281,8 @@ begin
           end;
 
     end;
+
+  // gChessEngineControllers[1].SetLogFileName('Engine1LogFile.txt');
 
   RequestsMemo.Lines.Add(gNumberOfEnginesRunning.ToString + ' engines started.');
 
@@ -291,6 +319,13 @@ begin
   FServer.Active := False;
   FServer.Bindings.Clear;
 end;
+
+
+procedure TMainForm.EngineCutoffTimerTimer(Sender: TObject);
+begin
+  LookForEnginesToCutOff;
+end;
+
 
 
 procedure TMainForm.FormCreate(Sender: TObject);
@@ -360,6 +395,41 @@ begin
   end;
 
   fChessEngineDataThread.Free;
+end;
+
+
+
+procedure TMainForm.LookForEnginesToCutOff;
+var
+  K: Integer;
+
+begin
+  for K := 1 to gNumberOfEnginesRunning do
+    begin
+      if (gChessEngineControllers[K].GetEPDBeingAnalyzed > '')
+        then
+          begin
+            if (gChessEngineControllers[K].GetNodeCount > NodeCountCutOffSpinBox.Value * 1000000)
+              then
+                begin
+                    // This sets the FEN to blank.
+                  gChessEngineControllers[K].StopAnalyzing;
+                  EngineStatusMemo.Lines[K] := 'Engine ' + K.ToString + ' Cut off for node count';
+
+                  RequestsMemo.Lines.Add('Engine ' + K.ToString + ' Cut off for node count');
+               end;
+
+            if (gChessEngineControllers[K].GetTimeSpentAnalyzing > SecondsCutOffSpinBox.Value * 1000)
+              then
+                begin
+                    // This sets the FEN to blank.
+                  gChessEngineControllers[K].StopAnalyzing;
+                  EngineStatusMemo.Lines[K] := 'Engine ' + K.ToString + ' Cut off for node count';
+
+                  RequestsMemo.Lines.Add('Engine ' + K.ToString + ' Cut off for node count');
+               end;
+          end;
+    end;
 end;
 
 

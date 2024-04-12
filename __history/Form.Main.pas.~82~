@@ -48,6 +48,8 @@ type
 
     FServer: TIdHTTPWebBrokerBridge;
 
+    fNumberOfRequestsServed: Cardinal;
+
     procedure StopEngines;
 
     procedure StartServer;
@@ -119,13 +121,18 @@ var
   K: Integer;
   theEPDBeingAnalyzed: String;
   theClientIDBeingServed: String;
+  theScore: Integer;
+  theNodeCount: Cardinal;
+  theDepth: Integer;
 
 begin
-  RequestsMemo.Lines.Add(theClientID  + theFEN);
+  if (RequestsMemo.Lines.Count > 200) then RequestsMemo.Text := '';
 
-    // Look for an engine analyzing this position.
+  RequestsMemo.Lines.Add(theClientID  + ' ' + theFEN);
+
   theEngineNumber := 0;
 
+    // Look for an engine already serving this client.
   repeat
 
     Inc(theEngineNumber);
@@ -134,9 +141,8 @@ begin
 
     theClientIDBeingServed := gChessEngineControllers[theEngineNumber].GetClientID;
 
-  until (theEPDBeingAnalyzed = theFEN) or
-        (theClientIDBeingServed = theClientID) or
-        (theEngineNumber = gNumberOfEnginesRunning;
+  until (theClientIDBeingServed = theClientID) or
+        (theEngineNumber = gNumberOfEnginesRunning);
 
     // We found an engine serving this client for another position.
   if (theClientIDBeingServed = theClientID) and
@@ -148,25 +154,45 @@ begin
         gChessEngineControllers[theEngineNumber].SendEPDPositionToEngine(theFEN, 0, True, True, theClientID);
 
         theReplyForTheClient := kStartedThinking; // 'StartedThinking';
-      end;
-
-
-    // If an engine says it is analyzing this position then return the best line.
-  if (gChessEngineControllers[theEngineNumber].GetEPDBeingAnalyzed = theFEN)
-    then
-      begin
-        theReplyForTheClient := 'pv1=' + gChessEngineControllers[theEngineNumber].GetPrincipleVariation(1);
-
-        for K := 2 to gChessEngineControllers[theEngineNumber].GetTotalPrincipleVariations do
-
-        theReplyForTheClient := theReplyForTheClient + '&pv' + K.ToString + '=' + gChessEngineControllers[theEngineNumber].GetPrincipleVariation(K);
-
-        EngineStatusMemo.Lines[theEngineNumber] := 'Engine-' + theEngineNumber.ToString + ' ' + theReplyForTheClient;
 
         Exit;
       end;
 
-    // Look for an engine not currently analyzing.
+
+    // If an engine says it is analyzing this position for this client then return the best line.
+  if (theClientIDBeingServed = theClientID) and
+     (theEPDBeingAnalyzed = theFEN)
+    then
+      begin
+        theReplyForTheClient := '';
+
+        for K := 1 to gChessEngineControllers[theEngineNumber].GetTotalPrincipleVariations do
+          begin
+            theReplyForTheClient := theReplyForTheClient +
+              'pv' + K.ToString + '=' + gChessEngineControllers[theEngineNumber].GetPrincipleVariation(K);
+
+            theScore := gChessEngineControllers[theEngineNumber].GetScore(K);
+
+            theReplyForTheClient := theReplyForTheClient +
+              '&score' + K.ToString + '=' + theScore.ToString;
+
+            if (K < gChessEngineControllers[theEngineNumber].GetTotalPrincipleVariations)
+              then theReplyForTheClient := theReplyForTheClient + '&';
+          end;
+
+        theNodeCount := gChessEngineControllers[theEngineNumber].GetNodeCount;
+
+        theDepth := gChessEngineControllers[theEngineNumber].GetDepth;
+
+        theReplyForTheClient := theReplyForTheClient +
+              '&depth=' + theDepth.ToString + '&nodecount=' + theNodeCount.ToString;
+
+        EngineStatusMemo.Lines[theEngineNumber] := 'Engine-' + theEngineNumber.ToString + ' (' + fNumberOfRequestsServed.ToString +  ') ' + theClientID + ' ' + theReplyForTheClient;
+
+        Exit;
+      end;
+
+    // Look for an engine not currently serving a client.
   theEngineNumber := 0;
 
   repeat
@@ -185,11 +211,16 @@ begin
       begin
         theReplyForTheClient := kServerBusy; // 'ServerBusy';
 
+        Inc(fNumberOfRequestsServed);
+
         Exit;
       end;
 
   gChessEngineControllers[theEngineNumber].SendEPDPositionToEngine(theFEN, 0, True, True, theClientID);
   theReplyForTheClient := kStartedThinking; // 'StartedThinking';
+
+  Inc(fNumberOfRequestsServed);
+  EngineStatusMemo.Lines[theEngineNumber] := 'Engine-' + theEngineNumber.ToString + ' (' + fNumberOfRequestsServed.ToString +  ')'  + theReplyForTheClient;
 end;
 
 
@@ -200,6 +231,7 @@ begin
   ButtonStop.Enabled := FServer.Active;
   EditPort.Enabled := not FServer.Active;
 end;
+
 
 
 procedure TMainForm.StartEnginesButtonClick(Sender: TObject);
@@ -236,6 +268,8 @@ begin
           end;
 
     end;
+
+  gChessEngineControllers[1].SetLogFileName('Engine1LogFile.txt');
 
   RequestsMemo.Lines.Add(gNumberOfEnginesRunning.ToString + ' engines started.');
 
@@ -292,6 +326,8 @@ begin
   {$IFDEF DEBUG}
   System.ReportMemoryLeaksOnShutdown := True;
   {$ENDIF}
+
+  fNumberOfRequestsServed := 0;
 
   gNumberOfEnginesRunning := 0;
 

@@ -2,7 +2,7 @@ object MainForm: TMainForm
   Left = 0
   Top = 0
   Caption = 'PocketGM Server'
-  ClientHeight = 453
+  ClientHeight = 540
   ClientWidth = 992
   FormFactor.Width = 320
   FormFactor.Height = 480
@@ -77,7 +77,7 @@ object MainForm: TMainForm
     Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
     DataDetectorTypes = []
     Position.X = 16.000000000000000000
-    Position.Y = 328.000000000000000000
+    Position.Y = 427.000000000000000000
     Size.Width = 953.000000000000000000
     Size.Height = 105.000000000000000000
     Size.PlatformDefault = False
@@ -146,5 +146,51 @@ object MainForm: TMainForm
     TextSettings.Trimming = None
     Text = 'EngineEXEFilenameLabel'
     TabOrder = 13
+  end
+  object NodeCountCutOffSpinBox: TSpinBox
+    Touch.InteractiveGestures = [LongTap, DoubleTap]
+    TabOrder = 15
+    Cursor = crIBeam
+    Min = 2.000000000000000000
+    Max = 1000.000000000000000000
+    Value = 20.000000000000000000
+    Position.X = 40.000000000000000000
+    Position.Y = 336.000000000000000000
+  end
+  object Label2: TLabel
+    Position.X = 148.000000000000000000
+    Position.Y = 341.000000000000000000
+    Size.Width = 373.000000000000000000
+    Size.Height = 17.000000000000000000
+    Size.PlatformDefault = False
+    TextSettings.Trimming = None
+    Text = 'Cut off engine after this node count (millions)'
+    TabOrder = 16
+  end
+  object SecondsCutOffSpinBox: TSpinBox
+    Touch.InteractiveGestures = [LongTap, DoubleTap]
+    TabOrder = 17
+    Cursor = crIBeam
+    Min = 10.000000000000000000
+    Value = 10.000000000000000000
+    Position.X = 40.000000000000000000
+    Position.Y = 368.000000000000000000
+  end
+  object Label3: TLabel
+    Position.X = 148.000000000000000000
+    Position.Y = 373.000000000000000000
+    Size.Width = 317.000000000000000000
+    Size.Height = 17.000000000000000000
+    Size.PlatformDefault = False
+    TextSettings.Trimming = None
+    Text = 'Cut off engine after this time (seconds)'
+    TabOrder = 18
+  end
+  object EngineCutoffTimer: TTimer
+    Enabled = False
+    Interval = 10000
+    OnTimer = EngineCutoffTimerTimer
+    Left = 312
+    Top = 96
   end
 end

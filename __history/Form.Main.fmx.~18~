@@ -2,12 +2,13 @@ object MainForm: TMainForm
   Left = 0
   Top = 0
   Caption = 'PocketGM Server'
-  ClientHeight = 453
-  ClientWidth = 895
+  ClientHeight = 540
+  ClientWidth = 992
   FormFactor.Width = 320
   FormFactor.Height = 480
   FormFactor.Devices = [Desktop, iPhone, iPad]
   OnCreate = FormCreate
+  OnDestroy = FormDestroy
   DesignerMasterStyle = 0
   object ButtonStart: TButton
     Position.X = 16.000000000000000000
@@ -34,7 +35,7 @@ object MainForm: TMainForm
   object EditPort: TEdit
     Touch.InteractiveGestures = [LongTap, DoubleTap]
     TabOrder = 3
-    Text = '8080'
+    Text = '80'
     Position.X = 16.000000000000000000
     Position.Y = 80.000000000000000000
     Size.Width = 100.000000000000000000
@@ -76,12 +77,12 @@ object MainForm: TMainForm
     Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
     DataDetectorTypes = []
     Position.X = 16.000000000000000000
-    Position.Y = 328.000000000000000000
-    Size.Width = 857.000000000000000000
+    Position.Y = 427.000000000000000000
+    Size.Width = 953.000000000000000000
     Size.Height = 105.000000000000000000
     Size.PlatformDefault = False
     TabOrder = 8
-    Viewport.Width = 853.000000000000000000
+    Viewport.Width = 949.000000000000000000
     Viewport.Height = 101.000000000000000000
   end
   object StartEnginesButton: TButton
@@ -115,5 +116,62 @@ object MainForm: TMainForm
     Text = 'Stop Engines'
     TextSettings.Trimming = None
     OnClick = StopEnginesButtonClick
+    object EngineStatusPanel: TPanel
+      Position.X = 408.000000000000000000
+      Position.Y = -254.000000000000000000
+      Size.Width = 545.000000000000000000
+      Size.Height = 279.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 5
+      object EngineStatusMemo: TMemo
+        Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
+        DataDetectorTypes = []
+        Position.X = 16.000000000000000000
+        Position.Y = 16.000000000000000000
+        Size.Width = 513.000000000000000000
+        Size.Height = 249.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 0
+        Viewport.Width = 509.000000000000000000
+        Viewport.Height = 245.000000000000000000
+      end
+    end
+  end
+  object EngineEXEFilenameLabel: TLabel
+    Position.X = 16.000000000000000000
+    Position.Y = 300.000000000000000000
+    Size.Width = 849.000000000000000000
+    Size.Height = 17.000000000000000000
+    Size.PlatformDefault = False
+    TextSettings.Trimming = None
+    Text = 'EngineEXEFilenameLabel'
+    TabOrder = 13
+  end
+  object NodeCountCutOffSpinBox: TSpinBox
+    Touch.InteractiveGestures = [LongTap, DoubleTap]
+    TabOrder = 15
+    Cursor = crIBeam
+    Min = 2.000000000000000000
+    Max = 1000.000000000000000000
+    Value = 20.000000000000000000
+    Position.X = 40.000000000000000000
+    Position.Y = 336.000000000000000000
+  end
+  object Label2: TLabel
+    Position.X = 148.000000000000000000
+    Position.Y = 341.000000000000000000
+    Size.Width = 373.000000000000000000
+    Size.Height = 17.000000000000000000
+    Size.PlatformDefault = False
+    TextSettings.Trimming = None
+    Text = 'Cut off engine after this node count (millions)'
+    TabOrder = 16
+  end
+  object EngineCutoffTimer: TTimer
+    Enabled = False
+    Interval = 10000
+    OnTimer = EngineCutoffTimerTimer
+    Left = 312
+    Top = 96
   end
 end
