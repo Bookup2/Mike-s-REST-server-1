@@ -288,6 +288,8 @@ begin
 
   StartEnginesButton.Enabled := False;
   StopEnginesButton.Enabled := True;
+
+  EngineCutoffTimer.Enabled := True;
 end;
 
 
@@ -314,11 +316,13 @@ begin
 end;
 
 
+
 procedure TMainForm.ButtonStopClick(Sender: TObject);
 begin
   FServer.Active := False;
   FServer.Bindings.Clear;
 end;
+
 
 
 procedure TMainForm.EngineCutoffTimerTimer(Sender: TObject);
@@ -404,6 +408,8 @@ var
   K: Integer;
 
 begin
+  RequestsMemo.Lines.Add('*** Looking for engines to cut off ***');
+
   for K := 1 to gNumberOfEnginesRunning do
     begin
       if (gChessEngineControllers[K].GetEPDBeingAnalyzed > '')
@@ -451,6 +457,8 @@ var
   K: Integer;
 
 begin
+  EngineCutoffTimer.Enabled := False;
+
   if (gNumberOfEnginesRunning = 0) then Exit;
 
   for K := 1 to gNumberOfEnginesRunning do

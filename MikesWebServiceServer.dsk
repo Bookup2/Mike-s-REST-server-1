@@ -1,37 +1,46 @@
 ﻿[Closed Files]
-File_0=TSourceModule,'C:\dev\COW REST Engine Server\ChessEngineController.pas',0,1,437,1,451,0,0,,
-File_1=TSourceModule,'C:\dev\COW Desktop\COW Pro desktop master\EbookForm.pas',0,1,15579,1,15594,0,0,,
-File_2=TSourceModule,'C:\dev\COW Desktop\COW Pro desktop master\GTypes.pas',0,1,1,1,1,0,0,,
-File_3=TSourceModule,'C:\dev\COW Desktop\COW Pro desktop master\Globals.pas',0,1,66,1,81,0,0,,
-File_4=TSourceModule,'C:\dev\COW Desktop\COW Pro desktop master\MainWindow.pas',0,1,9079,32,9094,0,0,,
-File_5=TSourceModule,'c:\program files (x86)\embarcadero\studio\23.0\SOURCE\RTL\SYS\System.SysUtils.pas',0,1,24657,1,24671,0,0,,
-File_6=TSourceModule,'c:\program files (x86)\embarcadero\studio\23.0\source\rtl\common\System.Classes.pas',0,1,7795,1,7809,0,0,,
-File_7=TSourceModule,'c:\program files (x86)\embarcadero\studio\23.0\source\fmx\FMX.Memo.pas',0,1,2156,1,2170,0,0,,
-File_8=TSourceModule,'C:\dev\Mike''s REST server 1\GTypes.pas',0,1,1555,1,1555,0,0,,
-File_9=TSourceModule,'C:\dev\Mike''s REST server 1\Utils.pas',0,1,36,1,51,0,0,,
-File_10=TSourceModule,'c:\program files (x86)\embarcadero\studio\23.0\source\fmx\FMX.Controls.pas',0,1,4460,1,4474,0,0,{{701,4}
-File_11=TSourceModule,'C:\dev\COW Desktop\COW Pro desktop master\ChessEngineDataThread.pas',0,1,91,96,92,0,0,,
-File_12=TSourceModule,'c:\program files (x86)\embarcadero\studio\23.0\source\Internet\Web.HTTPApp.pas',0,1,829,1,848,0,0,,
-File_13=TSourceModule,'c:\program files (x86)\embarcadero\studio\23.0\source\rtl\net\System.Net.URLClient.pas',0,1,1332,1,1346,0,0,,
-File_14=TSourceModule,'C:\dev\COW Desktop\COW Pro desktop master\Book47.pas',0,1,1,1,2676,0,0,,
+File_0=TSourceModule,'C:\dev\COW Desktop\COW Pro desktop master\EbookForm.pas',0,1,15579,1,15594,0,0,,
+File_1=TSourceModule,'C:\dev\COW Desktop\COW Pro desktop master\GTypes.pas',0,1,1,1,1,0,0,,
+File_2=TSourceModule,'C:\dev\COW Desktop\COW Pro desktop master\Globals.pas',0,1,66,1,81,0,0,,
+File_3=TSourceModule,'C:\dev\COW Desktop\COW Pro desktop master\MainWindow.pas',0,1,9079,32,9094,0,0,,
+File_4=TSourceModule,'c:\program files (x86)\embarcadero\studio\23.0\SOURCE\RTL\SYS\System.SysUtils.pas',0,1,24657,1,24671,0,0,,
+File_5=TSourceModule,'c:\program files (x86)\embarcadero\studio\23.0\source\rtl\common\System.Classes.pas',0,1,7795,1,7809,0,0,,
+File_6=TSourceModule,'c:\program files (x86)\embarcadero\studio\23.0\source\fmx\FMX.Memo.pas',0,1,2156,1,2170,0,0,,
+File_7=TSourceModule,'C:\dev\Mike''s REST server 1\GTypes.pas',0,1,1555,1,1555,0,0,,
+File_8=TSourceModule,'C:\dev\Mike''s REST server 1\Utils.pas',0,1,36,1,51,0,0,,
+File_9=TSourceModule,'c:\program files (x86)\embarcadero\studio\23.0\source\fmx\FMX.Controls.pas',0,1,4460,1,4474,0,0,{{701,4}
+File_10=TSourceModule,'C:\dev\COW Desktop\COW Pro desktop master\ChessEngineDataThread.pas',0,1,91,96,92,0,0,,
+File_11=TSourceModule,'c:\program files (x86)\embarcadero\studio\23.0\source\Internet\Web.HTTPApp.pas',0,1,829,1,848,0,0,,
+File_12=TSourceModule,'c:\program files (x86)\embarcadero\studio\23.0\source\rtl\net\System.Net.URLClient.pas',0,1,1332,1,1346,0,0,,
+File_13=TSourceModule,'C:\dev\COW Desktop\COW Pro desktop master\Book47.pas',0,1,1,1,2676,0,0,,
 
 [Modules]
 Module0=C:\dev\COW REST Engine Server\Form.Main.pas
-Module1=C:\dev\Mike's web client 1\UnitFormMain.pas
-Count=2
+Module1=C:\dev\COW REST Engine Server\ChessEngineController.pas
+Module2=C:\dev\COW REST Engine Server\ChessEngineControllerUCI.pas
+Module3=C:\dev\Mike's web client 1\UnitFormMain.pas
+Count=4
 EditWindowCount=1
 
 [C:\dev\COW REST Engine Server\Form.Main.pas]
+ModuleType=TSourceModule
+
+[C:\dev\COW REST Engine Server\ChessEngineController.pas]
+ModuleType=TSourceModule
+
+[C:\dev\COW REST Engine Server\ChessEngineControllerUCI.pas]
 ModuleType=TSourceModule
 
 [C:\dev\Mike's web client 1\UnitFormMain.pas]
 ModuleType=TSourceModule
 
 [EditWindow0]
-ViewCount=2
+ViewCount=4
 CurrentEditView=C:\dev\COW REST Engine Server\Form.Main.pas
 View0=0
 View1=1
+View2=2
+View3=3
 PercentageSizes=1
 Create=1
 Visible=1
@@ -75,13 +84,35 @@ EditViewName=C:\dev\Mike's web client 1\UnitFormMain.pas
 [View1]
 CustomEditViewType=TEditView
 Module=C:\dev\COW REST Engine Server\Form.Main.pas
-CursorX=1
-CursorY=271
-TopLine=245
+CursorX=65
+CursorY=411
+TopLine=401
 LeftCol=1
 Elisions=
 Bookmarks=
-EditViewName=C:\dev\COW REST Engine Server\Form.Main.pas
+EditViewName=Borland.FormDesignerView
+
+[View2]
+CustomEditViewType=TEditView
+Module=C:\dev\COW REST Engine Server\ChessEngineController.pas
+CursorX=1
+CursorY=41
+TopLine=23
+LeftCol=1
+Elisions=
+Bookmarks=
+EditViewName=C:\dev\COW REST Engine Server\ChessEngineController.pas
+
+[View3]
+CustomEditViewType=TEditView
+Module=C:\dev\COW REST Engine Server\ChessEngineControllerUCI.pas
+CursorX=1
+CursorY=46
+TopLine=32
+LeftCol=1
+Elisions=
+Bookmarks=
+EditViewName=C:\dev\COW REST Engine Server\ChessEngineControllerUCI.pas
 
 [Watches]
 Count=0
@@ -108,12 +139,11 @@ Dockable=1
 StayOnTop=0
 
 [Breakpoints]
-Count=5
+Count=4
 Breakpoint0='C:\dev\Mike''s REST server 1\WebModuleUnit1.pas',80,'',0,1,'',1,0,0,'',1,'','','',0,''
-Breakpoint1='C:\dev\Mike''s REST server 1\Form.Main.pas',210,'',0,1,'',1,0,0,'',1,'','','',0,''
+Breakpoint1='C:\dev\Mike''s REST server 1\Form.Main.pas',219,'',0,1,'',1,0,0,'',1,'','','',0,''
 Breakpoint2='C:\dev\COW Desktop\COW Pro desktop master\EbookForm.pas',2098,'',0,1,'',1,0,0,'',1,'','','',0,''
-Breakpoint3='C:\dev\Mike''s REST server 1\ChessEngineController.pas',451,'',0,1,'',1,0,0,'',1,'','','',0,''
-Breakpoint4='C:\dev\COW REST Engine Server\Form.Main.pas',271,'',0,1,'',1,0,0,'',1,'','','',0,''
+Breakpoint3='C:\dev\Mike''s REST server 1\ChessEngineController.pas',463,'',0,1,'',1,0,0,'',1,'','','',0,''
 
 [EmbarcaderoWin32Debugger_AddressBreakpoints]
 Count=0
@@ -238,8 +268,8 @@ SplitPos=111
 
 [PropInspDesignerSelection]
 ArrangeBy=Name
-SelectedItem=Caption,
-ExpandedItems=Border=0,BorderIcons=0,Constraints=0,Fill=0,FormFactor=0,"LiveBindings Designer=0"
+SelectedItem=Name,LiveBindings
+ExpandedItems=Border=0,BorderIcons=0,Constraints=0,Fill=0,FormFactor=0,"LiveBindings Designer=0",Anchors=0,LiveBindings=0,Margins=0,Padding=0,Position=0,Caret=0,DataDetectorTypes=0,RotationCenter=0,Scale=0,Size=0,StyledSettings=0,TextSettings=0,Touch=0,TouchTargetExpansion=0,SystemStatusBar=0
 
 [frmDesignPreview]
 PercentageSizes=1
