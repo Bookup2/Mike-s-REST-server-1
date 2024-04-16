@@ -34,6 +34,8 @@ type
     EngineCutoffTimer: TTimer;
     NodeCountCutOffSpinBox: TSpinBox;
     Label2: TLabel;
+    SecondsCutOffSpinBox: TSpinBox;
+    Label3: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure ButtonStartClick(Sender: TObject);
     procedure ButtonStopClick(Sender: TObject);
@@ -59,6 +61,7 @@ type
     procedure StartServer;
     procedure ApplicationIdle(Sender: TObject; var Done: Boolean);
     procedure LookForEnginesToCutOff;
+    function NumberOfEnginesAnalyzing: Integer;
 
   public
 
@@ -86,8 +89,8 @@ const
   kINIFileName = 'ServerSettings.INI';
   kINIEngineFilenameTag = 'EngineEXEFile';
   // kMaximumChessEngines = 10;
-  kServerBusy = '#ServerBusy';
-  kStartedThinking = '#StartedThinking';
+  kRESTEngineServerBusy = '#ServerBusy';
+  kRESTEngineServerStartedThinking = '#StartedThinking';
 
 
 function GetLocalIP: string;
@@ -158,7 +161,7 @@ begin
 
         gChessEngineControllers[theEngineNumber].SendEPDPositionToEngine(theFEN, 0, True, True, theClientID);
 
-        theReplyForTheClient := kStartedThinking; // 'StartedThinking';
+        theReplyForTheClient := kRESTEngineServerStartedThinking; // 'StartedThinking';
 
         Exit;
       end;
@@ -214,7 +217,7 @@ begin
   if (theEPDBeingAnalyzed > '')
     then
       begin
-        theReplyForTheClient := kServerBusy; // 'ServerBusy';
+        theReplyForTheClient := kRESTEngineServerBusy; // 'ServerBusy';
 
         Inc(fNumberOfRequestsServed);
 
@@ -286,6 +289,8 @@ begin
 
   StartEnginesButton.Enabled := False;
   StopEnginesButton.Enabled := True;
+
+  EngineCutoffTimer.Enabled := True;
 end;
 
 
@@ -312,11 +317,13 @@ begin
 end;
 
 
+
 procedure TMainForm.ButtonStopClick(Sender: TObject);
 begin
   FServer.Active := False;
   FServer.Bindings.Clear;
 end;
+
 
 
 procedure TMainForm.EngineCutoffTimerTimer(Sender: TObject);
@@ -402,17 +409,54 @@ var
   K: Integer;
 
 begin
+    // Skip this if we're not running short of engines.
+  if (NumberOfEnginesAnalyzing < (gNumberOfEnginesRunning - 1)) then Exit;
+
+  RequestsMemo.Lines.Add('*** Looking for engines to cut off ***');
+
   for K := 1 to gNumberOfEnginesRunning do
     begin
-      if (gChessEngineControllers[K].GetEPDBeingAnalyzed > '') and
-         (gChessEngineControllers[K].GetNodeCount > NodeCountCutOffSpinBox.Value * 1000000)
+      if (gChessEngineControllers[K].GetEPDBeingAnalyzed > '')
         then
           begin
-              // This sets the FEN to blank.
-            gChessEngineControllers[K].StopAnalyzing;
-            EngineStatusMemo.Lines[K] := 'Engine ' + K.ToString + ' Cut off ';
+            if (gChessEngineControllers[K].GetNodeCount > NodeCountCutOffSpinBox.Value * 1000000)
+              then
+                begin
+                    // This sets the FEN to blank.
+                  gChessEngineControllers[K].StopAnalyzing;
+                  EngineStatusMemo.Lines[K] := 'Engine ' + K.ToString + ' Cut off for node count ' + gChessEngineControllers[K].GetNodeCount.ToString + ' (' + Trunc(NodeCountCutOffSpinBox.Value).ToString + ')';
+
+                  RequestsMemo.Lines.Add('Engine ' + K.ToString + ' Cut off for node count');
+               end;
+
+            if (gChessEngineControllers[K].GetTimeSpentAnalyzing > SecondsCutOffSpinBox.Value * 1000)
+              then
+                begin
+                    // This sets the FEN to blank.
+                  gChessEngineControllers[K].StopAnalyzing;
+                  EngineStatusMemo.Lines[K] := 'Engine ' + K.ToString + ' Cut off for seconds (' + gChessEngineControllers[K].GetTimeSpentAnalyzing.ToString + ')';
+
+                  RequestsMemo.Lines.Add('Engine ' + K.ToString + ' Cut off for seconds (' + gChessEngineControllers[K].GetTimeSpentAnalyzing.ToString + ')');
+               end;
           end;
     end;
+end;
+
+
+
+function TMainForm.NumberOfEnginesAnalyzing: Integer;
+var
+  NumberOfEngines: Integer;
+  K: Integer;
+
+begin
+  NumberOfEngines := 0;
+
+  for K := 1 to gNumberOfEnginesRunning do
+    if (gChessEngineControllers[K].GetEPDBeingAnalyzed > '')
+      then Inc(NumberOfEngines);
+
+  Result := NumberOfEngines;
 end;
 
 
@@ -434,6 +478,8 @@ var
   K: Integer;
 
 begin
+  EngineCutoffTimer.Enabled := False;
+
   if (gNumberOfEnginesRunning = 0) then Exit;
 
   for K := 1 to gNumberOfEnginesRunning do

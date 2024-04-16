@@ -61,6 +61,7 @@ type
     procedure StartServer;
     procedure ApplicationIdle(Sender: TObject; var Done: Boolean);
     procedure LookForEnginesToCutOff;
+    function NumberOfEnginesAnalyzing: Integer;
 
   public
 
@@ -88,8 +89,8 @@ const
   kINIFileName = 'ServerSettings.INI';
   kINIEngineFilenameTag = 'EngineEXEFile';
   // kMaximumChessEngines = 10;
-  kServerBusy = '#ServerBusy';
-  kStartedThinking = '#StartedThinking';
+  kRESTEngineServerBusy = '#ServerBusy';
+  kRESTEngineServerStartedThinking = '#StartedThinking';
 
 
 function GetLocalIP: string;
@@ -160,7 +161,7 @@ begin
 
         gChessEngineControllers[theEngineNumber].SendEPDPositionToEngine(theFEN, 0, True, True, theClientID);
 
-        theReplyForTheClient := kStartedThinking; // 'StartedThinking';
+        theReplyForTheClient := kRESTEngineServerStartedThinking; // 'StartedThinking';
 
         Exit;
       end;
@@ -216,7 +217,7 @@ begin
   if (theEPDBeingAnalyzed > '')
     then
       begin
-        theReplyForTheClient := kServerBusy; // 'ServerBusy';
+        theReplyForTheClient := kRESTEngineServerBusy; // 'ServerBusy';
 
         Inc(fNumberOfRequestsServed);
 
@@ -224,7 +225,7 @@ begin
       end;
 
   gChessEngineControllers[theEngineNumber].SendEPDPositionToEngine(theFEN, 0, True, True, theClientID);
-  theReplyForTheClient := kStartedThinking; // 'StartedThinking';
+  theReplyForTheClient := kRESTEngineServerStartedThinking; // 'StartedThinking';
 
   Inc(fNumberOfRequestsServed);
   EngineStatusMemo.Lines[theEngineNumber] := 'Engine-' + theEngineNumber.ToString + ' (' + fNumberOfRequestsServed.ToString +  ')'  + theReplyForTheClient;
@@ -408,6 +409,9 @@ var
   K: Integer;
 
 begin
+    // Skip this if we're not running short of engines.
+  if (NumberOfEnginesAnalyzing < (gNumberOfEnginesRunning - 1)) then Exit;
+
   RequestsMemo.Lines.Add('*** Looking for engines to cut off ***');
 
   for K := 1 to gNumberOfEnginesRunning do
@@ -420,7 +424,7 @@ begin
                 begin
                     // This sets the FEN to blank.
                   gChessEngineControllers[K].StopAnalyzing;
-                  EngineStatusMemo.Lines[K] := 'Engine ' + K.ToString + ' Cut off for node count';
+                  EngineStatusMemo.Lines[K] := 'Engine ' + K.ToString + ' Cut off for node count ' + gChessEngineControllers[K].GetNodeCount.ToString + ' (' + Trunc(NodeCountCutOffSpinBox.Value).ToString + ')';
 
                   RequestsMemo.Lines.Add('Engine ' + K.ToString + ' Cut off for node count');
                end;
@@ -430,12 +434,29 @@ begin
                 begin
                     // This sets the FEN to blank.
                   gChessEngineControllers[K].StopAnalyzing;
-                  EngineStatusMemo.Lines[K] := 'Engine ' + K.ToString + ' Cut off for node count';
+                  EngineStatusMemo.Lines[K] := 'Engine ' + K.ToString + ' Cut off for seconds (' + gChessEngineControllers[K].GetTimeSpentAnalyzing.ToString + ')';
 
-                  RequestsMemo.Lines.Add('Engine ' + K.ToString + ' Cut off for node count');
+                  RequestsMemo.Lines.Add('Engine ' + K.ToString + ' Cut off for seconds (' + gChessEngineControllers[K].GetTimeSpentAnalyzing.ToString + ')');
                end;
           end;
     end;
+end;
+
+
+
+function TMainForm.NumberOfEnginesAnalyzing: Integer;
+var
+  NumberOfEngines: Integer;
+  K: Integer;
+
+begin
+  NumberOfEngines := 0;
+
+  for K := 1 to gNumberOfEnginesRunning do
+    if (gChessEngineControllers[K].GetEPDBeingAnalyzed > '')
+      then Inc(NumberOfEngines);
+
+  Result := NumberOfEngines;
 end;
 
 
