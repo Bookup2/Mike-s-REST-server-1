@@ -38,7 +38,8 @@ type
     { $ENDIF}
 
 
-    fTicksAtStartOfAnalysis: Int64;
+    fTicksAtStartOfAnalysis,
+    fTicksAtLastRequest: Int64;
 
     fCurrentClientWindow: TForm;
 
@@ -152,6 +153,7 @@ type
     procedure CheckPipes; virtual; abstract;   // This method should be called in its own thread in case it blocks.
 
     function GetTimeSpentAnalyzing: Int64;
+    function GetTimeSinceLastRequest: Int64;
 
     function GetNumberOfOverdrives: Integer; virtual;
 
@@ -373,7 +375,14 @@ end;
 
 function TChessEngineController.GetTimeSpentAnalyzing: Int64;
 begin
-  Result := TThread.GetTickCount64 -fTicksAtStartOfAnalysis;
+  Result := TThread.GetTickCount64 - fTicksAtStartOfAnalysis;
+end;
+
+
+
+function TChessEngineController.GetTimeSinceLastRequest: Int64;
+begin
+  Result := TThread.GetTickCount64 - fTicksAtLastRequest;
 end;
 
 
@@ -388,6 +397,8 @@ end;
 function TChessEngineController.GetPrincipleVariation(theMultiPVNumber: Integer): String;
 begin
   // Assert(theMultiPVNumber <= GetTotalPrincipleVariations, 'GetPrincipleVariation() has an out of range MultiPV');
+
+  fTicksAtLastRequest := TThread.GetTickCount64;
 
   Result := fEnginePrincipleVariation[theMultiPVNumber];     // FIXEDIN build 197
 end;

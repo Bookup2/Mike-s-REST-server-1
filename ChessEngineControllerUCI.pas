@@ -93,7 +93,7 @@ constructor TChessEngineControllerUCI.Create;
 begin
   inherited Create;
 
-  fTicksAtStartOfAnalysis := TThread.GetTickCount;
+  fTicksAtStartOfAnalysis := TThread.GetTickCount64;
 
   fEngineSentSomething := False;
 
@@ -461,7 +461,8 @@ begin
 
   fEPDPosition := theEPDString;
 
-  fTicksAtStartOfAnalysis := TThread.GetTickCount;
+  fTicksAtStartOfAnalysis := TThread.GetTickCount64;
+  fTicksAtLastRequest := TThread.GetTickCount64;
 
   theChessPosition := TChessPosition.Create;
 
@@ -541,9 +542,9 @@ begin
 
   fEngineIsAnalyzing := False;
 
-  SendCommand('stop');
-
   fEPDPosition := '';
+
+  SendCommand('stop');
 end;
 
 

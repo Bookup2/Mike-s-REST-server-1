@@ -42,8 +42,11 @@ procedure TWebModule1.WebModule1DefaultHandlerAction(Sender: TObject;
 begin
   Response.Content :=
     '<html>' +
-    '<head><title>Mikes Test Title</title></head>' +
-    '<body>This is from Mike''''s web server app.</body>' +
+    '<head><title>PocketGM Server</title></head>' +
+    '<body>' +
+    'Welcome to the Bookup Chess Engine Server for PocketGM.<br><br>' +
+    MainForm.ServerStatusForBrowser +
+    '</body>' +
     '</html>';
 end;
 

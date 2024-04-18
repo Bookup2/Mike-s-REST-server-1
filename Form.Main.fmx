@@ -1,14 +1,17 @@
 object MainForm: TMainForm
-  Left = 0
-  Top = 0
+  Left = 5
+  Top = 5
   Caption = 'PocketGM Server'
   ClientHeight = 749
-  ClientWidth = 992
+  ClientWidth = 1253
+  Position = Designed
   FormFactor.Width = 320
   FormFactor.Height = 480
   FormFactor.Devices = [Desktop, iPhone, iPad]
   OnCreate = FormCreate
   OnDestroy = FormDestroy
+  Left = 5
+  Top = 5
   DesignerMasterStyle = 0
   object ButtonStart: TButton
     Position.X = 16.000000000000000000
@@ -68,7 +71,7 @@ object MainForm: TMainForm
     TabOrder = 7
     ReadOnly = True
     Position.X = 16.000000000000000000
-    Position.Y = 184.000000000000000000
+    Position.Y = 158.000000000000000000
     Size.Width = 337.000000000000000000
     Size.Height = 22.000000000000000000
     Size.PlatformDefault = False
@@ -77,13 +80,13 @@ object MainForm: TMainForm
     Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
     DataDetectorTypes = []
     Position.X = 16.000000000000000000
-    Position.Y = 427.000000000000000000
-    Size.Width = 953.000000000000000000
-    Size.Height = 310.000000000000000000
+    Position.Y = 503.000000000000000000
+    Size.Width = 1097.000000000000000000
+    Size.Height = 238.000000000000000000
     Size.PlatformDefault = False
     TabOrder = 8
-    Viewport.Width = 949.000000000000000000
-    Viewport.Height = 306.000000000000000000
+    Viewport.Width = 1093.000000000000000000
+    Viewport.Height = 234.000000000000000000
   end
   object StartEnginesButton: TButton
     Position.X = 16.000000000000000000
@@ -116,36 +119,32 @@ object MainForm: TMainForm
     Text = 'Stop Engines'
     TextSettings.Trimming = None
     OnClick = StopEnginesButtonClick
-    object EngineStatusPanel: TPanel
-      Position.X = 408.000000000000000000
-      Position.Y = -254.000000000000000000
-      Size.Width = 545.000000000000000000
-      Size.Height = 279.000000000000000000
-      Size.PlatformDefault = False
-      TabOrder = 5
-      object EngineStatusMemo: TMemo
-        Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
-        DataDetectorTypes = []
-        Position.X = 16.000000000000000000
-        Position.Y = 16.000000000000000000
-        Size.Width = 513.000000000000000000
-        Size.Height = 249.000000000000000000
-        Size.PlatformDefault = False
-        TabOrder = 0
-        Viewport.Width = 509.000000000000000000
-        Viewport.Height = 245.000000000000000000
-      end
-    end
   end
   object EngineEXEFilenameLabel: TLabel
-    Position.X = 16.000000000000000000
-    Position.Y = 300.000000000000000000
+    Position.X = 29.000000000000000000
+    Position.Y = 322.000000000000000000
     Size.Width = 849.000000000000000000
     Size.Height = 17.000000000000000000
     Size.PlatformDefault = False
     TextSettings.Trimming = None
     Text = 'EngineEXEFilenameLabel'
     TabOrder = 13
+    object UseLogFileCheckBox: TCheckBox
+      Position.X = 435.000000000000000000
+      Position.Y = -251.000000000000000000
+      TabOrder = 4
+      Text = 'Use Log File'
+    end
+    object LogFileNameLabel: TLabel
+      Position.X = 432.000000000000000000
+      Position.Y = -224.000000000000000000
+      Size.Width = 673.000000000000000000
+      Size.Height = 17.000000000000000000
+      Size.PlatformDefault = False
+      TextSettings.Trimming = None
+      Text = 'LogFileNameLabel'
+      TabOrder = 5
+    end
   end
   object NodeCountCutOffSpinBox: TSpinBox
     Touch.InteractiveGestures = [LongTap, DoubleTap]
@@ -153,13 +152,13 @@ object MainForm: TMainForm
     Cursor = crIBeam
     Min = 2.000000000000000000
     Max = 1000.000000000000000000
-    Value = 20.000000000000000000
-    Position.X = 40.000000000000000000
-    Position.Y = 336.000000000000000000
+    Value = 40.000000000000000000
+    Position.X = 440.000000000000000000
+    Position.Y = 133.000000000000000000
   end
   object Label2: TLabel
-    Position.X = 148.000000000000000000
-    Position.Y = 341.000000000000000000
+    Position.X = 548.000000000000000000
+    Position.Y = 136.000000000000000000
     Size.Width = 373.000000000000000000
     Size.Height = 17.000000000000000000
     Size.PlatformDefault = False
@@ -169,28 +168,93 @@ object MainForm: TMainForm
   end
   object SecondsCutOffSpinBox: TSpinBox
     Touch.InteractiveGestures = [LongTap, DoubleTap]
-    TabOrder = 17
+    TabOrder = 18
     Cursor = crIBeam
     Min = 10.000000000000000000
-    Value = 10.000000000000000000
-    Position.X = 40.000000000000000000
-    Position.Y = 368.000000000000000000
+    Value = 20.000000000000000000
+    Position.X = 440.000000000000000000
+    Position.Y = 163.000000000000000000
   end
   object Label3: TLabel
-    Position.X = 148.000000000000000000
-    Position.Y = 373.000000000000000000
+    Position.X = 548.000000000000000000
+    Position.Y = 168.000000000000000000
     Size.Width = 317.000000000000000000
     Size.Height = 17.000000000000000000
     Size.PlatformDefault = False
     TextSettings.Trimming = None
     Text = 'Cut off engine after this time (seconds)'
-    TabOrder = 18
+    TabOrder = 20
   end
   object EngineCutoffTimer: TTimer
     Enabled = False
-    Interval = 10000
+    Interval = 2000
     OnTimer = EngineCutoffTimerTimer
     Left = 312
     Top = 96
+  end
+  object LogFileButton: TButton
+    Position.X = 592.000000000000000000
+    Position.Y = 68.000000000000000000
+    TabOrder = 22
+    Text = 'Log File'
+    TextSettings.Trimming = None
+    OnClick = LogFileButtonClick
+  end
+  object EngineStatusStringGrid: TStringGrid
+    CanFocus = True
+    ClipChildren = True
+    Position.X = 16.000000000000000000
+    Position.Y = 352.000000000000000000
+    Size.Width = 1229.000000000000000000
+    Size.Height = 141.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 23
+    RowCount = 10
+    Options = [Editing, ColumnResize, ColumnMove, ColLines, RowLines, Tabs, AutoDisplacement]
+    Viewport.Width = 1225.000000000000000000
+    Viewport.Height = 137.000000000000000000
+  end
+  object NumberOfEnginesRunningLabel: TLabel
+    Position.X = 200.000000000000000000
+    Position.Y = 275.000000000000000000
+    Size.Width = 153.000000000000000000
+    Size.Height = 17.000000000000000000
+    Size.PlatformDefault = False
+    TextSettings.Trimming = None
+    Text = '0 Engines'
+    TabOrder = 25
+  end
+  object NumberOfTotalRequestsLabel: TLabel
+    Position.X = 208.000000000000000000
+    Position.Y = 21.000000000000000000
+    Size.Width = 145.000000000000000000
+    Size.Height = 17.000000000000000000
+    Size.PlatformDefault = False
+    TextSettings.Trimming = None
+    Text = '0 Requests'
+    TabOrder = 26
+  end
+  object NoRequestsSpinBox: TSpinBox
+    Touch.InteractiveGestures = [LongTap, DoubleTap]
+    TabOrder = 17
+    Cursor = crIBeam
+    Min = 5.000000000000000000
+    Value = 15.000000000000000000
+    Position.X = 440.000000000000000000
+    Position.Y = 193.000000000000000000
+  end
+  object Label4: TLabel
+    Position.X = 548.000000000000000000
+    Position.Y = 193.000000000000000000
+    Size.Width = 317.000000000000000000
+    Size.Height = 17.000000000000000000
+    Size.PlatformDefault = False
+    TextSettings.Trimming = None
+    Text = 'Cut off engine after no requests (seconds)'
+    TabOrder = 19
+  end
+  object SaveDialog1: TSaveDialog
+    Left = 368
+    Top = 320
   end
 end

@@ -7,13 +7,13 @@ uses
   FMX.Types, FMX.Graphics, FMX.Controls, FMX.Forms, FMX.Dialogs, FMX.StdCtrls,
   FMX.Edit, IdHTTPWebBrokerBridge, IdGlobal, Web.HTTPApp,
   FMX.Controls.Presentation, FMX.Memo.Types, FMX.ScrollBox, FMX.Memo, FMX.EditBox, FMX.SpinBox,
-  System.INIFiles, System.IOUtils,
+  System.INIFiles, System.IOUtils, System.Rtti,
 
   // ChessEngineController,
   ChessEngineControllerUCIForWindows,
   ChessEngineDataThread,
 
-  Globals;
+  Globals,  FMX.Grid.Style, FMX.Grid;
 
 
 type
@@ -29,13 +29,20 @@ type
     NumberOfEnginesSpinBox: TSpinBox;
     StopEnginesButton: TButton;
     EngineEXEFilenameLabel: TLabel;
-    EngineStatusPanel: TPanel;
-    EngineStatusMemo: TMemo;
     EngineCutoffTimer: TTimer;
     NodeCountCutOffSpinBox: TSpinBox;
     Label2: TLabel;
     SecondsCutOffSpinBox: TSpinBox;
     Label3: TLabel;
+    LogFileButton: TButton;
+    EngineStatusStringGrid: TStringGrid;
+    SaveDialog1: TSaveDialog;
+    UseLogFileCheckBox: TCheckBox;
+    LogFileNameLabel: TLabel;
+    NumberOfEnginesRunningLabel: TLabel;
+    NumberOfTotalRequestsLabel: TLabel;
+    NoRequestsSpinBox: TSpinBox;
+    Label4: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure ButtonStartClick(Sender: TObject);
     procedure ButtonStopClick(Sender: TObject);
@@ -44,9 +51,22 @@ type
     procedure StopEnginesButtonClick(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure EngineCutoffTimerTimer(Sender: TObject);
+    procedure LogFileButtonClick(Sender: TObject);
 
   private
 
+
+    fColumnStatus,
+    fColumnClientID,
+    fColumnTimeSpent,
+    fColumnTimeSinceLastRequest,
+    fColumnNumberOfRequests,
+    fColumnDepth,
+    fColumnNodeCount,
+    fColumnPV,
+    fColumnEngineNumber: TStringColumn;
+
+    fEngineLogFileName: String;
     // fNumberOfEnginesRunning: Integer;
     // fChessEngineControllers: Array[1..10] of TChessEngineControllerUCIForWindows;
     fEngineFileName: String;
@@ -60,10 +80,13 @@ type
 
     procedure StartServer;
     procedure ApplicationIdle(Sender: TObject; var Done: Boolean);
-    procedure LookForEnginesToCutOff;
+    procedure LookForEnginesToCutOffByNodesOrTimeSpentOnAnalysis;
+    procedure LookForEnginesToCutOffByTooLongSinceLastClientRequest;
     function NumberOfEnginesAnalyzing: Integer;
 
   public
+
+    function ServerStatusForBrowser: String;
 
     procedure AnalyzeThisPositionForClient(theFEN: String;
                                            theClientID: String;
@@ -125,13 +148,16 @@ procedure TMainForm.AnalyzeThisPositionForClient(theFEN: String; theClientID: St
   var theReplyForTheClient: String);
 var
   theEngineNumber: Integer;
-  DebugString: String;
+  // DebugString: String;
   K: Integer;
   theEPDBeingAnalyzed: String;
   theClientIDBeingServed: String;
   theScore: Integer;
   theNodeCount: Cardinal;
   theDepth: Integer;
+  theRequestValue: Integer;
+  theErrorCode: Integer;
+  DebugString: String;
 
 begin
   if (RequestsMemo.Lines.Count > 50) then RequestsMemo.Text := '';
@@ -163,6 +189,15 @@ begin
 
         theReplyForTheClient := kRESTEngineServerStartedThinking; // 'StartedThinking';
 
+        EngineStatusStringGrid.Cells[1, theEngineNumber] := 'Switched';
+        EngineStatusStringGrid.Cells[2, theEngineNumber] := theClientID;
+        EngineStatusStringGrid.Cells[3, theEngineNumber] := '*';     // requests
+        EngineStatusStringGrid.Cells[4, theEngineNumber] := '*';     // time since last request
+        EngineStatusStringGrid.Cells[5, theEngineNumber] := '*';     // time spent analyzing
+        EngineStatusStringGrid.Cells[6, theEngineNumber] := '*';
+        EngineStatusStringGrid.Cells[7, theEngineNumber] := '*';
+        EngineStatusStringGrid.Cells[8, theEngineNumber] := '*';      // PV
+
         Exit;
       end;
 
@@ -173,6 +208,22 @@ begin
     then
       begin
         theReplyForTheClient := '';
+
+        DebugString := EngineStatusStringGrid.Cells[3, theEngineNumber];
+
+        Val(EngineStatusStringGrid.Cells[3, theEngineNumber], theRequestValue, theErrorCode);
+
+        if (theErrorCode = 0)
+          then EngineStatusStringGrid.Cells[3, theEngineNumber] := (theRequestValue + 1).ToString
+          else EngineStatusStringGrid.Cells[3, theEngineNumber] := '?';
+
+        EngineStatusStringGrid.Cells[1, theEngineNumber] := 'Analyzing';
+        EngineStatusStringGrid.Cells[2, theEngineNumber] := gChessEngineControllers[theEngineNumber].GetClientID;
+        EngineStatusStringGrid.Cells[4, theEngineNumber] := gChessEngineControllers[theEngineNumber].GetTimeSinceLastRequest.ToString;
+        EngineStatusStringGrid.Cells[5, theEngineNumber] := gChessEngineControllers[theEngineNumber].GetTimeSpentAnalyzing.ToString;
+        EngineStatusStringGrid.Cells[6, theEngineNumber] := gChessEngineControllers[theEngineNumber].GetDepth.ToString;
+        EngineStatusStringGrid.Cells[7, theEngineNumber] := gChessEngineControllers[theEngineNumber].GetNodeCount.ToString;
+        EngineStatusStringGrid.Cells[8, theEngineNumber] := gChessEngineControllers[theEngineNumber].GetScore(1).ToString + ' ' + gChessEngineControllers[theEngineNumber].GetPrincipleVariation(1);
 
         for K := 1 to gChessEngineControllers[theEngineNumber].GetTotalPrincipleVariations do
           begin
@@ -195,7 +246,7 @@ begin
         theReplyForTheClient := theReplyForTheClient +
               '&depth=' + theDepth.ToString + '&nodecount=' + theNodeCount.ToString;
 
-        EngineStatusMemo.Lines[theEngineNumber] := 'Engine-' + theEngineNumber.ToString + ' (' + fNumberOfRequestsServed.ToString +  ') ' + theClientID + ' ' + theReplyForTheClient;
+        // EngineStatusMemo.Lines[theEngineNumber] := 'Engine-' + theEngineNumber.ToString + ' (' + fNumberOfRequestsServed.ToString +  ') ' + theClientID + ' ' + theReplyForTheClient;
 
         Exit;
       end;
@@ -219,6 +270,8 @@ begin
       begin
         theReplyForTheClient := kRESTEngineServerBusy; // 'ServerBusy';
 
+        RequestsMemo.Lines.Add('*** Server busy ***');
+
         Inc(fNumberOfRequestsServed);
 
         Exit;
@@ -227,8 +280,21 @@ begin
   gChessEngineControllers[theEngineNumber].SendEPDPositionToEngine(theFEN, 0, True, True, theClientID);
   theReplyForTheClient := kRESTEngineServerStartedThinking; // 'StartedThinking';
 
+  EngineStatusStringGrid.Cells[3, theEngineNumber] := '1';
+
+        EngineStatusStringGrid.Cells[1, theEngineNumber] := 'Started';
+        EngineStatusStringGrid.Cells[2, theEngineNumber] := theClientID;
+        EngineStatusStringGrid.Cells[3, theEngineNumber] := '1';     // requests
+        EngineStatusStringGrid.Cells[4, theEngineNumber] := '*';
+        EngineStatusStringGrid.Cells[5, theEngineNumber] := '*';
+        EngineStatusStringGrid.Cells[6, theEngineNumber] := '*';
+        EngineStatusStringGrid.Cells[7, theEngineNumber] := '*';
+        EngineStatusStringGrid.Cells[8, theEngineNumber] := '*';
+
   Inc(fNumberOfRequestsServed);
-  EngineStatusMemo.Lines[theEngineNumber] := 'Engine-' + theEngineNumber.ToString + ' (' + fNumberOfRequestsServed.ToString +  ')'  + theReplyForTheClient;
+
+  // EngineStatusMemo.Lines[theEngineNumber] := 'Engine-' + theEngineNumber.ToString + ' (' + fNumberOfRequestsServed.ToString +  ')'  + theReplyForTheClient;
+  NumberOfTotalRequestsLabel.Text := fNumberOfRequestsServed.ToString + ' Requests handled';
 end;
 
 
@@ -238,6 +304,15 @@ begin
   ButtonStart.Enabled := not FServer.Active;
   ButtonStop.Enabled := FServer.Active;
   EditPort.Enabled := not FServer.Active;
+end;
+
+
+
+function TMainForm.ServerStatusForBrowser: String;
+begin
+  Result := 'Number of engines running = ' + gNumberOfEnginesRunning.ToString + '<br>' +
+            'Number of engines analyzing = ' + NumberOfEnginesAnalyzing.ToString + '<br>' +
+            'Number of requests served = ' + fNumberOfRequestsServed.ToString;
 end;
 
 
@@ -258,11 +333,24 @@ begin
     // Create some engine instances.
   gNumberOfEnginesRunning := Trunc(NumberOfEnginesSpinBox.Value);
 
-  EngineStatusMemo.Text := '***** ENGINE STATUS *****';
+  EngineStatusStringGrid.RowCount := gNumberOfEnginesRunning + 1;
+
+  EngineStatusStringGrid.BeginUpdate;
+  EngineStatusStringGrid.Cells[0, 0] := ' ';
+  EngineStatusStringGrid.Cells[1, 0] := 'Status';
+  EngineStatusStringGrid.Cells[2, 0] := 'Client';
+  EngineStatusStringGrid.Cells[3, 0] := 'Requests';
+  EngineStatusStringGrid.Cells[4, 0] := 'Time Since Request';
+  EngineStatusStringGrid.Cells[5, 0] := 'Time Analyzing';
+  EngineStatusStringGrid.Cells[6, 0] := 'Depth';
+  EngineStatusStringGrid.Cells[7, 0] := 'Nodes';
+  EngineStatusStringGrid.Cells[8, 0] := 'PV';
+  EngineStatusStringGrid.EndUpdate;
+   //                  PastMovesGrid.Repaint;
 
   for K := 1 to gNumberOfEnginesRunning do
     begin
-      EngineStatusMemo.Lines.Add('Engine ' + K.ToString);
+      EngineStatusStringGrid.Cells[0, K] := K.ToString;
     end;
 
   for K := 1 to gNumberOfEnginesRunning do
@@ -271,12 +359,12 @@ begin
 
       gChessEngineControllers[K].Connect(fEngineFileName);
 
-      EngineStatusMemo.Lines[K] := 'Engine ' + K.ToString + ' Connected';
+      EngineStatusStringGrid.Cells[1, K] := 'Connected';
 
       if not gChessEngineControllers[K].Connected
         then
           begin
-            ShowMessage('There was a problem connecting with the engine');
+            ShowMessage('There was a problem connecting with engine ' + K.ToString);
 
             Exit;
           end;
@@ -327,8 +415,23 @@ end;
 
 
 procedure TMainForm.EngineCutoffTimerTimer(Sender: TObject);
+var
+  K: Integer;
 begin
-  LookForEnginesToCutOff;
+  RequestsMemo.Lines.Add('--- Looking for engines to cut off ---');
+
+  for K := 1 to gNumberOfEnginesRunning do
+    begin
+      if (gChessEngineControllers[K].GetEPDBeingAnalyzed > '')
+        then
+          begin
+            EngineStatusStringGrid.Cells[4, K] := gChessEngineControllers[K].GetTimeSinceLastRequest.ToString;
+            EngineStatusStringGrid.Cells[5, K] := gChessEngineControllers[K].GetTimeSpentAnalyzing.ToString;
+          end;
+    end;
+
+  LookForEnginesToCutOffByNodesOrTimeSpentOnAnalysis;
+  LookForEnginesToCutOffByTooLongSinceLastClientRequest;
 end;
 
 
@@ -342,6 +445,43 @@ var
   K: Integer;
 
 begin
+  fEngineLogFileName := 'EngineLogFile.TXT';
+
+
+  fColumnEngineNumber         := TStringColumn.Create(EngineStatusStringGrid);
+  fColumnStatus               := TStringColumn.Create(EngineStatusStringGrid);
+  fColumnClientID             := TStringColumn.Create(EngineStatusStringGrid);
+  fColumnTimeSpent            := TStringColumn.Create(EngineStatusStringGrid);
+  fColumnNumberOfRequests     := TStringColumn.Create(EngineStatusStringGrid);
+  fColumnTimeSinceLastRequest := TStringColumn.Create(EngineStatusStringGrid);
+  fColumnDepth                := TStringColumn.Create(EngineStatusStringGrid);
+  fColumnNodeCount            := TStringColumn.Create(EngineStatusStringGrid);
+  fColumnPV                   := TStringColumn.Create(EngineStatusStringGrid);
+
+  fColumnEngineNumber.Width := 30;
+  fColumnStatus.Width := 100;
+  fColumnClientID.Width := 110;
+  fColumnTimeSpent.Width := 90;
+  fColumnTimeSinceLastRequest.Width := 90;
+  fColumnNumberOfRequests.Width := 80;
+  fColumnDepth.Width := 50;
+  fColumnNodeCount.Width := 120;
+  fColumnPV.Width := 580;
+
+  // Pastmovesgrid.TextSettings.Font.Size := gPreferences.PastMovesFontSize;
+  // Pastmovesgrid.TextSettings.Font.Family := 'LinaresFigurine';
+  // PastMovesGrid.RowHeight := 1.25 * Pastmovesgrid.TextSettings.Font.Size; // 35;
+
+  EngineStatusStringGrid.AddObject(fColumnEngineNumber);
+  EngineStatusStringGrid.AddObject(fColumnStatus);
+  EngineStatusStringGrid.AddObject(fColumnClientID);
+  EngineStatusStringGrid.AddObject(fColumnNumberOfRequests);
+  EngineStatusStringGrid.AddObject(fColumnTimeSinceLastRequest);
+  EngineStatusStringGrid.AddObject(fColumnTimeSpent);
+  EngineStatusStringGrid.AddObject(fColumnDepth);
+  EngineStatusStringGrid.AddObject(fColumnNodeCount);
+  EngineStatusStringGrid.AddObject(fColumnPV);
+
   EditLocalIP.Text := GetLocalIP;
   FServer := TIdHTTPWebBrokerBridge.Create(Self);
   Application.OnIdle := ApplicationIdle;
@@ -404,15 +544,57 @@ end;
 
 
 
-procedure TMainForm.LookForEnginesToCutOff;
+procedure TMainForm.LogFileButtonClick(Sender: TObject);
+begin
+  SaveDialog1.FileName := ExtractFileName(fEngineLogFileName);
+
+  if not SaveDialog1.Execute then Exit;
+
+  fEngineLogFileName := SaveDialog1.FileName;
+
+  UseLogFileCheckBox.IsChecked := True;
+
+  LogFileNameLabel.Text := fEngineLogFileName;
+end;
+
+
+
+procedure TMainForm.LookForEnginesToCutOffByTooLongSinceLastClientRequest;
 var
   K: Integer;
 
 begin
+  for K := 1 to gNumberOfEnginesRunning do
+    begin
+      if (gChessEngineControllers[K].GetEPDBeingAnalyzed > '') and
+         (gChessEngineControllers[K].GetTimeSinceLastRequest > Trunc(NoRequestsSpinBox.Value * 1000))
+        then
+          begin
+              // This sets the FEN to blank.
+            gChessEngineControllers[K].StopAnalyzing;
+
+            RequestsMemo.Lines.Add('Engine ' + K.ToString + ' Cut off for too long since a request (' + gChessEngineControllers[K].GetTimeSinceLastRequest.ToString + ')');
+
+            EngineStatusStringGrid.Cells[1, K] := 'No requests';
+          end;
+    end;
+end;
+
+
+
+procedure TMainForm.LookForEnginesToCutOffByNodesOrTimeSpentOnAnalysis;
+var
+  K: Integer;
+  DebugGetTimeSpentAnalyzing,
+  DebugGetTimeMaximum: Int64;
+
+begin
+  NumberOfEnginesRunningLabel.Text := NumberOfEnginesAnalyzing.ToString + ' Engines analyzing';
+
     // Skip this if we're not running short of engines.
   if (NumberOfEnginesAnalyzing < (gNumberOfEnginesRunning - 1)) then Exit;
 
-  RequestsMemo.Lines.Add('*** Looking for engines to cut off ***');
+  // RequestsMemo.Lines.Add('--- Looking for engines to cut off for time analyzing or node limit ---');
 
   for K := 1 to gNumberOfEnginesRunning do
     begin
@@ -424,20 +606,27 @@ begin
                 begin
                     // This sets the FEN to blank.
                   gChessEngineControllers[K].StopAnalyzing;
-                  EngineStatusMemo.Lines[K] := 'Engine ' + K.ToString + ' Cut off for node count ' + gChessEngineControllers[K].GetNodeCount.ToString + ' (' + Trunc(NodeCountCutOffSpinBox.Value).ToString + ')';
 
                   RequestsMemo.Lines.Add('Engine ' + K.ToString + ' Cut off for node count');
-               end;
-
-            if (gChessEngineControllers[K].GetTimeSpentAnalyzing > SecondsCutOffSpinBox.Value * 1000)
-              then
+                end
+              else
                 begin
-                    // This sets the FEN to blank.
-                  gChessEngineControllers[K].StopAnalyzing;
-                  EngineStatusMemo.Lines[K] := 'Engine ' + K.ToString + ' Cut off for seconds (' + gChessEngineControllers[K].GetTimeSpentAnalyzing.ToString + ')';
+                  DebugGetTimeSpentAnalyzing := gChessEngineControllers[K].GetTimeSpentAnalyzing;
+                  DebugGetTimeMaximum := Trunc(SecondsCutOffSpinBox.Value);
+                  DebugGetTimeMaximum := DebugGetTimeMaximum * 1000;
 
-                  RequestsMemo.Lines.Add('Engine ' + K.ToString + ' Cut off for seconds (' + gChessEngineControllers[K].GetTimeSpentAnalyzing.ToString + ')');
-               end;
+                  if (gChessEngineControllers[K].GetTimeSpentAnalyzing > Trunc(SecondsCutOffSpinBox.Value * 1000))
+                    then
+                      begin
+                          // This sets the FEN to blank.
+                        gChessEngineControllers[K].StopAnalyzing;
+
+                        RequestsMemo.Lines.Add('Engine ' + K.ToString + ' Cut off for seconds (' + gChessEngineControllers[K].GetTimeSpentAnalyzing.ToString + ')');
+
+                        EngineStatusStringGrid.Cells[1, K] := 'Cut off';
+                      end;
+                end;
+
           end;
     end;
 end;
@@ -488,7 +677,6 @@ begin
         then gChessEngineControllers[K].Disconnect(False);
 
       gChessEngineControllers[K].Free;
-      EngineStatusMemo.Lines[K] := 'Engine ' + K.ToString + ' Freed';
     end;
 
   RequestsMemo.Lines.Add(gNumberOfEnginesRunning.ToString + ' engines freed.');
