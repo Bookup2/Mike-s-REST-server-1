@@ -40,9 +40,9 @@ EditViewName=C:\dev\Mike's REST server 1\Form.Main.pas
 
 [ClosedView_QzpcZGV2XENPVyBEZXNrdG9wXENPVyBQcm8gZGVza3RvcCBtYXN0ZXJcTWFpbldpbmRvdy5wYXM=]
 Module=C:\dev\COW Desktop\COW Pro desktop master\MainWindow.pas
-CursorX=32
-CursorY=9094
-TopLine=9079
+CursorX=1
+CursorY=5308
+TopLine=5294
 LeftCol=1
 Elisions=
 Bookmarks=
@@ -120,9 +120,9 @@ EditViewName=c:\program files (x86)\embarcadero\studio\23.0\source\fmx\FMX.Contr
 
 [ClosedView_QzpcZGV2XENPVyBEZXNrdG9wXENPVyBQcm8gZGVza3RvcCBtYXN0ZXJcRWJvb2tGb3JtLnBhcw==]
 Module=C:\dev\COW Desktop\COW Pro desktop master\EbookForm.pas
-CursorX=1
-CursorY=15594
-TopLine=15579
+CursorX=15
+CursorY=54
+TopLine=41
 LeftCol=1
 Elisions=
 Bookmarks=
@@ -331,8 +331,8 @@ EditViewName=C:\dev\COW Desktop\COW Pro desktop master\GTypes.pas
 [ClosedView_QzpcZGV2XENPVyBSRVNUIEVuZ2luZSBTZXJ2ZXJcRm9ybS5NYWluLnBhcw==]
 Module=C:\dev\COW REST Engine Server\Form.Main.pas
 CursorX=1
-CursorY=271
-TopLine=257
+CursorY=173
+TopLine=154
 LeftCol=1
 Elisions=
 Bookmarks=
@@ -627,7 +627,6 @@ LeftCol=1
 Elisions=
 Bookmarks=
 EditViewName=c:\program files (x86)\embarcadero\studio\23.0\source\fmx\FMX.Controls.Presentation.pas
-
 [ClosedView_YzpccHJvZ3JhbSBmaWxlcyAoeDg2KVxlbWJhcmNhZGVyb1xzdHVkaW9cMjMuMFxzb3VyY2VcZm14
 XEZNWC5Db250cm9scy5QcmVzZW50YXRpb24ucGFz]
 Module=c:\program files (x86)\embarcadero\studio\23.0\source\fmx\FMX.Controls.Presentation.pas
@@ -638,4 +637,24 @@ LeftCol=1
 Elisions=
 Bookmarks=
 EditViewName=c:\program files (x86)\embarcadero\studio\23.0\source\fmx\FMX.Controls.Presentation.pas
+
+[ClosedView_QzpcZGV2XENPVyBSRVNUIEVuZ2luZSBTZXJ2ZXJcUG9ja2V0R01Cb29rLnBhcw==]
+Module=C:\dev\COW REST Engine Server\PocketGMBook.pas
+CursorX=1
+CursorY=581
+TopLine=567
+LeftCol=1
+Elisions=
+Bookmarks=
+EditViewName=C:\dev\COW REST Engine Server\PocketGMBook.pas
+[ClosedView_QzpcZGV2XENPVyBEZXNrdG9wXENPVyBQcm8gZGVza3RvcCBtYXN0ZXJcR2FtZUluZGV4MDEucGFz
+]
+Module=C:\dev\COW Desktop\COW Pro desktop master\GameIndex01.pas
+CursorX=1
+CursorY=17
+TopLine=1
+LeftCol=1
+Elisions=
+Bookmarks=
+EditViewName=C:\dev\COW Desktop\COW Pro desktop master\GameIndex01.pas
 

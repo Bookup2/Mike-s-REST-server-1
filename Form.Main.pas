@@ -7,13 +7,15 @@ uses
   FMX.Types, FMX.Graphics, FMX.Controls, FMX.Forms, FMX.Dialogs, FMX.StdCtrls,
   FMX.Edit, IdHTTPWebBrokerBridge, IdGlobal, Web.HTTPApp,
   FMX.Controls.Presentation, FMX.Memo.Types, FMX.ScrollBox, FMX.Memo, FMX.EditBox, FMX.SpinBox,
-  System.INIFiles, System.IOUtils, System.Rtti,
+  System.INIFiles, System.IOUtils, System.Rtti, FMX.Grid.Style, FMX.Grid,
 
   // ChessEngineController,
   ChessEngineControllerUCIForWindows,
   ChessEngineDataThread,
 
-  Globals,  FMX.Grid.Style, FMX.Grid;
+  Globals,
+
+  PocketGMBook;
 
 
 type
@@ -55,6 +57,7 @@ type
 
   private
 
+    fBook: TCachedServerReplyBook;
 
     fColumnStatus,
     fColumnClientID,
@@ -114,6 +117,8 @@ const
   // kMaximumChessEngines = 10;
   kRESTEngineServerBusy = '#ServerBusy';
   kRESTEngineServerStartedThinking = '#StartedThinking';
+  kPocketGMCacheBookFileName = 'PocketGMCacheBook.PGC';
+  kFolderCache = 'Cache Database';
 
 
 function GetLocalIP: string;
@@ -158,11 +163,21 @@ var
   theRequestValue: Integer;
   theErrorCode: Integer;
   DebugString: String;
+  theCachedReply: String;
 
 begin
   if (RequestsMemo.Lines.Count > 50) then RequestsMemo.Text := '';
 
   RequestsMemo.Lines.Add(theClientID  + ' ' + theFEN);
+
+  fBook.FillInEverything(theFEN, theCachedReply);
+
+  if (theCachedReply > '')
+    then
+      begin
+        theReplyForTheClient := theCachedReply;
+        Exit;
+      end;
 
   theEngineNumber := 0;
 
@@ -443,10 +458,21 @@ var
   theINIFileName: String;
   theEXEFileName: String;
   K: Integer;
+  CacheFolder: String;
+  CacheFileName: String;
 
 begin
   fEngineLogFileName := 'EngineLogFile.TXT';
 
+  fBook := TCachedServerReplyBook.Create;
+
+  CacheFolder := IncludeTrailingPathDelimiter(System.IOUtils.TPath.Combine(ExtractFilePath(ParamStr(0)), kFolderCache));
+  CacheFileName := System.IOUtils.TPath.Combine(CacheFolder, kPocketGMCacheBookFileName);
+
+  if not FileExists(CacheFileName)
+    then ShowMessage('Cache database not found  - ' + CacheFileName);
+
+  fBook.OpenDatabase(CacheFileName);
 
   fColumnEngineNumber         := TStringColumn.Create(EngineStatusStringGrid);
   fColumnStatus               := TStringColumn.Create(EngineStatusStringGrid);
@@ -540,6 +566,9 @@ begin
   end;
 
   fChessEngineDataThread.Free;
+
+  fBook.CloseDatabase;
+  fBook.Free;
 end;
 
 
