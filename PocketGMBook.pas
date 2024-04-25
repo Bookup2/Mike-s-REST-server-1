@@ -89,7 +89,7 @@ const
                                      'WHERE ' + kSQLFieldFEN + ' = :' + kSQLFieldFEN;
 
   kSQLUpdateMainposition = 'UPDATE ' + kSQLTableMainPosition + ' SET ' +
-                           kSQLFieldCachedServerReply        + ' = :' + kSQLFieldCachedServerReply       + ', ' +
+                           kSQLFieldCachedServerReply        + ' = :' + kSQLFieldCachedServerReply       + ' ' +
                            'WHERE ' + kSQLFieldFEN + ' = :' + kSQLFieldFEN;
 
   kSQLInsertDataVersion = 'INSERT INTO ' + kSQLTableDataVersion + ' (' +

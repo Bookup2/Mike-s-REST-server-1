@@ -331,8 +331,8 @@ EditViewName=C:\dev\COW Desktop\COW Pro desktop master\GTypes.pas
 [ClosedView_QzpcZGV2XENPVyBSRVNUIEVuZ2luZSBTZXJ2ZXJcRm9ybS5NYWluLnBhcw==]
 Module=C:\dev\COW REST Engine Server\Form.Main.pas
 CursorX=1
-CursorY=173
-TopLine=154
+CursorY=815
+TopLine=803
 LeftCol=1
 Elisions=
 Bookmarks=
@@ -641,8 +641,8 @@ EditViewName=c:\program files (x86)\embarcadero\studio\23.0\source\fmx\FMX.Contr
 [ClosedView_QzpcZGV2XENPVyBSRVNUIEVuZ2luZSBTZXJ2ZXJcUG9ja2V0R01Cb29rLnBhcw==]
 Module=C:\dev\COW REST Engine Server\PocketGMBook.pas
 CursorX=1
-CursorY=581
-TopLine=567
+CursorY=458
+TopLine=445
 LeftCol=1
 Elisions=
 Bookmarks=
@@ -657,4 +657,44 @@ LeftCol=1
 Elisions=
 Bookmarks=
 EditViewName=C:\dev\COW Desktop\COW Pro desktop master\GameIndex01.pas
+
+[ClosedView_QzpcZGV2XENPVyBEZXNrdG9wXENPVyBQcm8gZGVza3RvcCBtYXN0ZXJcVXRpbHMucGFz]
+Module=C:\dev\COW Desktop\COW Pro desktop master\Utils.pas
+CursorX=1
+CursorY=1243
+TopLine=1227
+LeftCol=1
+Elisions=
+Bookmarks=
+EditViewName=C:\dev\COW Desktop\COW Pro desktop master\Utils.pas
+[ClosedView_YzpccHJvZ3JhbSBmaWxlcyAoeDg2KVxlbWJhcmNhZGVyb1xzdHVkaW9cMjMuMFxzb3VyY2VcSW5k
+eTEwXFN5c3RlbVxJZFN0YWNrLnBhcw==]
+Module=c:\program files (x86)\embarcadero\studio\23.0\source\Indy10\System\IdStack.pas
+CursorX=1
+CursorY=980
+TopLine=940
+LeftCol=1
+Elisions=
+Bookmarks=
+EditViewName=c:\program files (x86)\embarcadero\studio\23.0\source\Indy10\System\IdStack.pas
+[ClosedView_YzpccHJvZ3JhbSBmaWxlcyAoeDg2KVxlbWJhcmNhZGVyb1xzdHVkaW9cMjMuMFxzb3VyY2VcSW5k
+eTEwXFN5c3RlbVxJZFN0YWNrLnBhcw==]
+Module=c:\program files (x86)\embarcadero\studio\23.0\source\Indy10\System\IdStack.pas
+CursorX=1
+CursorY=980
+TopLine=940
+LeftCol=1
+Elisions=
+Bookmarks=
+EditViewName=c:\program files (x86)\embarcadero\studio\23.0\source\Indy10\System\IdStack.pas
+
+[ClosedView_QzpcZGV2XENPVyBEZXNrdG9wXENPVyBQcm8gZGVza3RvcCBtYXN0ZXJcQm9vazQ3LnBhcw==]
+Module=C:\dev\COW Desktop\COW Pro desktop master\Book47.pas
+CursorX=1
+CursorY=285
+TopLine=266
+LeftCol=1
+Elisions=
+Bookmarks=
+EditViewName=C:\dev\COW Desktop\COW Pro desktop master\Book47.pas
 

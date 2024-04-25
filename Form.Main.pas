@@ -45,6 +45,21 @@ type
     NumberOfTotalRequestsLabel: TLabel;
     NoRequestsSpinBox: TSpinBox;
     Label4: TLabel;
+    CachePanel: TPanel;
+    Label8: TLabel;
+    CacheHitsLabel: TLabel;
+    Label7: TLabel;
+    CacheErrorsLabel: TLabel;
+    CacheSizeLabel: TLabel;
+    Label5: TLabel;
+    Label6: TLabel;
+    CacheAdditionsLabel: TLabel;
+    Label10: TLabel;
+    AllowCacheUpdatesCheckBox: TCheckBox;
+    CacheUpdatesLabel: TLabel;
+    Label11: TLabel;
+    CacheRejectionsLabel: TLabel;
+    Label12: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure ButtonStartClick(Sender: TObject);
     procedure ButtonStopClick(Sender: TObject);
@@ -57,6 +72,11 @@ type
 
   private
 
+    fCacheErrors,
+    fCacheHits,
+    fCacheAdditions,
+    fCacheUpdates,
+    fCacheRejections: Integer;
     fBook: TCachedServerReplyBook;
 
     fColumnStatus,
@@ -78,6 +98,8 @@ type
     FServer: TIdHTTPWebBrokerBridge;
 
     fNumberOfRequestsServed: Cardinal;
+
+    procedure StoreAnalysisInCache(theEngineNumber: Integer);
 
     procedure StopEngines;
 
@@ -119,6 +141,25 @@ const
   kRESTEngineServerStartedThinking = '#StartedThinking';
   kPocketGMCacheBookFileName = 'PocketGMCacheBook.PGC';
   kFolderCache = 'Cache Database';
+
+
+function AddCommasTo(theNumber: String): String;
+var
+  theCommaPosition: Integer;
+
+begin
+  theCommaPosition := Length(theNumber) - 2;
+
+  while (theCommaPosition > 1) do
+    begin
+      Insert(',', theNumber, theCommaPosition);
+
+      theCommaPosition := theCommaPosition - 3
+    end;
+
+  Result := theNumber;
+end;
+
 
 
 function GetLocalIP: string;
@@ -164,19 +205,39 @@ var
   theErrorCode: Integer;
   DebugString: String;
   theCachedReply: String;
+  DebugExistsInCache: Boolean;
 
 begin
   if (RequestsMemo.Lines.Count > 50) then RequestsMemo.Text := '';
 
-  RequestsMemo.Lines.Add(theClientID  + ' ' + theFEN);
+  // RequestsMemo.Lines.Add(theClientID  + ' ' + theFEN);
 
-  fBook.FillInEverything(theFEN, theCachedReply);
-
-  if (theCachedReply > '')
+  if (fBook <> nil)
     then
       begin
-        theReplyForTheClient := theCachedReply;
-        Exit;
+        theCachedReply := '';
+
+        DebugExistsInCache := fBook.FENExists(theFEN);
+
+        fBook.FillInEverything(theFEN, theCachedReply);
+
+        if DebugExistsInCache and (theCachedReply = '')
+          then
+            begin
+              Inc(fCacheErrors);
+
+              CacheErrorsLabel.Text := fCacheErrors.ToString;
+            end;
+
+
+        if (theCachedReply > '')
+          then
+            begin
+              Inc(fCacheHits);
+              CacheHitsLabel.Text := fCacheHits.ToString;
+              theReplyForTheClient := theCachedReply + '&Cloud=1';
+              Exit;
+            end;
       end;
 
   theEngineNumber := 0;
@@ -433,7 +494,7 @@ procedure TMainForm.EngineCutoffTimerTimer(Sender: TObject);
 var
   K: Integer;
 begin
-  RequestsMemo.Lines.Add('--- Looking for engines to cut off ---');
+  // RequestsMemo.Lines.Add('--- Looking for engines to cut off ---');
 
   for K := 1 to gNumberOfEnginesRunning do
     begin
@@ -462,6 +523,19 @@ var
   CacheFileName: String;
 
 begin
+  fCacheErrors := 0;
+  fCacheUpdates := 0;
+  fCacheAdditions := 0;
+  fCacheHits := 0;
+  fCacheRejections := 0;
+
+  CacheErrorsLabel.Text := 'None';
+  CacheHitsLabel.Text := 'None';
+  CacheAdditionsLabel.Text := 'None';
+  CacheSizeLabel.Text := 'unknown';
+  CacheUpdatesLabel.Text := 'None';
+  CacheRejectionsLabel.Text := 'None';
+
   fEngineLogFileName := 'EngineLogFile.TXT';
 
   fBook := TCachedServerReplyBook.Create;
@@ -470,9 +544,17 @@ begin
   CacheFileName := System.IOUtils.TPath.Combine(CacheFolder, kPocketGMCacheBookFileName);
 
   if not FileExists(CacheFileName)
-    then ShowMessage('Cache database not found  - ' + CacheFileName);
+    then
+      begin
+        ShowMessage('Cache database not found  - ' + CacheFileName);
+        FreeAndNil(fBook);
+      end
+    else
+      begin
+        fBook.OpenDatabase(CacheFileName);
 
-  fBook.OpenDatabase(CacheFileName);
+        CacheSizeLabel.Text := AddCommasTo(fBook.NumberOfFENs.ToString);
+      end;
 
   fColumnEngineNumber         := TStringColumn.Create(EngineStatusStringGrid);
   fColumnStatus               := TStringColumn.Create(EngineStatusStringGrid);
@@ -567,8 +649,12 @@ begin
 
   fChessEngineDataThread.Free;
 
-  fBook.CloseDatabase;
-  fBook.Free;
+  if (fBook <> nil)
+    then
+      begin
+        fBook.CloseDatabase;
+        fBook.Free;
+      end;
 end;
 
 
@@ -633,6 +719,8 @@ begin
             if (gChessEngineControllers[K].GetNodeCount > NodeCountCutOffSpinBox.Value * 1000000)
               then
                 begin
+                  StoreAnalysisInCache(K);
+
                     // This sets the FEN to blank.
                   gChessEngineControllers[K].StopAnalyzing;
 
@@ -647,10 +735,12 @@ begin
                   if (gChessEngineControllers[K].GetTimeSpentAnalyzing > Trunc(SecondsCutOffSpinBox.Value * 1000))
                     then
                       begin
+                        StoreAnalysisInCache(K);
+
                           // This sets the FEN to blank.
                         gChessEngineControllers[K].StopAnalyzing;
 
-                        RequestsMemo.Lines.Add('Engine ' + K.ToString + ' Cut off for seconds (' + gChessEngineControllers[K].GetTimeSpentAnalyzing.ToString + ')');
+                        RequestsMemo.Lines.Add('Engine ' + K.ToString + ' Cut off for seconds (' + AddCommasTo(gChessEngineControllers[K].GetTimeSpentAnalyzing.ToString) + ')');
 
                         EngineStatusStringGrid.Cells[1, K] := 'Cut off';
                       end;
@@ -721,6 +811,82 @@ end;
 procedure TMainForm.StopEnginesButtonClick(Sender: TObject);
 begin
   StopEngines;
+end;
+
+
+
+procedure TMainForm.StoreAnalysisInCache(theEngineNumber: Integer);
+var
+  theReplyForTheClient: String;
+  theFEN: String;
+  K: Integer;
+  theScore,
+  theNodeCount,
+  theDepth: Integer;
+  theTimeSpentAnalyzing: Int64;
+
+begin
+  theReplyForTheClient := '';
+
+  theFEN := gChessEngineControllers[theEngineNumber].GetEPDBeingAnalyzed;
+
+  for K := 1 to gChessEngineControllers[theEngineNumber].GetTotalPrincipleVariations do
+    begin
+      theReplyForTheClient := theReplyForTheClient +
+        'pv' + K.ToString + '=' + gChessEngineControllers[theEngineNumber].GetPrincipleVariation(K);
+
+      theScore := gChessEngineControllers[theEngineNumber].GetScore(K);
+
+      theReplyForTheClient := theReplyForTheClient +
+        '&score' + K.ToString + '=' + theScore.ToString;
+
+      if (K < gChessEngineControllers[theEngineNumber].GetTotalPrincipleVariations)
+        then theReplyForTheClient := theReplyForTheClient + '&';
+    end;
+
+  theNodeCount := gChessEngineControllers[theEngineNumber].GetNodeCount;
+
+  theDepth := gChessEngineControllers[theEngineNumber].GetDepth;
+
+  theReplyForTheClient := theReplyForTheClient +
+        '&depth=' + theDepth.ToString + '&nodecount=' + theNodeCount.ToString;
+
+  theTimeSpentAnalyzing := gChessEngineControllers[theEngineNumber].GetTimeSpentAnalyzing;
+
+  if (theTimeSpentAnalyzing < (SecondsCutOffSpinBox.Value * 1000))
+    then
+      begin
+        RequestsMemo.Lines.Add('Cache rejected analysis - not enough time');
+        Inc(fCacheRejections);
+        CacheRejectionsLabel.Text := fCacheRejections.ToString;
+
+        Exit;
+      end;
+
+  if (theNodeCount > (NodeCountCutOffSpinBox.Value * 1000000))
+    then
+      begin
+        RequestsMemo.Lines.Add('Cache rejected analysis - not enough nodes');
+        Inc(fCacheRejections);
+        CacheRejectionsLabel.Text := fCacheRejections.ToString;
+
+        Exit
+      end;
+
+  if (fBook.FENExists(theFEN))
+    then
+      begin
+        Inc(fCacheUpdates);
+        CacheUpdatesLabel.Text := fCacheUpdates.ToString;
+      end
+    else
+      begin
+        Inc(fCacheAdditions);
+        CacheAdditionsLabel.Text := fCacheAdditions.ToString;
+      end;
+
+  if AllowCacheUpdatesCheckBox.isChecked
+    then fBook.UpdateEverything(theFEN, theReplyForTheClient);
 end;
 
 
