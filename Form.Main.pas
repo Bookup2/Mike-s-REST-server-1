@@ -60,6 +60,8 @@ type
     Label11: TLabel;
     CacheRejectionsLabel: TLabel;
     Label12: TLabel;
+    Label9: TLabel;
+    ServerBusyCountLabel: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure ButtonStartClick(Sender: TObject);
     procedure ButtonStopClick(Sender: TObject);
@@ -98,6 +100,7 @@ type
     FServer: TIdHTTPWebBrokerBridge;
 
     fNumberOfRequestsServed: Cardinal;
+    fNumberOfServerBusy: Cardinal;
 
     procedure StoreAnalysisInCache(theEngineNumber: Integer);
 
@@ -208,6 +211,8 @@ var
   DebugExistsInCache: Boolean;
 
 begin
+  Inc(fNumberOfRequestsServed);
+
   if (RequestsMemo.Lines.Count > 50) then RequestsMemo.Text := '';
 
   // RequestsMemo.Lines.Add(theClientID  + ' ' + theFEN);
@@ -348,7 +353,9 @@ begin
 
         RequestsMemo.Lines.Add('*** Server busy ***');
 
-        Inc(fNumberOfRequestsServed);
+        Inc(fNumberOfServerBusy);
+
+        ServerBusyCountLabel.Text := fNumberOfServerBusy.ToString;
 
         Exit;
       end;
@@ -366,8 +373,6 @@ begin
         EngineStatusStringGrid.Cells[6, theEngineNumber] := '*';
         EngineStatusStringGrid.Cells[7, theEngineNumber] := '*';
         EngineStatusStringGrid.Cells[8, theEngineNumber] := '*';
-
-  Inc(fNumberOfRequestsServed);
 
   // EngineStatusMemo.Lines[theEngineNumber] := 'Engine-' + theEngineNumber.ToString + ' (' + fNumberOfRequestsServed.ToString +  ')'  + theReplyForTheClient;
   NumberOfTotalRequestsLabel.Text := fNumberOfRequestsServed.ToString + ' Requests handled';
@@ -536,6 +541,8 @@ begin
   CacheUpdatesLabel.Text := 'None';
   CacheRejectionsLabel.Text := 'None';
 
+  ServerBusyCountLabel.Text := 'Not yet';
+
   fEngineLogFileName := 'EngineLogFile.TXT';
 
   fBook := TCachedServerReplyBook.Create;
@@ -601,6 +608,7 @@ begin
   {$ENDIF}
 
   fNumberOfRequestsServed := 0;
+  fNumberOfServerBusy := 0;
 
   gNumberOfEnginesRunning := 0;
 

@@ -120,13 +120,13 @@ EditViewName=c:\program files (x86)\embarcadero\studio\23.0\source\fmx\FMX.Contr
 
 [ClosedView_QzpcZGV2XENPVyBEZXNrdG9wXENPVyBQcm8gZGVza3RvcCBtYXN0ZXJcRWJvb2tGb3JtLnBhcw==]
 Module=C:\dev\COW Desktop\COW Pro desktop master\EbookForm.pas
-CursorX=15
-CursorY=54
-TopLine=41
+CursorX=18
+CursorY=2396
+TopLine=1
 LeftCol=1
 Elisions=
 Bookmarks=
-EditViewName=C:\dev\COW Desktop\COW Pro desktop master\EbookForm.pas
+EditViewName=Borland.FormDesignerView
 
 [ClosedView_QzpcZGV2XE1pa2UncyBSRVNUIHNlcnZlciAxXENoZXNzRW5naW5lQ29udHJvbGxlclVDSS5wYXM=]
 Module=C:\dev\Mike's REST server 1\ChessEngineControllerUCI.pas
@@ -697,4 +697,24 @@ LeftCol=1
 Elisions=
 Bookmarks=
 EditViewName=C:\dev\COW Desktop\COW Pro desktop master\Book47.pas
+[ClosedView_QzpcZGV2XENPVyBEZXNrdG9wXENPVyBQcm8gZGVza3RvcCBtYXN0ZXJcR2FtZUluZGV4MDEucGFz
+]
+Module=C:\dev\COW Desktop\COW Pro desktop master\GameIndex01.pas
+CursorX=35
+CursorY=5
+TopLine=1
+LeftCol=1
+Elisions=
+Bookmarks=
+EditViewName=C:\dev\COW Desktop\COW Pro desktop master\GameIndex01.pas
+[ClosedView_QzpcZGV2XENPVyBEZXNrdG9wXENPVyBQcm8gZGVza3RvcCBtYXN0ZXJcR2FtZUluZGV4MDEucGFz
+]
+Module=C:\dev\COW Desktop\COW Pro desktop master\GameIndex01.pas
+CursorX=35
+CursorY=5
+TopLine=1
+LeftCol=1
+Elisions=
+Bookmarks=
+EditViewName=C:\dev\COW Desktop\COW Pro desktop master\GameIndex01.pas
 

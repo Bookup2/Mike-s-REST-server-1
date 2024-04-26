@@ -259,7 +259,7 @@ object MainForm: TMainForm
   end
   object SaveDialog1: TSaveDialog
     Left = 368
-    Top = 320
+    Top = 224
   end
   object CachePanel: TPanel
     Position.X = 836.000000000000000000
@@ -400,5 +400,23 @@ object MainForm: TMainForm
       Text = 'Cache Rejections:'
       TabOrder = 6
     end
+  end
+  object Label9: TLabel
+    Position.X = 448.000000000000000000
+    Position.Y = 240.000000000000000000
+    TextSettings.HorzAlign = Trailing
+    TextSettings.Trimming = None
+    Text = 'Server busy:'
+    TabOrder = 32
+  end
+  object ServerBusyCountLabel: TLabel
+    Position.X = 576.000000000000000000
+    Position.Y = 240.000000000000000000
+    Size.Width = 128.000000000000000000
+    Size.Height = 17.000000000000000000
+    Size.PlatformDefault = False
+    TextSettings.Trimming = None
+    Text = 'ServerBusyCountLabel'
+    TabOrder = 33
   end
 end

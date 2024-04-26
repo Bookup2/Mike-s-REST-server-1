@@ -55,6 +55,11 @@ type
     Label6: TLabel;
     CacheAdditionsLabel: TLabel;
     Label10: TLabel;
+    AllowCacheUpdatesCheckBox: TCheckBox;
+    CacheUpdatesLabel: TLabel;
+    Label11: TLabel;
+    CacheRejectionsLabel: TLabel;
+    Label12: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure ButtonStartClick(Sender: TObject);
     procedure ButtonStopClick(Sender: TObject);
@@ -69,7 +74,9 @@ type
 
     fCacheErrors,
     fCacheHits,
-    fCacheAdditions: Integer;
+    fCacheAdditions,
+    fCacheUpdates,
+    fCacheRejections: Integer;
     fBook: TCachedServerReplyBook;
 
     fColumnStatus,
@@ -198,18 +205,30 @@ var
   theErrorCode: Integer;
   DebugString: String;
   theCachedReply: String;
+  DebugExistsInCache: Boolean;
 
 begin
   if (RequestsMemo.Lines.Count > 50) then RequestsMemo.Text := '';
 
-  RequestsMemo.Lines.Add(theClientID  + ' ' + theFEN);
+  // RequestsMemo.Lines.Add(theClientID  + ' ' + theFEN);
 
   if (fBook <> nil)
     then
       begin
         theCachedReply := '';
 
+        DebugExistsInCache := fBook.FENExists(theFEN);
+
         fBook.FillInEverything(theFEN, theCachedReply);
+
+        if DebugExistsInCache and (theCachedReply = '')
+          then
+            begin
+              Inc(fCacheErrors);
+
+              CacheErrorsLabel.Text := fCacheErrors.ToString;
+            end;
+
 
         if (theCachedReply > '')
           then
@@ -475,7 +494,7 @@ procedure TMainForm.EngineCutoffTimerTimer(Sender: TObject);
 var
   K: Integer;
 begin
-  RequestsMemo.Lines.Add('--- Looking for engines to cut off ---');
+  // RequestsMemo.Lines.Add('--- Looking for engines to cut off ---');
 
   for K := 1 to gNumberOfEnginesRunning do
     begin
@@ -505,11 +524,17 @@ var
 
 begin
   fCacheErrors := 0;
+  fCacheUpdates := 0;
+  fCacheAdditions := 0;
+  fCacheHits := 0;
+  fCacheRejections := 0;
 
   CacheErrorsLabel.Text := 'None';
   CacheHitsLabel.Text := 'None';
   CacheAdditionsLabel.Text := 'None';
   CacheSizeLabel.Text := 'unknown';
+  CacheUpdatesLabel.Text := 'None';
+  CacheRejectionsLabel.Text := 'None';
 
   fEngineLogFileName := 'EngineLogFile.TXT';
 
@@ -798,6 +823,7 @@ var
   theScore,
   theNodeCount,
   theDepth: Integer;
+  theTimeSpentAnalyzing: Int64;
 
 begin
   theReplyForTheClient := '';
@@ -825,10 +851,42 @@ begin
   theReplyForTheClient := theReplyForTheClient +
         '&depth=' + theDepth.ToString + '&nodecount=' + theNodeCount.ToString;
 
-  fBook.UpdateEverything(theFEN, theReplyForTheClient);
+  theTimeSpentAnalyzing := gChessEngineControllers[theEngineNumber].GetTimeSpentAnalyzing;
 
-  Inc(fCacheAdditions);
-  CacheAdditionsLabel.Text := fCacheAdditions.ToString;
+  if (theTimeSpentAnalyzing < (SecondsCutOffSpinBox.Value * 1000))
+    then
+      begin
+        RequestsMemo.Lines.Add('Cache rejected analysis - not enough time');
+        Inc(fCacheRejections);
+        CacheRejectionsLabel.Text := fCacheRejections.ToString;
+
+        Exit;
+      end;
+
+  if (theNodeCount > (NodeCountCutOffSpinBox.Value * 1000000))
+    then
+      begin
+        RequestsMemo.Lines.Add('Cache rejected analysis - not enough nodes');
+        Inc(fCacheRejections);
+        CacheRejectionsLabel.Text := fCacheRejections.ToString;
+
+        Exit
+      end;
+
+  if (fBook.FENExists(theFEN))
+    then
+      begin
+        Inc(fCacheUpdates);
+        CacheUpdatesLabel.Text := fCacheUpdates.ToString;
+      end
+    else
+      begin
+        Inc(fCacheAdditions);
+        CacheAdditionsLabel.Text := fCacheAdditions.ToString;
+      end;
+
+  if AllowCacheUpdatesCheckBox.isChecked
+    then fBook.UpdateEverything(theFEN, theReplyForTheClient);
 end;
 
 
