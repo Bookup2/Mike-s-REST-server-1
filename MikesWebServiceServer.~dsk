@@ -1,9 +1,9 @@
 ﻿[Closed Files]
-File_0=TSourceModule,'c:\program files (x86)\embarcadero\studio\23.0\SOURCE\RTL\SYS\System.pas',0,1,25698,1,25711,0,0,,
-File_1=TSourceModule,'C:\dev\COW REST Engine Server\ChessEngineDataThread.pas',0,1,102,1,115,0,0,,
-File_2=TSourceModule,'c:\program files (x86)\embarcadero\studio\23.0\source\fmx\FMX.Controls.Presentation.pas',0,1,761,1,775,0,0,,
-File_3=TSourceModule,'c:\program files (x86)\embarcadero\studio\23.0\source\fmx\FMX.Grid.pas',0,1,5228,1,5242,0,0,{{4004,0}
-File_4=TSourceModule,'c:\program files (x86)\embarcadero\studio\23.0\source\rtl\common\System.Classes.pas',0,1,16368,1,16382,0,0,,
+File_0=TSourceModule,'c:\program files (x86)\embarcadero\studio\23.0\source\rtl\common\System.Classes.pas',0,1,17068,1,17081,0,0,,
+File_1=TSourceModule,'c:\program files (x86)\embarcadero\studio\23.0\SOURCE\RTL\SYS\System.pas',0,1,25698,1,25711,0,0,,
+File_2=TSourceModule,'C:\dev\COW REST Engine Server\ChessEngineDataThread.pas',0,1,102,1,115,0,0,,
+File_3=TSourceModule,'c:\program files (x86)\embarcadero\studio\23.0\source\fmx\FMX.Controls.Presentation.pas',0,1,761,1,775,0,0,,
+File_4=TSourceModule,'c:\program files (x86)\embarcadero\studio\23.0\source\fmx\FMX.Grid.pas',0,1,5228,1,5242,0,0,{{4004,0}
 File_5=TSourceModule,'c:\program files (x86)\embarcadero\studio\23.0\SOURCE\RTL\SYS\System.SysUtils.pas',0,1,33615,1,33629,0,0,,
 File_6=TSourceModule,'C:\dev\COW Desktop\COW Pro desktop master\GTypes.pas',0,1,1,1,1,0,0,,
 File_7=TSourceModule,'C:\dev\COW Desktop\COW Pro desktop master\Globals.pas',0,1,66,1,81,0,0,,
@@ -15,12 +15,12 @@ File_12=TSourceModule,'C:\dev\COW Desktop\COW Pro desktop master\ChessEngineData
 File_13=TSourceModule,'c:\program files (x86)\embarcadero\studio\23.0\source\Internet\Web.HTTPApp.pas',0,1,829,1,848,0,0,,
 
 [Modules]
-Module0=C:\dev\COW REST Engine Server\PocketGMBook.pas
+Module0=C:\dev\COW Desktop\COW Pro desktop master\EbookForm.pas
 Module1=C:\dev\COW REST Engine Server\Form.Main.pas
-Module2=C:\dev\COW Desktop\COW Pro desktop master\MainWindow.pas
-Module3=C:\dev\COW Desktop\COW Pro desktop master\GameIndex01.pas
-Module4=C:\dev\COW Desktop\COW Pro desktop master\Book47.pas
-Module5=C:\dev\COW Desktop\COW Pro desktop master\EbookForm.pas
+Module2=C:\dev\COW REST Engine Server\PocketGMBook.pas
+Module3=C:\dev\COW Desktop\COW Pro desktop master\MainWindow.pas
+Module4=C:\dev\COW Desktop\COW Pro desktop master\GameIndex01.pas
+Module5=C:\dev\COW Desktop\COW Pro desktop master\Book47.pas
 Module6=C:\dev\COW REST Engine Server\ChessEngineController.pas
 Module7=C:\dev\COW REST Engine Server\ChessEngineControllerUCI.pas
 Module8=C:\dev\COW REST Engine Server\WebModuleUnit1.pas
@@ -29,10 +29,13 @@ Module10=C:\dev\COW Desktop\COW desktop master - for RSP-41223\EbookForm.pas
 Count=11
 EditWindowCount=1
 
-[C:\dev\COW REST Engine Server\PocketGMBook.pas]
+[C:\dev\COW Desktop\COW Pro desktop master\EbookForm.pas]
 ModuleType=TSourceModule
 
 [C:\dev\COW REST Engine Server\Form.Main.pas]
+ModuleType=TSourceModule
+
+[C:\dev\COW REST Engine Server\PocketGMBook.pas]
 ModuleType=TSourceModule
 
 [C:\dev\COW Desktop\COW Pro desktop master\MainWindow.pas]
@@ -42,9 +45,6 @@ ModuleType=TSourceModule
 ModuleType=TSourceModule
 
 [C:\dev\COW Desktop\COW Pro desktop master\Book47.pas]
-ModuleType=TSourceModule
-
-[C:\dev\COW Desktop\COW Pro desktop master\EbookForm.pas]
 ModuleType=TSourceModule
 
 [C:\dev\COW REST Engine Server\ChessEngineController.pas]
@@ -64,7 +64,7 @@ ModuleType=TSourceModule
 
 [EditWindow0]
 ViewCount=11
-CurrentEditView=C:\dev\COW REST Engine Server\PocketGMBook.pas
+CurrentEditView=C:\dev\COW Desktop\COW Pro desktop master\EbookForm.pas
 View0=0
 View1=1
 View2=2
@@ -119,9 +119,9 @@ EditViewName=Borland.FormDesignerView
 [View1]
 CustomEditViewType=TEditView
 Module=C:\dev\COW REST Engine Server\Form.Main.pas
-CursorX=35
-CursorY=475
-TopLine=466
+CursorX=12
+CursorY=186
+TopLine=160
 LeftCol=1
 Elisions=
 Bookmarks=
@@ -153,8 +153,8 @@ EditViewName=C:\dev\COW Desktop\COW Pro desktop master\GameIndex01.pas
 CustomEditViewType=TEditView
 Module=C:\dev\COW REST Engine Server\PocketGMBook.pas
 CursorX=1
-CursorY=362
-TopLine=347
+CursorY=606
+TopLine=560
 LeftCol=1
 Elisions=
 Bookmarks=
@@ -174,9 +174,9 @@ EditViewName=C:\dev\COW Desktop\COW Pro desktop master\Book47.pas
 [View6]
 CustomEditViewType=TEditView
 Module=C:\dev\COW Desktop\COW Pro desktop master\EbookForm.pas
-CursorX=15
-CursorY=54
-TopLine=41
+CursorX=18
+CursorY=2396
+TopLine=1
 LeftCol=1
 Elisions=
 Bookmarks=
@@ -257,8 +257,8 @@ Breakpoint1='C:\dev\Mike''s REST server 1\Form.Main.pas',286,'',0,1,'',1,0,0,'',
 Breakpoint2='C:\dev\COW Desktop\COW Pro desktop master\EbookForm.pas',2098,'',0,1,'',1,0,0,'',1,'','','',0,''
 Breakpoint3='C:\dev\Mike''s REST server 1\ChessEngineController.pas',474,'',0,1,'',1,0,0,'',1,'','','',0,''
 Breakpoint4='C:\dev\COW REST Engine Server\Form.Main.pas',286,'',0,1,'',1,0,0,'',1,'','','',0,''
-Breakpoint5='C:\dev\COW REST Engine Server\PocketGMBook.pas',359,'',0,1,'',1,0,0,'',1,'','','',0,''
-Breakpoint6='C:\dev\COW REST Engine Server\PocketGMBook.pas',360,'',0,1,'',1,0,0,'',1,'','','',0,''
+Breakpoint5='C:\dev\COW REST Engine Server\Form.Main.pas',173,'',0,1,'',1,0,0,'',1,'','','',0,''
+Breakpoint6='C:\dev\COW REST Engine Server\Form.Main.pas',178,'',0,1,'',1,0,0,'',1,'','','',0,''
 
 [EmbarcaderoWin32Debugger_AddressBreakpoints]
 Count=0
@@ -380,11 +380,6 @@ LRDockWidth=1896
 Dockable=1
 StayOnTop=0
 SplitPos=111
-
-[PropInspDesignerSelection]
-ArrangeBy=Name
-SelectedItem=Text,Action
-ExpandedItems=Anchors=0,LiveBindings=0,"LiveBindings Designer=0",Margins=0,Padding=0,Position=1,RotationCenter=0,Scale=1,Size=0,Options=1,StyledSettings=0,TextSettings=1,Touch=0,TouchTargetExpansion=1,Border=0,BorderIcons=0,Constraints=0,SystemStatusBar=0,Fill=0,FormFactor=0,Caret=0,TextSettings.Font=0
 
 [frmDesignPreview]
 PercentageSizes=1
