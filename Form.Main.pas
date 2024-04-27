@@ -79,7 +79,8 @@ type
     fCacheAdditions,
     fCacheUpdates,
     fCacheRejections: Integer;
-    fBook: TCachedServerReplyBook;
+    fCacheBook: TCachedServerReplyBook;
+    fCacheFileName: String;
 
     fColumnStatus,
     fColumnClientID,
@@ -139,6 +140,7 @@ const
 
   kINIFileName = 'ServerSettings.INI';
   kINIEngineFilenameTag = 'EngineEXEFile';
+  kINICacheFileNameTag = 'CacheFileName';  // /Cache Database/PocketGMCacheBook.PGC
   // kMaximumChessEngines = 10;
   kRESTEngineServerBusy = '#ServerBusy';
   kRESTEngineServerStartedThinking = '#StartedThinking';
@@ -217,14 +219,14 @@ begin
 
   // RequestsMemo.Lines.Add(theClientID  + ' ' + theFEN);
 
-  if (fBook <> nil)
+  if (fCacheBook <> nil)
     then
       begin
         theCachedReply := '';
 
-        DebugExistsInCache := fBook.FENExists(theFEN);
+        DebugExistsInCache := fCacheBook.FENExists(theFEN);
 
-        fBook.FillInEverything(theFEN, theCachedReply);
+        fCacheBook.FillInEverything(theFEN, theCachedReply);
 
         if DebugExistsInCache and (theCachedReply = '')
           then
@@ -524,8 +526,6 @@ var
   theINIFileName: String;
   theEXEFileName: String;
   K: Integer;
-  CacheFolder: String;
-  CacheFileName: String;
 
 begin
   fCacheErrors := 0;
@@ -544,24 +544,6 @@ begin
   ServerBusyCountLabel.Text := 'Not yet';
 
   fEngineLogFileName := 'EngineLogFile.TXT';
-
-  fBook := TCachedServerReplyBook.Create;
-
-  CacheFolder := IncludeTrailingPathDelimiter(System.IOUtils.TPath.Combine(ExtractFilePath(ParamStr(0)), kFolderCache));
-  CacheFileName := System.IOUtils.TPath.Combine(CacheFolder, kPocketGMCacheBookFileName);
-
-  if not FileExists(CacheFileName)
-    then
-      begin
-        ShowMessage('Cache database not found  - ' + CacheFileName);
-        FreeAndNil(fBook);
-      end
-    else
-      begin
-        fBook.OpenDatabase(CacheFileName);
-
-        CacheSizeLabel.Text := AddCommasTo(fBook.NumberOfFENs.ToString);
-      end;
 
   fColumnEngineNumber         := TStringColumn.Create(EngineStatusStringGrid);
   fColumnStatus               := TStringColumn.Create(EngineStatusStringGrid);
@@ -627,7 +609,28 @@ begin
 
   EngineEXEFilenameLabel.Text := fEngineFileName;
 
+  fCacheFileName := theINIFile.ReadString('ProgramPreferences', kINICacheFileNameTag, '');
+
   theINIFile.Free;
+
+  fCacheBook := TCachedServerReplyBook.Create;
+  fCacheFileName := TPath.Combine(ExtractFilePath(ParamStr(0)), 'Cache Database\' + fCacheFileName);
+
+  // CacheFolder := IncludeTrailingPathDelimiter(System.IOUtils.TPath.Combine(ExtractFilePath(ParamStr(0)), kFolderCache));
+  // CacheFileName := System.IOUtils.TPath.Combine(CacheFolder, kPocketGMCacheBookFileName);
+
+  if not FileExists(fCacheFileName)
+    then
+      begin
+        ShowMessage('Cache database not found  - ' + fCacheFileName);
+        FreeAndNil(fCacheBook);
+      end
+    else
+      begin
+        fCacheBook.OpenDatabase(fCacheFileName);
+
+        CacheSizeLabel.Text := AddCommasTo(fCacheBook.NumberOfFENs.ToString);
+      end;
 
   for K := 1 to kMaximumChessEngines do
     gChessEngineControllers[K] := nil;
@@ -657,11 +660,11 @@ begin
 
   fChessEngineDataThread.Free;
 
-  if (fBook <> nil)
+  if (fCacheBook <> nil)
     then
       begin
-        fBook.CloseDatabase;
-        fBook.Free;
+        fCacheBook.CloseDatabase;
+        fCacheBook.Free;
       end;
 end;
 
@@ -881,7 +884,7 @@ begin
         Exit
       end;
 
-  if (fBook.FENExists(theFEN))
+  if (fCacheBook.FENExists(theFEN))
     then
       begin
         Inc(fCacheUpdates);
@@ -894,7 +897,7 @@ begin
       end;
 
   if AllowCacheUpdatesCheckBox.isChecked
-    then fBook.UpdateEverything(theFEN, theReplyForTheClient);
+    then fCacheBook.UpdateEverything(theFEN, theReplyForTheClient);
 end;
 
 

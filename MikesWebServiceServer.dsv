@@ -330,9 +330,9 @@ EditViewName=C:\dev\COW Desktop\COW Pro desktop master\GTypes.pas
 
 [ClosedView_QzpcZGV2XENPVyBSRVNUIEVuZ2luZSBTZXJ2ZXJcRm9ybS5NYWluLnBhcw==]
 Module=C:\dev\COW REST Engine Server\Form.Main.pas
-CursorX=1
-CursorY=815
-TopLine=803
+CursorX=99
+CursorY=619
+TopLine=603
 LeftCol=1
 Elisions=
 Bookmarks=
@@ -717,4 +717,25 @@ LeftCol=1
 Elisions=
 Bookmarks=
 EditViewName=C:\dev\COW Desktop\COW Pro desktop master\GameIndex01.pas
+[ClosedView_QzpcZGV2XENPVyBSRVNUIEVuZ2luZSBTZXJ2ZXJcV2luMzJcRGVidWdcU2VydmVyU2V0dGluZ3Mu
+SU5J]
+Module=C:\dev\COW REST Engine Server\Win32\Debug\ServerSettings.INI
+CursorX=20
+CursorY=3
+TopLine=1
+LeftCol=1
+Elisions=
+Bookmarks=
+EditViewName=C:\dev\COW REST Engine Server\Win32\Debug\ServerSettings.INI
+
+[ClosedView_QzpcZGV2XENPVyBSRVNUIEVuZ2luZSBTZXJ2ZXJcV2luMzJcRGVidWdcU2VydmVyU2V0dGluZ3Mu
+SU5J]
+Module=C:\dev\COW REST Engine Server\Win32\Debug\ServerSettings.INI
+CursorX=15
+CursorY=3
+TopLine=1
+LeftCol=1
+Elisions=
+Bookmarks=
+EditViewName=C:\dev\COW REST Engine Server\Win32\Debug\ServerSettings.INI
 
