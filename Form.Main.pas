@@ -15,7 +15,8 @@ uses
 
   Globals,
 
-  PocketGMBook;
+  PocketGMBook,
+  ClientDatabase;
 
 
 type
@@ -62,6 +63,8 @@ type
     Label12: TLabel;
     Label9: TLabel;
     ServerBusyCountLabel: TLabel;
+    ExportClientsButton: TButton;
+    ExportClientsSaveDialog: TSaveDialog;
     procedure FormCreate(Sender: TObject);
     procedure ButtonStartClick(Sender: TObject);
     procedure ButtonStopClick(Sender: TObject);
@@ -71,6 +74,7 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure EngineCutoffTimerTimer(Sender: TObject);
     procedure LogFileButtonClick(Sender: TObject);
+    procedure ExportClientsButtonClick(Sender: TObject);
 
   private
 
@@ -81,6 +85,9 @@ type
     fCacheRejections: Integer;
     fCacheBook: TCachedServerReplyBook;
     fCacheFileName: String;
+
+    fClientDatabaseFileName: String;
+    fClientDatabase: TClientDatabase;
 
     fColumnStatus,
     fColumnClientID,
@@ -141,6 +148,7 @@ const
   kINIFileName = 'ServerSettings.INI';
   kINIEngineFilenameTag = 'EngineEXEFile';
   kINICacheFileNameTag = 'CacheFileName';  // /Cache Database/PocketGMCacheBook.PGC
+  kINICientDatabaseFileNameTag = 'ClientDatabaseFilename';
   // kMaximumChessEngines = 10;
   kRESTEngineServerBusy = '#ServerBusy';
   kRESTEngineServerStartedThinking = '#StartedThinking';
@@ -214,6 +222,8 @@ var
 
 begin
   Inc(fNumberOfRequestsServed);
+
+  fClientDatabase.UpdateEverything(theClientID);
 
   if (RequestsMemo.Lines.Count > 50) then RequestsMemo.Text := '';
 
@@ -519,6 +529,53 @@ end;
 
 
 
+procedure TMainForm.ExportClientsButtonClick(Sender: TObject);
+var
+  thExportFile: TextFile;
+  theClientID: String;
+  theTime: String;
+  theNumberOfAccesses: Cardinal;
+
+begin
+  if not ExportClientsSaveDialog.Execute then Exit;
+
+  AssignFile(thExportFile, ExportClientsSaveDialog.FileName);
+
+  try
+
+    try
+
+      Rewrite(thExportFile);
+
+      if not fClientDatabase.GetFirstClientID(theClientID)
+        then
+          begin
+            CloseFile(thExportFile);
+            Exit;
+          end;
+
+      repeat
+
+        fClientDatabase.FillInEverything(theClientID, theTime, theNumberOfAccesses);
+
+        WriteLn(thExportFile, theClientID + ',' + theTime + ',' + theNumberOfAccesses.ToString);
+
+      until not fClientDatabase.GetClientIDAfter(theClientID);
+
+    except
+
+      ShowMessage('Error writing to file: ' + ExportClientsSaveDialog.FileName);
+    end;
+
+  finally
+
+    CloseFile(thExportFile);
+
+  end;
+end;
+
+
+
 procedure TMainForm.FormCreate(Sender: TObject);
 var
 //   TESTMemoryLeak: TButton;
@@ -526,6 +583,7 @@ var
   theINIFileName: String;
   theEXEFileName: String;
   K: Integer;
+  theFolder: String;
 
 begin
   fCacheErrors := 0;
@@ -611,6 +669,8 @@ begin
 
   fCacheFileName := theINIFile.ReadString('ProgramPreferences', kINICacheFileNameTag, '');
 
+  fClientDatabaseFileName := theINIFile.ReadString('ProgramPreferences', kINICientDatabaseFileNameTag, 'ClientDatabase.db');
+
   theINIFile.Free;
 
   fCacheBook := TCachedServerReplyBook.Create;
@@ -618,6 +678,18 @@ begin
 
   // CacheFolder := IncludeTrailingPathDelimiter(System.IOUtils.TPath.Combine(ExtractFilePath(ParamStr(0)), kFolderCache));
   // CacheFileName := System.IOUtils.TPath.Combine(CacheFolder, kPocketGMCacheBookFileName);
+
+  fClientDatabase := TClientDatabase.Create;
+  theFolder := TPath.Combine(ExtractFilePath(ParamStr(0)), 'Client Database');
+
+  ForceDirectories(theFolder);
+
+  fClientDatabaseFileName := TPath.Combine(theFolder, fClientDatabaseFileName);
+
+  if not FileExists(fClientDatabaseFileName)
+    then fClientDatabase.CreateDatabase(fClientDatabaseFileName);
+
+  fClientDatabase.OpenDatabase(fClientDatabaseFileName);
 
   if not FileExists(fCacheFileName)
     then
@@ -666,6 +738,9 @@ begin
         fCacheBook.CloseDatabase;
         fCacheBook.Free;
       end;
+
+  fClientDatabase.CloseDatabase;
+  fClientDatabase.Free;
 end;
 
 

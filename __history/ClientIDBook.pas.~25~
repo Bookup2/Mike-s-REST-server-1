@@ -1,0 +1,779 @@
+unit ClientIDBook;
+
+interface
+
+{$DEFINE BOOKREADWRITE}
+{$DEFINE DEBUGBOOK}
+
+  // Use FireDAC for Windows, LiteDAC (DevArt) for Macintosh.
+{$IFDEF MSWINDOWS}
+{$DEFINE USEFIREDAC}
+{$ENDIF}
+
+{$IFDEF MACOS}
+{ $DEFINE USEDEVART}
+{$DEFINE USEFIREDAC}
+{$ENDIF}
+
+uses
+  System.SysUtils,
+  System.UITypes,
+  System.Classes,  // TMemoryStream
+  System.IOUtils,  // System.IOUtils.TFile
+  FMX.StdCtrls,
+  FMX.Dialogs,   // MessageDlg()
+
+  FireDAC.Comp.Client,    // FDConnection
+  FireDAC.Phys.SQLite,    // eliminates the need for the DLL?
+  FireDac.Stan.Param,
+  FireDac.Stan.Def,
+  FireDac.DApt,
+  FireDac.Stan.Async,
+  FireDAC.FMXUI.Wait,     // TFDGUIxWaitCursor
+
+  FireDAC.Phys.SQLiteWrapper.Stat,  // Needed for static linking (no .DLL)  FIXEDIN build 116
+
+  Data.db,  // ftBlob?
+
+  // gTypes,
+  Utils;
+
+
+const
+
+  kCarriageReturn = #13;
+
+  kDataVersion = 100;
+  kDataVersionAsString = '100';
+  kDataVersionMinimumSupported = 100;
+
+  kSQLiteInMemoryDatabase = ':memory:';
+
+  // kASCIICharZero = 48;
+  kASCIICharExclamationMark = 33;
+  kSQLitePocketGMCacheDatabaseExtension = 'DB';   //  Clients
+
+  kSQLTableDataVersion = 'tDataVersion';
+  kSQLTableClients = 'tClients';
+
+  kSQLFieldDataVersion = 'fdata_version';
+  kSQLFieldClientID = 'fClientID';
+  kSQLFieldTimeLastAccessed = 'ftime_last_accessed';
+  kSQLFieldNumberOfAccesses = 'fnumber_of_accesses';
+
+  kSQLFieldCountResult = 'fcount_result';
+
+  {
+
+  kSQLCreateTableDataVersion = 'CREATE TABLE ' + kSQLTableDataVersion + ' (' +
+                                kSQLFieldDataVersion       + ' INT)';
+
+  }
+
+  kSQLCreateTableMainposition = 'CREATE TABLE ' + kSQLTableClients + ' (' +
+                                kSQLFieldClientID                      + ' CHAR(100)   PRIMARY KEY,' +
+                                kSQLFieldTimeLastAccessed              + ' TEXT, ' +
+                                kSQLFieldNumberOfAccesses              + ' INTEGER)';
+
+  kSQLCountClientIDs       = 'SELECT COUNT(*) AS ' + kSQLFieldCountResult + ' FROM ' + kSQLTableClients;
+
+  kSQLSelectDataVersion = 'SELECT ' +
+                          kSQLFieldDataVersion + ' ' +
+                          'FROM ' + kSQLTableDataVersion;
+
+  kSQLSelectClientsEverything = 'SELECT * FROM ' + kSQLTableClients + ' ' +
+                                     'WHERE ' + kSQLFieldClientID + ' = :' + kSQLFieldClientID;
+
+  kSQLUpdateClients = 'UPDATE ' + kSQLTableClients + ' SET ' +
+                           kSQLFieldTimeLastAccessed        + ' = :' + kSQLFieldTimeLastAccessed       + ', ' +
+                           kSQLFieldNumberOfAccesses        + ' = :' + kSQLFieldNumberOfAccesses       + ' ' +
+                           'WHERE ' + kSQLFieldClientID + ' = :' + kSQLFieldClientID;
+
+  kSQLInsertDataVersion = 'INSERT INTO ' + kSQLTableDataVersion + ' (' +
+                           kSQLFieldDataVersion             + ') ' +
+                           'VALUES (' +
+                           ':' + kSQLFieldDataVersion             + ')';
+
+  kSQLInsertClient = 'INSERT INTO ' + kSQLTableClients + ' (' +
+                           kSQLFieldClientID                   + ', ' +
+                           kSQLFieldTimeLastAccessed     + ') ' +
+                           'VALUES (' +
+                           ':' + kSQLFieldClientID                   + ', ' +
+                           ':' + kSQLFieldTimeLastAccessed           + ')';
+
+  fSQLSelectFirstClientID = 'SELECT ' + kSQLFieldClientID + ' FROM ' + kSQLTableClients + ' ORDER BY ' + kSQLFieldClientID + ' LIMIT 1';
+
+  fSQLSelectClientIDAfter = 'SELECT ' + kSQLFieldClientID + ' FROM ' + kSQLTableClients + ' WHERE ' + kSQLFieldClientID + ' > :' + kSQLFieldClientID + ' ORDER BY ' + kSQLFieldClientID + ' LIMIT 1';
+
+
+
+type
+  TChessFENKeyString = String[100];
+
+
+  // BufferType = array [1..kLargestRecord + kExtraBufferSpace] of Byte;
+
+  TClientIDBook = class(TObject)
+    constructor Create;
+
+    destructor Destroy; override;
+
+    function CreateDatabase(aFileName: String): Boolean;
+    procedure OpenDatabase(aFileName: String);
+    procedure CloseDatabase;
+
+    function TableExists(aTablename: String): Boolean;
+
+    function GetDataVersion: Integer;
+    procedure SetDataVersion;
+
+    function GetPragma(aPragma: String): String;
+    function GetDriverName: String;
+
+
+    function GetFileName: String;
+
+    function ClientIDExists(const aClientID: String): Boolean;
+
+    procedure FillInEverything(aClientID: String;
+                               var aTimeLastAccessed: String;
+                               var aTotalAccesses: Cardinal);
+
+    procedure UpdateEverything(aClientID: String);
+
+    function NumberOfClientIDs: LongInt;
+
+    function GetNumberOfAccesses(aClientId: String): Cardinal;
+
+    function GetFirstClientID(var theClientID: String): Boolean;
+    function GetClientIDAfter(var theClientID: String): Boolean;
+
+    private
+
+    protected
+
+    fFileName,
+    fExpandedFileName: String;
+    fDiskNumberOfFileName: Integer;
+
+    fNumberOfMainTableUpdates: Integer;
+    fNumberOfMainTableInserts: Integer;
+
+    fSQLite3Connection: TFDConnection;
+    fSQLite3Query: TFDQuery;
+  end;
+
+
+{=============================================================================}
+
+implementation
+
+
+
+procedure TClientIDBook.CloseDatabase;
+begin
+  if fSQLite3Connection.Connected
+    then fSQLite3Connection.Connected := False;
+
+  fSQLite3Connection.Params.Clear;
+  fSQLite3Connection.DriverName := 'SQLite';
+end;
+
+
+
+constructor TClientIDBook.Create;
+var
+  ForTesting: Integer;
+
+begin
+  inherited Create;
+
+  fFileName := '';
+  fExpandedFileName := '';
+
+  fDiskNumberOfFileName := -2;
+
+  fSQLite3Connection := TFDConnection.Create(nil);
+  fSQLite3Connection.OptionsIntf.FormatOptions.StrsTrim := False;
+
+  ForTesting := fSQLite3Connection.Params.Count;
+
+  fSQLite3Connection.DriverName := 'SQLite';
+
+    // Re: SQLite is slow in OS X https://quality.embarcadero.com/browse/RSP-11827
+  fSQLite3Connection.ResourceOptions.SilentMode := True;   // Recommended workaround by Dmitry Arefiev on Dec 8, 2015
+
+  fSQLite3Query := TFDQuery.Create(nil);
+
+  fSQLite3Query.Connection := fSQLite3Connection;
+end;
+
+
+
+destructor TClientIDBook.Destroy;
+var
+  TESTName: String;
+
+begin
+  try
+
+    TestName := fFileName;
+
+    if fSQLite3Connection.Connected
+      then
+        begin
+          CloseDatabase;
+        end;
+
+  except
+
+  end;
+
+  FreeAndNil(fSQLite3Query);
+  FreeAndNil(fSQLite3Connection);
+
+  inherited Destroy;
+end;
+
+
+
+  { This method creates a new database but does not open it. }
+function TClientIDBook.CreateDatabase(aFileName: String): Boolean;
+var
+  ExpandedFileName: String;
+  theFilePath: String;
+  theCurrentMode: String;
+
+begin
+  fFileName := aFileName;
+
+  ExpandedFileName := ExpandFileName(fFileName);
+
+  if (Length(ExpandedFileName) > 0)
+    then fDiskNumberOfFileName := (Pos(ExpandedFileName[1], 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'))
+    else fDiskNumberOfFileName := 0;  { assume the default drive }
+
+  {$IFDEF MSWINDOWS}
+  RemoveReadOnlyAttribute(ExpandedFileName);
+  {$ENDIF MSWINDOWS}
+
+      { Trim off the extension. }
+  // theFilePath := ExtractFilePath(fFileName);
+
+        // Add on the extension
+  // fFileName := fFileName + '.' + kSQLiteDatabaseExtension;
+
+  if FileExists(fFileName)
+    then
+      begin
+
+        try
+            // Remove any read-only or system flag.
+          {$IFDEF MSWINDOWS}
+          FileSetAttr(fFileName, 0);
+          {$ENDIF MSWINDOWS}
+
+          System.IOUtils.TFile.Delete(fFileName);  // FIXEDIN build 113
+
+        except
+          ShowMessage('A database already exists that cannot be deleted. ' + kCarriageReturn + fFileName);
+
+          raise;
+
+        end;
+      end;
+
+  if FileExists(fFileName)
+    then
+      begin
+        Assert(False, 'A database already exists that cannot be deleted. ' + kCarriageReturn + fFileName);
+      end;
+
+  try
+    // fSQLite3Connection.Params.Clear;
+    // fSQLite3Connection.Params.Add('DriverID=SQLite');
+    fSQLite3Connection.Params.Add('Database=' + fFilename);
+
+    fSQLite3Connection.Connected := True;
+
+    // fSQLite3Query.SQL.Text := kSQLCreateTableDataVersion;
+    // fSQLite3Query.ExecSQL;
+    fSQLite3Query.SQL.Text := kSQLCreateTableMainposition;
+    fSQLite3Query.ExecSQL;
+
+
+    SetDataVersion;
+
+    // fSQLite3Query.ExecSQL('PRAGMA synchronous = WHAT');
+    // fSQLite3Query.ExecSQL('PRAGMA synchronous = OFF');   // Safety mode is off.
+
+    fSQLite3Query.SQL.Text := 'PRAGMA journal_mode';
+    fSQLite3Query.Open;
+    // fSQLite3Query.Open('PRAGMA journal_mode');  FireDAC code
+
+    theCurrentMode := fSQLite3Query.Fields[0].AsString;
+
+      // http://www.sqlite.org/pragma.html#pragma_journal_mode
+    // fSQLite3Query.ExecSQL('PRAGMA journal_mode=OFF');   // Safety mode is off.
+
+    fSQLite3Query.SQL.Text := 'PRAGMA journal_mode';
+    fSQLite3Query.Open;
+    theCurrentMode := fSQLite3Query.Fields[0].AsString;
+
+  except
+
+    raise
+  end;
+
+    // Break the connection.
+  fSQLite3Connection.Connected := False;
+
+  Result := True;
+end;
+
+
+
+function TClientIDBook.GetPragma(aPragma: String): String;
+begin
+  fSQLite3Query.SQL.Text := 'PRAGMA ' + aPragma;
+  fSQLite3Query.Open;
+  Result := fSQLite3Query.Fields[0].AsString;
+end;
+
+
+
+function TClientIDBook.GetDriverName: String;
+begin
+  Result := 'FireDAC ' + fSQLite3Connection.DriverName;
+end;
+
+
+
+  { This method opens a database based on SQLite. }
+  // NOTE: The default folder must be set before calling this method.
+procedure TClientIDBook.OpenDatabase(aFileName: String);
+// var
+//   theCurrentMode: String;
+
+begin
+  Assert(FileExists(aFileName), 'OpenDatabase() - Database file does not exist.  Folder or file name may have illegal characters.');
+
+  fFileName := aFileName;
+
+  fExpandedFileName := ExpandFileName(fFileName);
+
+  // Assert(not UseSaveMode, 'Code for safety mode with SQLite not tested.');
+
+    // ******************* Is fDiskNumberOfFileName necessary or even possible on MACOS?
+  if (Length(fExpandedFileName) > 0)
+    then fDiskNumberOfFileName := (Pos(fExpandedFileName[1], 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'))
+    else fDiskNumberOfFileName := 0;  { assume the default drive }
+
+  {$IFDEF MSWINDOWS}
+  RemoveReadOnlyAttribute(fExpandedFileName);
+  {$ENDIF}
+
+
+
+    // no extension expected
+
+  fSQLite3Connection.Connected := False;
+
+  // fSQLite3Connection.Params.Clear;
+  // fSQLite3Connection.Params.Add('DriverID=SQLite');
+  fSQLite3Connection.Params.Add('Database=' + fFilename);
+
+  try
+    fSQLite3Connection.Connected := True;
+
+  except
+    on E: EAbort do
+      ; // user pressed Cancel button in Login dialog
+
+    {
+    on E: EFDDBEngineException do
+      case E.Kind of
+        ekUserPwdInvalid: ; // user name or password are incorrect
+        ekUserPwdExpired: ; // user password is expired
+        ekServerGone: ;     // DBMS is not accessible due to some reason
+      else                // other issues
+    end;
+    }
+  end;
+end;
+
+
+
+procedure TClientIDBook.SetDataVersion;
+begin
+  fSQLite3Query.SQL.Text := 'PRAGMA user_version=' + IntToStr(kDataVersion) + ';';
+  fSQLite3Query.ExecSQL;
+end;
+
+
+
+function TClientIDBook.TableExists(aTablename: String): Boolean;
+begin
+  fSQLite3Query.SQL.Text := 'SELECT count(*) AS ' + kSQLFieldCountResult + ' FROM sqlite_master WHERE type=' + #39 +  'table' + #39 +
+                            ' AND name=' + #39 + aTablename + #39;
+  try
+    fSQLite3Query.Open();
+
+    Assert((fSQLite3Query.RecordCount = 1),
+           'TableExists() has an invalid RecordCount of ' + IntToStr(fSQLite3Query.RecordCount));
+  except
+
+
+    on E: Exception do
+
+      begin
+
+        ShowMessage(E.Message);
+
+        raise;
+      end;
+  end;
+
+
+  Result := (fSQLite3Query.FieldByName(kSQLFieldCountResult).AsInteger > 0);
+
+end;
+
+
+
+procedure TClientIDBook.UpdateEverything(aClientID: String);
+var
+  theTime: TDateTime;
+
+begin
+  Assert((Length(aClientID) > 15), 'UpdateEverything had a short or blank ClientID');
+
+  if (Copy(aClientID, Length(aClientID), 1) = ' ')
+    then aClientID := Copy(aClientID, 1, Length(aClientID) - 1);
+
+  try
+    if ClientIDExists(aClientID)
+      then
+        begin
+          fSQLite3Query.SQL.Text := kSQLUpdateClients;
+
+          fSQLite3Query.ParamByName(kSQLFieldClientID).AsString               := aClientID;
+          fSQLite3Query.ParamByName(kSQLFieldTimeLastAccessed).AsString       := DateToStr(theTime) + ' ' + TimeToStr(theTime);
+
+          try
+
+            fSQLite3Query.ExecSQL;
+
+          except
+
+            on E: Exception do
+              begin
+
+                ShowMessage(E.Message);
+
+                raise;
+              end;
+          end;
+        end
+      else
+        begin
+          fSQLite3Query.SQL.Text := kSQLInsertClient;
+
+          fSQLite3Query.ParamByName(kSQLFieldClientID).AsString         := aClientID;
+          fSQLite3Query.ParamByName(kSQLFieldTimeLastAccessed).AsString := DateToStr(theTime) + ' ' + TimeToStr(theTime);
+
+          try
+
+            fSQLite3Query.ExecSQL;
+
+          except
+
+            on E: Exception do
+              begin
+
+                ShowMessage(E.Message);
+
+                raise;
+              end;
+          end;
+        end;
+
+  except
+
+
+    on E: Exception do
+
+      begin
+
+        ShowMessage(E.Message);
+
+        raise;
+      end;
+  end;
+end;
+
+
+
+function TClientIDBook.GetFileName: String;
+begin
+  GetFileName := fFileName;
+end;
+
+
+
+function TClientIDBook.ClientIDExists(const aClientID: String): Boolean;
+var
+  theClientID: String;
+
+begin
+  theClientID := aClientID;
+
+  if (Copy(theClientID, Length(theClientID), 1) = ' ')
+    then theClientID := Copy(aClientID, 1, Length(theClientID) - 1);
+
+  fSQLite3Query.SQL.Text := 'SELECT rowid FROM ' + kSQLTableClients + ' WHERE ' + kSQLFieldClientID + ' = :' + kSQLFieldClientID;
+
+  try
+    fSQLite3Query.ParamByName(kSQLFieldClientID).AsString := theClientID;
+
+    fSQLite3Query.Open();
+
+    Assert((fSQLite3Query.RecordCount = 0) or (fSQLite3Query.RecordCount = 1),
+           'BoardExists() has an invalid RecordCount of ' + IntToStr(fSQLite3Query.RecordCount));
+
+    Result := (fSQLite3Query.RecordCount > 0);
+
+  except
+
+
+    on E: Exception do
+
+      begin
+
+        ShowMessage(E.Message);
+
+        raise;
+      end;
+  end;
+end;
+
+
+
+procedure TClientIDBook.FillInEverything(aClientID: String;
+                                         var aTimeLastAccessed: String;
+                                         var aTotalAccesses: Cardinal);
+var
+  theClientIDExists: Boolean;
+  theClientIDFromSQLite: String;
+
+begin
+  aTimeLastAccessed := '';
+  aTotalAccesses := 0;
+
+  fSQLite3Query.SQL.Text := kSQLSelectClientsEverything;
+
+  try
+    fSQLite3Query.ParamByName(kSQLFieldClientID).AsString := aClientID;
+
+    fSQLite3Query.Open();
+
+    Assert((fSQLite3Query.RecordCount = 0) or (fSQLite3Query.RecordCount = 1),
+           'FillInEverything() has an invalid RecordCount of ' + IntToStr(fSQLite3Query.RecordCount));
+
+    theClientIDExists := (fSQLite3Query.RecordCount > 0);
+
+  except
+
+    on E: Exception do
+
+      begin
+
+        ShowMessage(E.Message);
+
+        raise;
+      end;
+  end;
+
+    // If the database does not have this ClientID, exit with blank information.
+  if not theClientIDExists
+    then Exit;
+
+  aTimeLastAccessed := fSQLite3Query.FieldByName(kSQLFieldTimeLastAccessed).AsString;
+  aTotalAccesses    := fSQLite3Query.FieldByName(kSQLFieldNumberOfAccesses).AsInteger;
+
+  theClientIDFromSQLite := fSQLite3Query.FieldByName(kSQLFieldClientID).AsString;
+
+  if (aClientID <> theClientIDFromSQLite)
+    then ShowMessage('Database corruption');
+end;
+
+
+
+function TClientIDBook.GetDataVersion: Integer;
+var
+  theVersionString: String;
+  theVersionNumber, theErrorCode: Integer;
+
+begin
+  theVersionString := GetPragma('user_version');
+
+  Val(theVersionString, theVersionNumber, theErrorCode);
+
+  Result := theVersionNumber;
+
+  {
+  if not TableExists(kSQLTableDataVersion)
+    then
+      begin
+        Result := 0;
+        Exit;
+      end;
+
+  fSQLite3Query.SQL.Text := kSQLSelectDataVersion;
+
+  try
+    fSQLite3Query.Open();
+
+    Assert((fSQLite3Query.RecordCount = 1),
+           'GetDataVersion() has an invalid RecordCount of ' + IntToStr(fSQLite3Query.RecordCount));
+
+  except
+
+
+    on E: Exception do
+
+      begin
+
+        ShowMessage(E.Message);
+
+        raise;
+      end;
+  end;
+
+
+  Result := fSQLite3Query.FieldByName(kSQLFieldDataVersion).AsInteger;
+
+  }
+
+end;
+
+
+
+function TClientIDBook.NumberOfClientIDs: LongInt;
+begin
+  fSQLite3Query.SQL.Text := kSQLCountClientIDs;
+
+  try
+    fSQLite3Query.Open();
+
+    Assert((fSQLite3Query.RecordCount = 1),
+           'NumberOfPositions() has an invalid RecordCount of ' + IntToStr(fSQLite3Query.RecordCount));
+
+  except
+
+
+    on E: Exception do
+
+      begin
+
+        ShowMessage(E.Message);
+
+        raise;
+      end;
+  end;
+
+  NumberOfClientIDs := fSQLite3Query.FieldByName(kSQLFieldCountResult).AsInteger;
+end;
+
+
+
+function TClientIDBook.GetFirstClientID(var theClientID: String): Boolean;
+begin
+  fSQLite3Query.SQL.Text := fSQLSelectFirstClientID;
+
+  try
+    fSQLite3Query.Open();
+
+    Assert((fSQLite3Query.RecordCount = 0) or (fSQLite3Query.RecordCount = 1),
+           'GetFirstClientID() has an invalid RecordCount of ' + IntToStr(fSQLite3Query.RecordCount));
+
+  except
+
+
+    on E: Exception do
+
+      begin
+
+        ShowMessage(E.Message);
+
+        raise;
+      end;
+  end;
+
+
+  if (fSQLite3Query.RecordCount = 0)
+    then
+      begin
+        Result := False;
+        Exit;
+      end;
+
+  theClientID := fSQLite3Query.FieldByName(kSQLFieldClientID).AsString;
+
+  Result := True;
+end;
+
+
+
+function TClientIDBook.GetNumberOfAccesses(aClientId: String): Cardinal;
+begin
+  Result :=
+end;
+
+
+
+function TClientIDBook.GetClientIDAfter(var theClientID: String): Boolean;
+var
+  aNextBoardString: String;
+
+begin
+  fSQLite3Query.SQL.Text := fSQLSelectClientIDAfter;
+
+  try
+    fSQLite3Query.ParamByName(kSQLFieldClientID).AsString := theClientID;
+
+    fSQLite3Query.Open();
+
+    Assert((fSQLite3Query.RecordCount = 0) or (fSQLite3Query.RecordCount = 1),
+           'TClientIDBook.GetClientIDAfter() has an invalid RecordCount of ' + IntToStr(fSQLite3Query.RecordCount));
+
+    if (fSQLite3Query.RecordCount = 0)
+      then
+        begin
+          Result := False;
+          Exit;
+        end;
+
+  except
+
+
+    on E: Exception do
+
+      begin
+
+        ShowMessage(E.Message);
+
+        raise;
+      end;
+  end;
+
+
+  theClientID := fSQLite3Query.FieldByName(kSQLFieldClientID).AsString;
+
+
+  Result := True;
+end;
+
+
+
+end.

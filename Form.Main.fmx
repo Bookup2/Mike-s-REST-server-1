@@ -84,13 +84,13 @@ object MainForm: TMainForm
     Margins.Right = 10.000000000000000000
     Margins.Bottom = 10.000000000000000000
     Position.X = 10.000000000000000000
-    Position.Y = 584.000000000000000000
+    Position.Y = 560.000000000000000000
     Size.Width = 1233.000000000000000000
-    Size.Height = 238.000000000000000000
+    Size.Height = 262.000000000000000000
     Size.PlatformDefault = False
     TabOrder = 8
     Viewport.Width = 1229.000000000000000000
-    Viewport.Height = 234.000000000000000000
+    Viewport.Height = 258.000000000000000000
   end
   object StartEnginesButton: TButton
     Position.X = 16.000000000000000000
@@ -208,15 +208,15 @@ object MainForm: TMainForm
     CanFocus = True
     ClipChildren = True
     Position.X = 13.000000000000000000
-    Position.Y = 427.000000000000000000
+    Position.Y = 384.000000000000000000
     Size.Width = 1229.000000000000000000
-    Size.Height = 141.000000000000000000
+    Size.Height = 161.000000000000000000
     Size.PlatformDefault = False
     TabOrder = 23
     RowCount = 10
     Options = [Editing, ColumnResize, ColumnMove, ColLines, RowLines, Tabs, AutoDisplacement]
     Viewport.Width = 1225.000000000000000000
-    Viewport.Height = 137.000000000000000000
+    Viewport.Height = 157.000000000000000000
   end
   object NumberOfEnginesRunningLabel: TLabel
     Position.X = 200.000000000000000000
@@ -418,5 +418,21 @@ object MainForm: TMainForm
     TextSettings.Trimming = None
     Text = 'ServerBusyCountLabel'
     TabOrder = 33
+  end
+  object ExportClientsButton: TButton
+    Position.X = 852.000000000000000000
+    Position.Y = 249.000000000000000000
+    Size.Width = 169.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 36
+    Text = 'Export Clients'
+    TextSettings.Trimming = None
+    OnClick = ExportClientsButtonClick
+  end
+  object ExportClientsSaveDialog: TSaveDialog
+    DefaultExt = 'CSV'
+    Left = 1048
+    Top = 256
   end
 end

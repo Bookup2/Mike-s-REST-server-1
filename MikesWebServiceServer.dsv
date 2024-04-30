@@ -120,13 +120,13 @@ EditViewName=c:\program files (x86)\embarcadero\studio\23.0\source\fmx\FMX.Contr
 
 [ClosedView_QzpcZGV2XENPVyBEZXNrdG9wXENPVyBQcm8gZGVza3RvcCBtYXN0ZXJcRWJvb2tGb3JtLnBhcw==]
 Module=C:\dev\COW Desktop\COW Pro desktop master\EbookForm.pas
-CursorX=18
-CursorY=2396
-TopLine=1
+CursorX=1
+CursorY=3127
+TopLine=3113
 LeftCol=1
 Elisions=
 Bookmarks=
-EditViewName=Borland.FormDesignerView
+EditViewName=C:\dev\COW Desktop\COW Pro desktop master\EbookForm.pas
 
 [ClosedView_QzpcZGV2XE1pa2UncyBSRVNUIHNlcnZlciAxXENoZXNzRW5naW5lQ29udHJvbGxlclVDSS5wYXM=]
 Module=C:\dev\Mike's REST server 1\ChessEngineControllerUCI.pas
@@ -330,9 +330,9 @@ EditViewName=C:\dev\COW Desktop\COW Pro desktop master\GTypes.pas
 
 [ClosedView_QzpcZGV2XENPVyBSRVNUIEVuZ2luZSBTZXJ2ZXJcRm9ybS5NYWluLnBhcw==]
 Module=C:\dev\COW REST Engine Server\Form.Main.pas
-CursorX=99
-CursorY=619
-TopLine=603
+CursorX=1
+CursorY=226
+TopLine=198
 LeftCol=1
 Elisions=
 Bookmarks=
@@ -640,9 +640,9 @@ EditViewName=c:\program files (x86)\embarcadero\studio\23.0\source\fmx\FMX.Contr
 
 [ClosedView_QzpcZGV2XENPVyBSRVNUIEVuZ2luZSBTZXJ2ZXJcUG9ja2V0R01Cb29rLnBhcw==]
 Module=C:\dev\COW REST Engine Server\PocketGMBook.pas
-CursorX=1
-CursorY=458
-TopLine=445
+CursorX=16
+CursorY=208
+TopLine=186
 LeftCol=1
 Elisions=
 Bookmarks=
@@ -727,7 +727,6 @@ LeftCol=1
 Elisions=
 Bookmarks=
 EditViewName=C:\dev\COW REST Engine Server\Win32\Debug\ServerSettings.INI
-
 [ClosedView_QzpcZGV2XENPVyBSRVNUIEVuZ2luZSBTZXJ2ZXJcV2luMzJcRGVidWdcU2VydmVyU2V0dGluZ3Mu
 SU5J]
 Module=C:\dev\COW REST Engine Server\Win32\Debug\ServerSettings.INI
@@ -738,4 +737,74 @@ LeftCol=1
 Elisions=
 Bookmarks=
 EditViewName=C:\dev\COW REST Engine Server\Win32\Debug\ServerSettings.INI
+
+[ClosedView_QzpcZGV2XENPVyBSRVNUIEVuZ2luZSBTZXJ2ZXJcQ2xpZW50SURCb29rLnBhcw==]
+Module=C:\dev\COW REST Engine Server\ClientIDBook.pas
+CursorX=30
+CursorY=148
+TopLine=135
+LeftCol=1
+Elisions=
+Bookmarks=
+EditViewName=C:\dev\COW REST Engine Server\ClientIDBook.pas
+[ClosedView_QzpcZGV2XENPVyBEZXNrdG9wXENPVyBkZXNrdG9wIG1hc3RlciAtIGZvciBSU1AtNDEyMjNcRWJv
+b2tGb3JtLnBhcw==]
+Module=C:\dev\COW Desktop\COW desktop master - for RSP-41223\EbookForm.pas
+CursorX=1
+CursorY=2997
+TopLine=2975
+LeftCol=1
+Elisions=
+Bookmarks=
+EditViewName=C:\dev\COW Desktop\COW desktop master - for RSP-41223\EbookForm.pas
+[ClosedView_QzpcZGV2XENPVyBEZXNrdG9wXENPVyBkZXNrdG9wIG1hc3RlciAtIGZvciBSU1AtNDEyMjNcRWJv
+b2tGb3JtLnBhcw==]
+Module=C:\dev\COW Desktop\COW desktop master - for RSP-41223\EbookForm.pas
+CursorX=1
+CursorY=2997
+TopLine=2975
+LeftCol=1
+Elisions=
+Bookmarks=
+EditViewName=C:\dev\COW Desktop\COW desktop master - for RSP-41223\EbookForm.pas
+[ClosedView_QzpcZGV2XENPVyBSRVNUIEVuZ2luZSBTZXJ2ZXJcQ2hlc3NFbmdpbmVDb250cm9sbGVyVUNJLnBh
+cw==]
+Module=C:\dev\COW REST Engine Server\ChessEngineControllerUCI.pas
+CursorX=49
+CursorY=462
+TopLine=408
+LeftCol=1
+Elisions=
+Bookmarks=
+EditViewName=C:\dev\COW REST Engine Server\ChessEngineControllerUCI.pas
+[ClosedView_QzpcZGV2XENPVyBSRVNUIEVuZ2luZSBTZXJ2ZXJcQ2hlc3NFbmdpbmVDb250cm9sbGVyVUNJLnBh
+cw==]
+Module=C:\dev\COW REST Engine Server\ChessEngineControllerUCI.pas
+CursorX=49
+CursorY=462
+TopLine=408
+LeftCol=1
+Elisions=
+Bookmarks=
+EditViewName=C:\dev\COW REST Engine Server\ChessEngineControllerUCI.pas
+[ClosedView_QzpcZGV2XENPVyBEZXNrdG9wXENPVyBkZXNrdG9wIG1hc3RlciAtIGZvciBSU1AtNDEyMjNcRWJv
+b2tGb3JtLnBhcw==]
+Module=C:\dev\COW Desktop\COW desktop master - for RSP-41223\EbookForm.pas
+CursorX=1
+CursorY=2997
+TopLine=2975
+LeftCol=1
+Elisions=
+Bookmarks=
+EditViewName=C:\dev\COW Desktop\COW desktop master - for RSP-41223\EbookForm.pas
+
+[ClosedView_QzpcZGV2XENPVyBSRVNUIEVuZ2luZSBTZXJ2ZXJcQ2xpZW50RGF0YWJhc2UucGFz]
+Module=C:\dev\COW REST Engine Server\ClientDatabase.pas
+CursorX=1
+CursorY=1
+TopLine=1
+LeftCol=1
+Elisions=
+Bookmarks=
+EditViewName=C:\dev\COW REST Engine Server\ClientDatabase.pas
 
