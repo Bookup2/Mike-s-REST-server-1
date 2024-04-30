@@ -680,7 +680,7 @@ begin
   // CacheFileName := System.IOUtils.TPath.Combine(CacheFolder, kPocketGMCacheBookFileName);
 
   fClientDatabase := TClientDatabase.Create;
-  theFolder := TPath.Combine(ExtractFilePath(ParamStr(0)), 'Client Database');
+  theFolder := TPath.Combine(TPath.GetDocumentsPath, 'Client Database');
 
   ForceDirectories(theFolder);
 
