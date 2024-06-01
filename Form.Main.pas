@@ -246,7 +246,6 @@ begin
               CacheErrorsLabel.Text := fCacheErrors.ToString;
             end;
 
-
         if (theCachedReply > '')
           then
             begin
@@ -282,6 +281,7 @@ begin
 
         theReplyForTheClient := kRESTEngineServerStartedThinking; // 'StartedThinking';
 
+        EngineStatusStringGrid.BeginUpdate;
         EngineStatusStringGrid.Cells[1, theEngineNumber] := 'Switched';
         EngineStatusStringGrid.Cells[2, theEngineNumber] := theClientID;
         EngineStatusStringGrid.Cells[3, theEngineNumber] := '*';     // requests
@@ -290,6 +290,7 @@ begin
         EngineStatusStringGrid.Cells[6, theEngineNumber] := '*';
         EngineStatusStringGrid.Cells[7, theEngineNumber] := '*';
         EngineStatusStringGrid.Cells[8, theEngineNumber] := '*';      // PV
+        EngineStatusStringGrid.EndUpdate;
 
         Exit;
       end;
@@ -310,6 +311,7 @@ begin
           then EngineStatusStringGrid.Cells[3, theEngineNumber] := (theRequestValue + 1).ToString
           else EngineStatusStringGrid.Cells[3, theEngineNumber] := '?';
 
+        EngineStatusStringGrid.BeginUpdate;
         EngineStatusStringGrid.Cells[1, theEngineNumber] := 'Analyzing';
         EngineStatusStringGrid.Cells[2, theEngineNumber] := gChessEngineControllers[theEngineNumber].GetClientID;
         EngineStatusStringGrid.Cells[4, theEngineNumber] := gChessEngineControllers[theEngineNumber].GetTimeSinceLastRequest.ToString;
@@ -317,6 +319,7 @@ begin
         EngineStatusStringGrid.Cells[6, theEngineNumber] := gChessEngineControllers[theEngineNumber].GetDepth.ToString;
         EngineStatusStringGrid.Cells[7, theEngineNumber] := gChessEngineControllers[theEngineNumber].GetNodeCount.ToString;
         EngineStatusStringGrid.Cells[8, theEngineNumber] := gChessEngineControllers[theEngineNumber].GetScore(1).ToString + ' ' + gChessEngineControllers[theEngineNumber].GetPrincipleVariation(1);
+        EngineStatusStringGrid.EndUpdate;
 
         for K := 1 to gChessEngineControllers[theEngineNumber].GetTotalPrincipleVariations do
           begin
@@ -518,8 +521,10 @@ begin
       if (gChessEngineControllers[K].GetEPDBeingAnalyzed > '')
         then
           begin
+            EngineStatusStringGrid.BeginUpdate;
             EngineStatusStringGrid.Cells[4, K] := gChessEngineControllers[K].GetTimeSinceLastRequest.ToString;
             EngineStatusStringGrid.Cells[5, K] := gChessEngineControllers[K].GetTimeSpentAnalyzing.ToString;
+            EngineStatusStringGrid.EndUpdate;
           end;
     end;
 
@@ -615,7 +620,7 @@ begin
 
   fColumnEngineNumber.Width := 30;
   fColumnStatus.Width := 100;
-  fColumnClientID.Width := 110;
+  fColumnClientID.Width := 220;
   fColumnTimeSpent.Width := 90;
   fColumnTimeSinceLastRequest.Width := 90;
   fColumnNumberOfRequests.Width := 80;
