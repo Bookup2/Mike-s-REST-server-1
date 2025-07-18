@@ -1,0 +1,438 @@
+object MainForm: TMainForm
+  Left = 5
+  Top = 5
+  Caption = 'PocketGM Server'
+  ClientHeight = 832
+  ClientWidth = 1253
+  Position = Designed
+  FormFactor.Width = 320
+  FormFactor.Height = 480
+  FormFactor.Devices = [Desktop, iPhone, iPad]
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  Left = 5
+  Top = 5
+  DesignerMasterStyle = 0
+  object ButtonStart: TButton
+    Position.X = 16.000000000000000000
+    Position.Y = 16.000000000000000000
+    Size.Width = 73.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 0
+    Text = 'Start'
+    TextSettings.Trimming = None
+    OnClick = ButtonStartClick
+  end
+  object ButtonStop: TButton
+    Position.X = 96.000000000000000000
+    Position.Y = 16.000000000000000000
+    Size.Width = 73.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 1
+    Text = 'Stop'
+    TextSettings.Trimming = None
+    OnClick = ButtonStopClick
+  end
+  object EditPort: TEdit
+    Touch.InteractiveGestures = [LongTap, DoubleTap]
+    TabOrder = 3
+    Text = '80'
+    Position.X = 16.000000000000000000
+    Position.Y = 80.000000000000000000
+    Size.Width = 100.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+  end
+  object Label1: TLabel
+    Position.X = 16.000000000000000000
+    Position.Y = 56.000000000000000000
+    Size.Width = 120.000000000000000000
+    Size.Height = 17.000000000000000000
+    Size.PlatformDefault = False
+    TextSettings.Trimming = None
+    Text = 'Port'
+    TabOrder = 5
+  end
+  object ButtonOpenBrowser: TButton
+    Position.X = 56.000000000000000000
+    Position.Y = 50.000000000000000000
+    Size.Width = 113.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 4
+    Text = 'Open Browser'
+    TextSettings.Trimming = None
+    OnClick = ButtonOpenBrowserClick
+  end
+  object EditLocalIP: TEdit
+    Touch.InteractiveGestures = [LongTap, DoubleTap]
+    TabOrder = 7
+    ReadOnly = True
+    Position.X = 136.000000000000000000
+    Position.Y = 80.000000000000000000
+    Size.Width = 337.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+  end
+  object RequestsMemo: TMemo
+    Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
+    DataDetectorTypes = []
+    Align = Bottom
+    Margins.Left = 10.000000000000000000
+    Margins.Right = 10.000000000000000000
+    Margins.Bottom = 10.000000000000000000
+    Position.X = 10.000000000000000000
+    Position.Y = 560.000000000000000000
+    Size.Width = 1233.000000000000000000
+    Size.Height = 262.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 8
+    Viewport.Width = 1229.000000000000000000
+    Viewport.Height = 258.000000000000000000
+  end
+  object StartEnginesButton: TButton
+    Position.X = 16.000000000000000000
+    Position.Y = 110.000000000000000000
+    Size.Width = 153.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 10
+    Text = 'Start Engines'
+    TextSettings.Trimming = None
+    OnClick = StartEnginesButtonClick
+  end
+  object NumberOfEnginesSpinBox: TSpinBox
+    Touch.InteractiveGestures = [LongTap, DoubleTap]
+    TabOrder = 11
+    Cursor = crIBeam
+    Min = 1.000000000000000000
+    Max = 10.000000000000000000
+    Value = 4.000000000000000000
+    Position.X = 200.000000000000000000
+    Position.Y = 110.000000000000000000
+  end
+  object StopEnginesButton: TButton
+    Position.X = 16.000000000000000000
+    Position.Y = 140.000000000000000000
+    Size.Width = 153.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 9
+    Text = 'Stop Engines'
+    TextSettings.Trimming = None
+    OnClick = StopEnginesButtonClick
+  end
+  object EngineEXEFilenameLabel: TLabel
+    Position.X = 285.000000000000000000
+    Position.Y = 21.000000000000000000
+    Size.Width = 500.000000000000000000
+    Size.Height = 17.000000000000000000
+    Size.PlatformDefault = False
+    TextSettings.Trimming = None
+    Text = 'EngineEXEFilenameLabel'
+    TabOrder = 13
+    object UseLogFileCheckBox: TCheckBox
+      Position.X = 435.000000000000000000
+      Position.Y = -251.000000000000000000
+      TabOrder = 4
+      Text = 'Use Log File'
+    end
+    object LogFileNameLabel: TLabel
+      Position.X = 432.000000000000000000
+      Position.Y = -224.000000000000000000
+      Size.Width = 673.000000000000000000
+      Size.Height = 17.000000000000000000
+      Size.PlatformDefault = False
+      TextSettings.Trimming = None
+      Text = 'LogFileNameLabel'
+      TabOrder = 5
+    end
+  end
+  object NodeCountCutOffSpinBox: TSpinBox
+    Touch.InteractiveGestures = [LongTap, DoubleTap]
+    TabOrder = 15
+    Cursor = crIBeam
+    Min = 2.000000000000000000
+    Max = 1000.000000000000000000
+    Value = 40.000000000000000000
+    Position.X = 440.000000000000000000
+    Position.Y = 133.000000000000000000
+  end
+  object Label2: TLabel
+    Position.X = 548.000000000000000000
+    Position.Y = 136.000000000000000000
+    Size.Width = 373.000000000000000000
+    Size.Height = 17.000000000000000000
+    Size.PlatformDefault = False
+    TextSettings.Trimming = None
+    Text = 'Cut off engine after this node count (millions)'
+    TabOrder = 16
+  end
+  object SecondsCutOffSpinBox: TSpinBox
+    Touch.InteractiveGestures = [LongTap, DoubleTap]
+    TabOrder = 18
+    Cursor = crIBeam
+    Min = 10.000000000000000000
+    Value = 20.000000000000000000
+    Position.X = 440.000000000000000000
+    Position.Y = 163.000000000000000000
+  end
+  object Label3: TLabel
+    Position.X = 548.000000000000000000
+    Position.Y = 168.000000000000000000
+    Size.Width = 317.000000000000000000
+    Size.Height = 17.000000000000000000
+    Size.PlatformDefault = False
+    TextSettings.Trimming = None
+    Text = 'Cut off engine after this time (seconds)'
+    TabOrder = 20
+  end
+  object EngineCutoffTimer: TTimer
+    Enabled = False
+    Interval = 2000
+    OnTimer = EngineCutoffTimerTimer
+    Left = 648
+    Top = 296
+  end
+  object LogFileButton: TButton
+    Position.X = 592.000000000000000000
+    Position.Y = 68.000000000000000000
+    TabOrder = 22
+    Text = 'Log File'
+    TextSettings.Trimming = None
+    OnClick = LogFileButtonClick
+  end
+  object EngineStatusStringGrid: TStringGrid
+    CanFocus = True
+    ClipChildren = True
+    Position.X = 13.000000000000000000
+    Position.Y = 384.000000000000000000
+    Size.Width = 1229.000000000000000000
+    Size.Height = 161.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 23
+    RowCount = 10
+    Options = [Editing, ColumnResize, ColumnMove, ColLines, RowLines, Tabs, AutoDisplacement]
+    Viewport.Width = 1225.000000000000000000
+    Viewport.Height = 157.000000000000000000
+  end
+  object NumberOfEnginesRunningLabel: TLabel
+    Position.X = 200.000000000000000000
+    Position.Y = 145.000000000000000000
+    Size.Width = 153.000000000000000000
+    Size.Height = 17.000000000000000000
+    Size.PlatformDefault = False
+    TextSettings.Trimming = None
+    Text = '0 Engines'
+    TabOrder = 25
+  end
+  object NumberOfTotalRequestsLabel: TLabel
+    Position.X = 208.000000000000000000
+    Position.Y = 21.000000000000000000
+    Size.Width = 145.000000000000000000
+    Size.Height = 17.000000000000000000
+    Size.PlatformDefault = False
+    TextSettings.Trimming = None
+    Text = '0 Requests'
+    TabOrder = 26
+  end
+  object NoRequestsSpinBox: TSpinBox
+    Touch.InteractiveGestures = [LongTap, DoubleTap]
+    TabOrder = 17
+    Cursor = crIBeam
+    Min = 5.000000000000000000
+    Value = 15.000000000000000000
+    Position.X = 440.000000000000000000
+    Position.Y = 193.000000000000000000
+  end
+  object Label4: TLabel
+    Position.X = 548.000000000000000000
+    Position.Y = 198.000000000000000000
+    Size.Width = 317.000000000000000000
+    Size.Height = 17.000000000000000000
+    Size.PlatformDefault = False
+    TextSettings.Trimming = None
+    Text = 'Cut off engine after no requests (seconds)'
+    TabOrder = 19
+  end
+  object SaveDialog1: TSaveDialog
+    Left = 552
+    Top = 296
+  end
+  object CachePanel: TPanel
+    Position.X = 836.000000000000000000
+    Position.Y = 46.000000000000000000
+    Size.Width = 368.000000000000000000
+    Size.Height = 195.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 29
+    object Label8: TLabel
+      StyledSettings = [Family, Style, FontColor]
+      Position.X = 16.000000000000000000
+      Position.Y = 8.000000000000000000
+      TextSettings.Font.Size = 16.000000000000000000
+      TextSettings.Trimming = None
+      Text = 'Cache'
+      TabOrder = 0
+      object AllowCacheUpdatesCheckBox: TCheckBox
+        IsChecked = True
+        Position.X = 96.000000000000000000
+        Position.Y = 1.000000000000000000
+        Size.Width = 201.000000000000000000
+        Size.Height = 19.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 4
+        Text = 'Allow CacheUpdates'
+      end
+    end
+    object CacheHitsLabel: TLabel
+      Position.X = 192.000000000000000000
+      Position.Y = 36.000000000000000000
+      TextSettings.Trimming = None
+      Text = 'CacheHitsLabel'
+      TabOrder = 39
+    end
+    object Label7: TLabel
+      Position.X = 36.000000000000000000
+      Position.Y = 36.000000000000000000
+      Size.Width = 148.000000000000000000
+      Size.Height = 17.000000000000000000
+      Size.PlatformDefault = False
+      TextSettings.HorzAlign = Trailing
+      TextSettings.Trimming = None
+      Text = 'Cache Hits:'
+      TabOrder = 38
+    end
+    object CacheErrorsLabel: TLabel
+      Position.X = 192.000000000000000000
+      Position.Y = 89.000000000000000000
+      TextSettings.Trimming = None
+      Text = 'CacheErrorsLabel'
+      TabOrder = 36
+    end
+    object CacheSizeLabel: TLabel
+      Position.X = 192.000000000000000000
+      Position.Y = 62.000000000000000000
+      TextSettings.Trimming = None
+      Text = 'CacheSizeLabel'
+      TabOrder = 32
+    end
+    object Label5: TLabel
+      Position.X = 15.000000000000000000
+      Position.Y = 62.000000000000000000
+      Size.Width = 169.000000000000000000
+      Size.Height = 17.000000000000000000
+      Size.PlatformDefault = False
+      TextSettings.HorzAlign = Trailing
+      TextSettings.WordWrap = False
+      TextSettings.Trimming = None
+      Text = 'Cloud Cache Size (positions):'
+      TabOrder = 31
+    end
+    object Label6: TLabel
+      Position.X = 15.000000000000000000
+      Position.Y = 89.000000000000000000
+      Size.Width = 169.000000000000000000
+      Size.Height = 17.000000000000000000
+      Size.PlatformDefault = False
+      TextSettings.HorzAlign = Trailing
+      TextSettings.WordWrap = False
+      TextSettings.Trimming = None
+      Text = 'Cache Errors:'
+      TabOrder = 9
+    end
+    object CacheAdditionsLabel: TLabel
+      Position.X = 192.000000000000000000
+      Position.Y = 115.000000000000000000
+      TextSettings.Trimming = None
+      Text = 'CacheAdditionsLabel'
+      TabOrder = 35
+    end
+    object Label10: TLabel
+      Position.X = 15.000000000000000000
+      Position.Y = 115.000000000000000000
+      Size.Width = 169.000000000000000000
+      Size.Height = 17.000000000000000000
+      Size.PlatformDefault = False
+      TextSettings.HorzAlign = Trailing
+      TextSettings.WordWrap = False
+      TextSettings.Trimming = None
+      Text = 'Cache Additions:'
+      TabOrder = 8
+    end
+    object CacheUpdatesLabel: TLabel
+      Position.X = 193.000000000000000000
+      Position.Y = 142.000000000000000000
+      TextSettings.Trimming = None
+      Text = 'CacheUpdatesLabel'
+      TabOrder = 34
+    end
+    object Label11: TLabel
+      Position.X = 16.000000000000000000
+      Position.Y = 142.000000000000000000
+      Size.Width = 169.000000000000000000
+      Size.Height = 17.000000000000000000
+      Size.PlatformDefault = False
+      TextSettings.HorzAlign = Trailing
+      TextSettings.WordWrap = False
+      TextSettings.Trimming = None
+      Text = 'Cache Updates:'
+      TabOrder = 7
+    end
+    object CacheRejectionsLabel: TLabel
+      Position.X = 193.000000000000000000
+      Position.Y = 167.000000000000000000
+      TextSettings.Trimming = None
+      Text = 'Cache Rejections'
+      TabOrder = 33
+    end
+    object Label12: TLabel
+      Position.X = 16.000000000000000000
+      Position.Y = 167.000000000000000000
+      Size.Width = 169.000000000000000000
+      Size.Height = 17.000000000000000000
+      Size.PlatformDefault = False
+      TextSettings.HorzAlign = Trailing
+      TextSettings.WordWrap = False
+      TextSettings.Trimming = None
+      Text = 'Cache Rejections:'
+      TabOrder = 6
+    end
+  end
+  object Label9: TLabel
+    Position.X = 448.000000000000000000
+    Position.Y = 240.000000000000000000
+    TextSettings.HorzAlign = Trailing
+    TextSettings.Trimming = None
+    Text = 'Server busy:'
+    TabOrder = 32
+  end
+  object ServerBusyCountLabel: TLabel
+    Position.X = 576.000000000000000000
+    Position.Y = 240.000000000000000000
+    Size.Width = 128.000000000000000000
+    Size.Height = 17.000000000000000000
+    Size.PlatformDefault = False
+    TextSettings.Trimming = None
+    Text = 'ServerBusyCountLabel'
+    TabOrder = 33
+  end
+  object ExportClientsButton: TButton
+    Position.X = 184.000000000000000000
+    Position.Y = 50.000000000000000000
+    Size.Width = 169.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 36
+    Text = 'Export Clients'
+    TextSettings.Trimming = None
+    OnClick = ExportClientsButtonClick
+  end
+  object ExportClientsSaveDialog: TSaveDialog
+    DefaultExt = 'CSV'
+    Left = 744
+    Top = 296
+  end
+end

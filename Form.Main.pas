@@ -65,6 +65,8 @@ type
     ServerBusyCountLabel: TLabel;
     ExportClientsButton: TButton;
     ExportClientsSaveDialog: TSaveDialog;
+    Label13: TLabel;
+    StartedAutomaticallyLabel: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure ButtonStartClick(Sender: TObject);
     procedure ButtonStopClick(Sender: TObject);
@@ -77,6 +79,9 @@ type
     procedure ExportClientsButtonClick(Sender: TObject);
 
   private
+
+    fStartUpAutomatically: Boolean;
+    fNumberOfEngines: Integer;
 
     fCacheErrors,
     fCacheHits,
@@ -112,9 +117,11 @@ type
 
     procedure StoreAnalysisInCache(theEngineNumber: Integer);
 
-    procedure StopEngines;
+    procedure StartEngines;  // FIXEDIN build 3
 
+    procedure StopEngines;
     procedure StartServer;
+
     procedure ApplicationIdle(Sender: TObject; var Done: Boolean);
     procedure LookForEnginesToCutOffByNodesOrTimeSpentOnAnalysis;
     procedure LookForEnginesToCutOffByTooLongSinceLastClientRequest;
@@ -148,6 +155,8 @@ const
   kINIFileName = 'ServerSettings.INI';
   kINIEngineFilenameTag = 'EngineEXEFile';
   kINICacheFileNameTag = 'CacheFileName';  // /Cache Database/PocketGMCacheBook.PGC
+  kINIStartUpAutomatically = 'StartUpAutomatically';
+  kININumberOfEngines = 'NumberOfEngines';
   kINICientDatabaseFileNameTag = 'ClientDatabaseFilename';
   // kMaximumChessEngines = 10;
   kRESTEngineServerBusy = '#ServerBusy';
@@ -314,10 +323,10 @@ begin
         EngineStatusStringGrid.BeginUpdate;
         EngineStatusStringGrid.Cells[1, theEngineNumber] := 'Analyzing';
         EngineStatusStringGrid.Cells[2, theEngineNumber] := gChessEngineControllers[theEngineNumber].GetClientID;
-        EngineStatusStringGrid.Cells[4, theEngineNumber] := gChessEngineControllers[theEngineNumber].GetTimeSinceLastRequest.ToString;
+        EngineStatusStringGrid.Cells[4, theEngineNumber] := AddCommasTo(gChessEngineControllers[theEngineNumber].GetTimeSinceLastRequest.ToString);
         EngineStatusStringGrid.Cells[5, theEngineNumber] := gChessEngineControllers[theEngineNumber].GetTimeSpentAnalyzing.ToString;
         EngineStatusStringGrid.Cells[6, theEngineNumber] := gChessEngineControllers[theEngineNumber].GetDepth.ToString;
-        EngineStatusStringGrid.Cells[7, theEngineNumber] := gChessEngineControllers[theEngineNumber].GetNodeCount.ToString;
+        EngineStatusStringGrid.Cells[7, theEngineNumber] := AddCommasTo(gChessEngineControllers[theEngineNumber].GetNodeCount.ToString);
         EngineStatusStringGrid.Cells[8, theEngineNumber] := gChessEngineControllers[theEngineNumber].GetScore(1).ToString + ' ' + gChessEngineControllers[theEngineNumber].GetPrincipleVariation(1);
         EngineStatusStringGrid.EndUpdate;
 
@@ -390,7 +399,7 @@ begin
         EngineStatusStringGrid.Cells[8, theEngineNumber] := '*';
 
   // EngineStatusMemo.Lines[theEngineNumber] := 'Engine-' + theEngineNumber.ToString + ' (' + fNumberOfRequestsServed.ToString +  ')'  + theReplyForTheClient;
-  NumberOfTotalRequestsLabel.Text := fNumberOfRequestsServed.ToString + ' Requests handled';
+  NumberOfTotalRequestsLabel.Text := AddCommasTo(fNumberOfRequestsServed.ToString) + ' Requests handled';
 end;
 
 
@@ -406,14 +415,23 @@ end;
 
 function TMainForm.ServerStatusForBrowser: String;
 begin
-  Result := 'Number of engines running = ' + gNumberOfEnginesRunning.ToString + '<br>' +
+    // FIXEDIN build 3
+  Result := 'PocketGMServer build 3 July 2025 <br>' +
+            'Number of engines running = ' + gNumberOfEnginesRunning.ToString + '<br>' +
             'Number of engines analyzing = ' + NumberOfEnginesAnalyzing.ToString + '<br>' +
-            'Number of requests served = ' + fNumberOfRequestsServed.ToString;
+            'Number of requests served = ' + AddCommasTo(fNumberOfRequestsServed.ToString);
 end;
 
 
 
 procedure TMainForm.StartEnginesButtonClick(Sender: TObject);
+begin
+  StartEngines;
+end;
+
+
+
+procedure TMainForm.StartEngines;
 var
   K: Integer;
 
@@ -469,7 +487,8 @@ begin
 
   // gChessEngineControllers[1].SetLogFileName('Engine1LogFile.txt');
 
-  RequestsMemo.Lines.Add(gNumberOfEnginesRunning.ToString + ' engines started.');
+    // FIXEDIN build 3
+  RequestsMemo.Lines.Add(FormatDateTime('yyyy-mm-dd hh:nn:ss', Now) + '  ' + gNumberOfEnginesRunning.ToString + ' engines started.');
 
   StartEnginesButton.Enabled := False;
   StopEnginesButton.Enabled := True;
@@ -674,6 +693,16 @@ begin
 
   fCacheFileName := theINIFile.ReadString('ProgramPreferences', kINICacheFileNameTag, '');
 
+  fStartUpAutomatically := theINIFile.ReadBool('ProgramPreferences', kINIStartUpAutomatically, True);
+
+  if fStartUpAutomatically
+    then StartedAutomaticallyLabel.Text := 'started automatically'
+    else StartedAutomaticallyLabel.Text := 'not started automatically';
+
+  fNumberOfEngines := theINIFile.ReadInteger('ProgramPreferences', kININumberOfEngines, 5);
+
+  NumberOfEnginesSpinBox.value := fNumberOfEngines;
+
   fClientDatabaseFileName := theINIFile.ReadString('ProgramPreferences', kINICientDatabaseFileNameTag, 'ClientDatabase.db');
 
   theINIFile.Free;
@@ -713,11 +742,23 @@ begin
     gChessEngineControllers[K] := nil;
 
   fChessEngineDataThread := TChessEngineDataThread.Create;
+
+  if fStartUpAutomatically
+    then
+      begin
+        StartEngines;
+        StartServer;
+      end;
 end;
 
 
 
 procedure TMainForm.FormDestroy(Sender: TObject);
+var
+  theINIFile: TIniFile;
+  theINIFileName: String;
+  theEXEFileName: String;
+
 begin
   StopEngines;
 
@@ -746,6 +787,24 @@ begin
 
   fClientDatabase.CloseDatabase;
   fClientDatabase.Free;
+
+  theINIFileName := TPath.Combine(ExtractFilePath(ParamStr(0)), kINIFileName);
+
+  theINIFile := TIniFile.Create(theINIFileName);
+
+  //theEXEFileName := theINIFile.ReadString('ProgramPreferences', kINIEngineFilenameTag, '');
+
+  // fCacheFileName := theINIFile.ReadString('ProgramPreferences', kINICacheFileNameTag, '');
+
+  fStartUpAutomatically := theINIFile.ReadBool('ProgramPreferences', kINIStartUpAutomatically, True);
+
+  theINIFile.WriteBool('ProgramPreferences', kINIStartUpAutomatically, fStartUpAutomatically);
+
+  theINIFile.WriteInteger('ProgramPreferences', kININumberOfEngines, Trunc(NumberOfEnginesSpinBox.value));
+
+  // fClientDatabaseFileName := theINIFile.ReadString('ProgramPreferences', kINICientDatabaseFileNameTag, 'ClientDatabase.db');
+
+  theINIFile.Free;
 end;
 
 

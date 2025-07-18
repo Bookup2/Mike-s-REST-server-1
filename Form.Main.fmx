@@ -2,7 +2,7 @@ object MainForm: TMainForm
   Left = 5
   Top = 5
   Caption = 'PocketGM Server'
-  ClientHeight = 832
+  ClientHeight = 653
   ClientWidth = 1253
   Position = Designed
   FormFactor.Width = 320
@@ -56,8 +56,8 @@ object MainForm: TMainForm
     TabOrder = 5
   end
   object ButtonOpenBrowser: TButton
-    Position.X = 16.000000000000000000
-    Position.Y = 128.000000000000000000
+    Position.X = 56.000000000000000000
+    Position.Y = 50.000000000000000000
     Size.Width = 113.000000000000000000
     Size.Height = 22.000000000000000000
     Size.PlatformDefault = False
@@ -70,8 +70,8 @@ object MainForm: TMainForm
     Touch.InteractiveGestures = [LongTap, DoubleTap]
     TabOrder = 7
     ReadOnly = True
-    Position.X = 16.000000000000000000
-    Position.Y = 158.000000000000000000
+    Position.X = 136.000000000000000000
+    Position.Y = 80.000000000000000000
     Size.Width = 337.000000000000000000
     Size.Height = 22.000000000000000000
     Size.PlatformDefault = False
@@ -84,17 +84,17 @@ object MainForm: TMainForm
     Margins.Right = 10.000000000000000000
     Margins.Bottom = 10.000000000000000000
     Position.X = 10.000000000000000000
-    Position.Y = 560.000000000000000000
+    Position.Y = 363.000000000000000000
     Size.Width = 1233.000000000000000000
-    Size.Height = 262.000000000000000000
+    Size.Height = 280.000000000000000000
     Size.PlatformDefault = False
     TabOrder = 8
     Viewport.Width = 1229.000000000000000000
-    Viewport.Height = 258.000000000000000000
+    Viewport.Height = 276.000000000000000000
   end
   object StartEnginesButton: TButton
     Position.X = 16.000000000000000000
-    Position.Y = 240.000000000000000000
+    Position.Y = 110.000000000000000000
     Size.Width = 153.000000000000000000
     Size.Height = 22.000000000000000000
     Size.PlatformDefault = False
@@ -111,11 +111,11 @@ object MainForm: TMainForm
     Max = 10.000000000000000000
     Value = 4.000000000000000000
     Position.X = 200.000000000000000000
-    Position.Y = 240.000000000000000000
+    Position.Y = 110.000000000000000000
   end
   object StopEnginesButton: TButton
     Position.X = 16.000000000000000000
-    Position.Y = 270.000000000000000000
+    Position.Y = 140.000000000000000000
     Size.Width = 153.000000000000000000
     Size.Height = 22.000000000000000000
     Size.PlatformDefault = False
@@ -125,9 +125,9 @@ object MainForm: TMainForm
     OnClick = StopEnginesButtonClick
   end
   object EngineEXEFilenameLabel: TLabel
-    Position.X = 29.000000000000000000
-    Position.Y = 338.000000000000000000
-    Size.Width = 849.000000000000000000
+    Position.X = 285.000000000000000000
+    Position.Y = 21.000000000000000000
+    Size.Width = 500.000000000000000000
     Size.Height = 17.000000000000000000
     Size.PlatformDefault = False
     TextSettings.Trimming = None
@@ -193,8 +193,8 @@ object MainForm: TMainForm
     Enabled = False
     Interval = 2000
     OnTimer = EngineCutoffTimerTimer
-    Left = 312
-    Top = 96
+    Left = 648
+    Top = 248
   end
   object LogFileButton: TButton
     Position.X = 592.000000000000000000
@@ -208,19 +208,19 @@ object MainForm: TMainForm
     CanFocus = True
     ClipChildren = True
     Position.X = 13.000000000000000000
-    Position.Y = 384.000000000000000000
+    Position.Y = 223.000000000000000000
     Size.Width = 1229.000000000000000000
-    Size.Height = 161.000000000000000000
+    Size.Height = 130.000000000000000000
     Size.PlatformDefault = False
     TabOrder = 23
     RowCount = 10
     Options = [Editing, ColumnResize, ColumnMove, ColLines, RowLines, Tabs, AutoDisplacement]
     Viewport.Width = 1225.000000000000000000
-    Viewport.Height = 157.000000000000000000
+    Viewport.Height = 126.000000000000000000
   end
   object NumberOfEnginesRunningLabel: TLabel
     Position.X = 200.000000000000000000
-    Position.Y = 275.000000000000000000
+    Position.Y = 145.000000000000000000
     Size.Width = 153.000000000000000000
     Size.Height = 17.000000000000000000
     Size.PlatformDefault = False
@@ -258,14 +258,14 @@ object MainForm: TMainForm
     TabOrder = 19
   end
   object SaveDialog1: TSaveDialog
-    Left = 368
-    Top = 224
+    Left = 552
+    Top = 296
   end
   object CachePanel: TPanel
     Position.X = 836.000000000000000000
-    Position.Y = 46.000000000000000000
+    Position.Y = 13.000000000000000000
     Size.Width = 368.000000000000000000
-    Size.Height = 195.000000000000000000
+    Size.Height = 202.000000000000000000
     Size.PlatformDefault = False
     TabOrder = 29
     object Label8: TLabel
@@ -402,16 +402,16 @@ object MainForm: TMainForm
     end
   end
   object Label9: TLabel
-    Position.X = 448.000000000000000000
-    Position.Y = 240.000000000000000000
+    Position.X = 520.000000000000000000
+    Position.Y = 98.000000000000000000
     TextSettings.HorzAlign = Trailing
     TextSettings.Trimming = None
     Text = 'Server busy:'
     TabOrder = 32
   end
   object ServerBusyCountLabel: TLabel
-    Position.X = 576.000000000000000000
-    Position.Y = 240.000000000000000000
+    Position.X = 648.000000000000000000
+    Position.Y = 98.000000000000000000
     Size.Width = 128.000000000000000000
     Size.Height = 17.000000000000000000
     Size.PlatformDefault = False
@@ -420,8 +420,8 @@ object MainForm: TMainForm
     TabOrder = 33
   end
   object ExportClientsButton: TButton
-    Position.X = 852.000000000000000000
-    Position.Y = 249.000000000000000000
+    Position.X = 184.000000000000000000
+    Position.Y = 50.000000000000000000
     Size.Width = 169.000000000000000000
     Size.Height = 22.000000000000000000
     Size.PlatformDefault = False
@@ -432,7 +432,19 @@ object MainForm: TMainForm
   end
   object ExportClientsSaveDialog: TSaveDialog
     DefaultExt = 'CSV'
-    Left = 1048
-    Top = 256
+    Left = 744
+    Top = 296
+  end
+  object Label13: TLabel
+    Position.X = 392.000000000000000000
+    Position.Y = 48.000000000000000000
+    Text = 'July 2025 build 3'
+    TabOrder = 40
+  end
+  object StartedAutomaticallyLabel: TLabel
+    Position.X = 308.000000000000000000
+    Position.Y = 110.000000000000000000
+    Text = 'StartedAutomaticallyLabel'
+    TabOrder = 41
   end
 end
