@@ -205,7 +205,7 @@ begin
   i := 0;
   while pptr^[i] <> nil do
   begin
-    Result := StrPas(inet_ntoa(pptr^[i]^));
+    Result := String(StrPas(inet_ntoa(pptr^[i]^)));
     Inc(i);
   end;
   WSACleanup;
@@ -757,7 +757,7 @@ procedure TMainForm.FormDestroy(Sender: TObject);
 var
   theINIFile: TIniFile;
   theINIFileName: String;
-  theEXEFileName: String;
+  // theEXEFileName: String;
 
 begin
   StopEngines;
@@ -850,8 +850,8 @@ end;
 procedure TMainForm.LookForEnginesToCutOffByNodesOrTimeSpentOnAnalysis;
 var
   K: Integer;
-  DebugGetTimeSpentAnalyzing,
-  DebugGetTimeMaximum: Int64;
+  // DebugGetTimeSpentAnalyzing,
+  // DebugGetTimeMaximum: Int64;
 
 begin
   NumberOfEnginesRunningLabel.Text := NumberOfEnginesAnalyzing.ToString + ' Engines analyzing';
@@ -878,9 +878,9 @@ begin
                 end
               else
                 begin
-                  DebugGetTimeSpentAnalyzing := gChessEngineControllers[K].GetTimeSpentAnalyzing;
-                  DebugGetTimeMaximum := Trunc(SecondsCutOffSpinBox.Value);
-                  DebugGetTimeMaximum := DebugGetTimeMaximum * 1000;
+                  // DebugGetTimeSpentAnalyzing := gChessEngineControllers[K].GetTimeSpentAnalyzing;
+                  // DebugGetTimeMaximum := Trunc(SecondsCutOffSpinBox.Value);
+                  // DebugGetTimeMaximum := DebugGetTimeMaximum * 1000;
 
                   if (gChessEngineControllers[K].GetTimeSpentAnalyzing > Trunc(SecondsCutOffSpinBox.Value * 1000))
                     then

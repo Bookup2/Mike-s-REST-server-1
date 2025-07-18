@@ -125,10 +125,10 @@ object MainForm: TMainForm
     OnClick = StopEnginesButtonClick
   end
   object EngineEXEFilenameLabel: TLabel
-    Position.X = 285.000000000000000000
-    Position.Y = 21.000000000000000000
-    Size.Width = 500.000000000000000000
-    Size.Height = 17.000000000000000000
+    Position.X = 329.000000000000000000
+    Position.Y = 13.000000000000000000
+    Size.Width = 499.000000000000000000
+    Size.Height = 37.000000000000000000
     Size.PlatformDefault = False
     TextSettings.Trimming = None
     Text = 'EngineEXEFilenameLabel'
@@ -231,7 +231,7 @@ object MainForm: TMainForm
   object NumberOfTotalRequestsLabel: TLabel
     Position.X = 208.000000000000000000
     Position.Y = 21.000000000000000000
-    Size.Width = 145.000000000000000000
+    Size.Width = 113.000000000000000000
     Size.Height = 17.000000000000000000
     Size.PlatformDefault = False
     TextSettings.Trimming = None

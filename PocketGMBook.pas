@@ -243,7 +243,6 @@ end;
 function TCachedServerReplyBook.CreateDatabase(aFileName: String): Boolean;
 var
   ExpandedFileName: String;
-  theFilePath: String;
   theCurrentMode: String;
 
 begin
@@ -752,9 +751,6 @@ end;
 
 
 function TCachedServerReplyBook.GetFENAfter(var theFEN: String): Boolean;
-var
-  aNextBoardString: String;
-
 begin
   fSQLite3Query.SQL.Text := fSQLSelectFENAfter;
 

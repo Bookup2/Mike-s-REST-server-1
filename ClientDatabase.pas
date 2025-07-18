@@ -181,8 +181,8 @@ end;
 
 
 constructor TClientDatabase.Create;
-var
-  ForTesting: Integer;
+// var
+//   ForTesting: Integer;
 
 begin
   inherited Create;
@@ -195,7 +195,7 @@ begin
   fSQLite3Connection := TFDConnection.Create(nil);
   fSQLite3Connection.OptionsIntf.FormatOptions.StrsTrim := False;
 
-  ForTesting := fSQLite3Connection.Params.Count;
+  // ForTesting := fSQLite3Connection.Params.Count;
 
   fSQLite3Connection.DriverName := 'SQLite';
 
@@ -240,7 +240,7 @@ end;
 function TClientDatabase.CreateDatabase(aFileName: String): Boolean;
 var
   ExpandedFileName: String;
-  theFilePath: String;
+  // theFilePath: String;
   theCurrentMode: String;
 
 begin
@@ -752,9 +752,6 @@ end;
 
 
 function TClientDatabase.GetClientIDAfter(var theClientID: String): Boolean;
-var
-  aNextBoardString: String;
-
 begin
   fSQLite3Query.SQL.Text := fSQLSelectClientIDAfter;
 
