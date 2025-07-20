@@ -143,6 +143,21 @@ implementation
 
 {$R *.fmx}
 
+{
+  password for Windows Server: @63ggQAM
+
+  On the Amazon LightSail Windows Server 2022 instance,
+  run Task Scheduler
+  Select "Task Schedular Library"
+  If the task does not exist, right click and choose Create Task...
+  Name: Run PocketGMServer when Admin logs in
+  Triggers: "At log on" Details "At log on of \Adminstrator"
+  Actions: Start a Program    Details: C:\Users\Administrator\Documents\GitHub\Mike-s-REST-server\Win32\Debug\PocketGMServer.exe
+  Settings:  UNcheck the box for "Stop the task if it runs longer than:"
+
+
+}
+
 uses
 {$IFDEF MSWINDOWS}
   WinApi.Windows, Winapi.ShellApi, Winsock,

@@ -438,7 +438,7 @@ object MainForm: TMainForm
   object Label13: TLabel
     Position.X = 392.000000000000000000
     Position.Y = 48.000000000000000000
-    Text = 'July 2025 build 3'
+    Text = 'July 2025 build 4'
     TabOrder = 40
   end
   object StartedAutomaticallyLabel: TLabel
