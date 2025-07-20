@@ -478,7 +478,8 @@ begin
       if not gChessEngineControllers[K].Connected
         then
           begin
-            ShowMessage('There was a problem connecting with engine ' + K.ToString);
+            // FIXEDIN build 4
+            // ShowMessage('There was a problem connecting with engine ' + K.ToString);
 
             Exit;
           end;

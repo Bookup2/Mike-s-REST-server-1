@@ -149,7 +149,9 @@ begin
           // FIXEDIN build 165
           // Stockfish 15 seems to take too long here on macOS 10.15.7.
           {$IFDEF DEBUG}
-          if not fEngineSentSomething then ShowMessage('The engine failed to reply within twelve seconds.');
+          // These messages can stall the program from restarting.
+          // FIXEDIN build 4
+          // if not fEngineSentSomething then ShowMessage('The engine failed to reply within twelve seconds.');
           {$ENDIF DEBUG}
 
           if gPreferences.ChessEngineSendStartupCommands
@@ -187,8 +189,9 @@ begin
           // fProcessing := False;
         end;
 
-  if not fUCIReady
-    then ShowMessage('The UCI engine is not ready.');
+  // FIXEDIN build 4
+  // if not fUCIReady
+  //   then ShowMessage('The UCI engine is not ready.');
 end;
 
 
