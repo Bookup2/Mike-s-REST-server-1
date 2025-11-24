@@ -14,7 +14,8 @@ type
       Request: TWebRequest; Response: TWebResponse; var Handled: Boolean);
     procedure WebModule1WebActionItem1Action(Sender: TObject;
       Request: TWebRequest; Response: TWebResponse; var Handled: Boolean);
-    procedure WebModuleCreate(Sender: TObject);
+    procedure WebModule1WebActionItem2Action(Sender: TObject;
+      Request: TWebRequest; Response: TWebResponse; var Handled: Boolean);
   private
     { Private declarations }
   public
@@ -110,10 +111,66 @@ end;
 
 
 
-procedure TWebModule1.WebModuleCreate(Sender: TObject);
-begin
-  // Create some engine instances.
+procedure TWebModule1.WebModule1WebActionItem2Action(Sender: TObject;
+  Request: TWebRequest; Response: TWebResponse; var Handled: Boolean);
+var
+  theLine: String;
+  theFields: TStringList;
+  theCount: Integer;
+  theReplyForTheClient,
+  theEmailAddress,
+  theProductKey,
+  theIPAddress: String;
 
+begin
+  if (Request.MethodType <> mtGet)
+    then Exit;
+
+  theLine := Request.Content;
+
+  theFields := TStringList.Create;
+
+  Request.ExtractQueryFields(theFields);
+
+  theCount := theFields.Count;
+
+  theReplyForTheClient := 'ERROR: General Error';
+
+  if (theCount <> 2) then theReplyForTheClient := 'ERROR: Expected 3 fields and got ' + theCount.ToString;
+
+  TThread.Synchronize(TThread.Current,
+    procedure
+    var
+      K: Integer;
+
+    begin
+      // MainForm.RequestsMemo.Lines.Add(Request.Content);
+
+      theCount := theFields.Count;
+
+      if theCount = 3
+        then
+          begin
+            for K := 0 to (theFields.Count -1) do
+            begin
+              theFields.Strings[K] := StringReplace(theFields.Strings[K], '+', ' ', [rfReplaceAll]);
+              // theFields.Strings[K] := TIdURI.URLDecode(theFields.Strings[i], enUtf8);
+
+              // MainForm.RequestsMemo.Lines.Add('theCount is ' + theCount.ToString);
+              // MainForm.RequestsMemo.Lines.Add(theFields.Strings[K]);
+            end;
+
+            theEmailAddress := theFields.Strings[0];
+            theProductKey := theFields.Strings[1];
+            theIPAddress := theFields.Strings[2];
+            MainForm.ProcessRegistrationRequest(theEmailAddress,theProductKey,theIPAddress,theReplyForTheClient);
+           end;
+    end);
+
+  Response.ContentType := 'application/json;charset=utf-8';
+  Response.Content := theReplyForTheClient;
+
+  theFields.Free;
 end;
 
 

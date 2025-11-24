@@ -21,7 +21,6 @@ object MainForm: TMainForm
     Size.PlatformDefault = False
     TabOrder = 0
     Text = 'Start'
-    TextSettings.Trimming = None
     OnClick = ButtonStartClick
   end
   object ButtonStop: TButton
@@ -32,7 +31,6 @@ object MainForm: TMainForm
     Size.PlatformDefault = False
     TabOrder = 1
     Text = 'Stop'
-    TextSettings.Trimming = None
     OnClick = ButtonStopClick
   end
   object EditPort: TEdit
@@ -63,7 +61,6 @@ object MainForm: TMainForm
     Size.PlatformDefault = False
     TabOrder = 4
     Text = 'Open Browser'
-    TextSettings.Trimming = None
     OnClick = ButtonOpenBrowserClick
   end
   object EditLocalIP: TEdit
@@ -79,7 +76,6 @@ object MainForm: TMainForm
   object RequestsMemo: TMemo
     Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
     DataDetectorTypes = []
-    Align = Bottom
     Margins.Left = 10.000000000000000000
     Margins.Right = 10.000000000000000000
     Margins.Bottom = 10.000000000000000000
@@ -89,8 +85,8 @@ object MainForm: TMainForm
     Size.Height = 280.000000000000000000
     Size.PlatformDefault = False
     TabOrder = 8
-    Viewport.Width = 1229.000000000000000000
-    Viewport.Height = 276.000000000000000000
+    Viewport.Width = 1233.000000000000000000
+    Viewport.Height = 280.000000000000000000
   end
   object StartEnginesButton: TButton
     Position.X = 16.000000000000000000
@@ -100,7 +96,6 @@ object MainForm: TMainForm
     Size.PlatformDefault = False
     TabOrder = 10
     Text = 'Start Engines'
-    TextSettings.Trimming = None
     OnClick = StartEnginesButtonClick
   end
   object NumberOfEnginesSpinBox: TSpinBox
@@ -121,7 +116,6 @@ object MainForm: TMainForm
     Size.PlatformDefault = False
     TabOrder = 9
     Text = 'Stop Engines'
-    TextSettings.Trimming = None
     OnClick = StopEnginesButtonClick
   end
   object EngineEXEFilenameLabel: TLabel
@@ -136,7 +130,7 @@ object MainForm: TMainForm
     object UseLogFileCheckBox: TCheckBox
       Position.X = 435.000000000000000000
       Position.Y = -251.000000000000000000
-      TabOrder = 4
+      TabOrder = 3
       Text = 'Use Log File'
     end
     object LogFileNameLabel: TLabel
@@ -147,7 +141,7 @@ object MainForm: TMainForm
       Size.PlatformDefault = False
       TextSettings.Trimming = None
       Text = 'LogFileNameLabel'
-      TabOrder = 5
+      TabOrder = 4
     end
   end
   object NodeCountCutOffSpinBox: TSpinBox
@@ -201,7 +195,6 @@ object MainForm: TMainForm
     Position.Y = 68.000000000000000000
     TabOrder = 22
     Text = 'Log File'
-    TextSettings.Trimming = None
     OnClick = LogFileButtonClick
   end
   object EngineStatusStringGrid: TStringGrid
@@ -210,13 +203,13 @@ object MainForm: TMainForm
     Position.X = 13.000000000000000000
     Position.Y = 223.000000000000000000
     Size.Width = 1229.000000000000000000
-    Size.Height = 130.000000000000000000
+    Size.Height = 106.000000000000000000
     Size.PlatformDefault = False
     TabOrder = 23
     RowCount = 10
     Options = [Editing, ColumnResize, ColumnMove, ColLines, RowLines, Tabs, AutoDisplacement]
-    Viewport.Width = 1225.000000000000000000
-    Viewport.Height = 126.000000000000000000
+    Viewport.Width = 1229.000000000000000000
+    Viewport.Height = 106.000000000000000000
   end
   object NumberOfEnginesRunningLabel: TLabel
     Position.X = 200.000000000000000000
@@ -229,11 +222,12 @@ object MainForm: TMainForm
     TabOrder = 25
   end
   object NumberOfTotalRequestsLabel: TLabel
-    Position.X = 208.000000000000000000
-    Position.Y = 21.000000000000000000
-    Size.Width = 113.000000000000000000
+    Position.X = 184.000000000000000000
+    Position.Y = 25.000000000000000000
+    Size.Width = 137.000000000000000000
     Size.Height = 17.000000000000000000
     Size.PlatformDefault = False
+    TextSettings.WordWrap = False
     TextSettings.Trimming = None
     Text = '0 Requests'
     TabOrder = 26
@@ -283,7 +277,7 @@ object MainForm: TMainForm
         Size.Width = 201.000000000000000000
         Size.Height = 19.000000000000000000
         Size.PlatformDefault = False
-        TabOrder = 4
+        TabOrder = 3
         Text = 'Allow CacheUpdates'
       end
     end
@@ -427,7 +421,6 @@ object MainForm: TMainForm
     Size.PlatformDefault = False
     TabOrder = 36
     Text = 'Export Clients'
-    TextSettings.Trimming = None
     OnClick = ExportClientsButtonClick
   end
   object ExportClientsSaveDialog: TSaveDialog
@@ -436,9 +429,12 @@ object MainForm: TMainForm
     Top = 296
   end
   object Label13: TLabel
-    Position.X = 392.000000000000000000
-    Position.Y = 48.000000000000000000
-    Text = 'July 2025 build 4'
+    Position.X = 376.000000000000000000
+    Position.Y = 55.000000000000000000
+    Size.Width = 177.000000000000000000
+    Size.Height = 17.000000000000000000
+    Size.PlatformDefault = False
+    Text = 'Nov 2025 build 4'
     TabOrder = 40
   end
   object StartedAutomaticallyLabel: TLabel
@@ -446,5 +442,15 @@ object MainForm: TMainForm
     Position.Y = 110.000000000000000000
     Text = 'StartedAutomaticallyLabel'
     TabOrder = 41
+  end
+  object Button1: TButton
+    Position.X = 16.000000000000000000
+    Position.Y = 176.000000000000000000
+    Size.Width = 169.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 45
+    Text = 'COW Registrations'
+    OnClick = Button1Click
   end
 end

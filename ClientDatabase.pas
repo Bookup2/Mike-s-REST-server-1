@@ -51,7 +51,7 @@ const
 
   // kASCIICharZero = 48;
   kASCIICharExclamationMark = 33;
-  kSQLitePocketGMCacheDatabaseExtension = 'DB';   //  Clients
+  // kSQLitePocketGMCacheDatabaseExtension = 'DB';   //  Clients
 
   kSQLTableDataVersion = 'tDataVersion';
   kSQLTableClients = 'tClients';

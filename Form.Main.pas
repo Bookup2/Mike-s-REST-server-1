@@ -16,7 +16,8 @@ uses
   Globals,
 
   PocketGMBook,
-  ClientDatabase;
+  ClientDatabase,
+  RegistrationDatabase;
 
 
 type
@@ -67,6 +68,7 @@ type
     ExportClientsSaveDialog: TSaveDialog;
     Label13: TLabel;
     StartedAutomaticallyLabel: TLabel;
+    Button1: TButton;
     procedure FormCreate(Sender: TObject);
     procedure ButtonStartClick(Sender: TObject);
     procedure ButtonStopClick(Sender: TObject);
@@ -77,6 +79,7 @@ type
     procedure EngineCutoffTimerTimer(Sender: TObject);
     procedure LogFileButtonClick(Sender: TObject);
     procedure ExportClientsButtonClick(Sender: TObject);
+    procedure Button1Click(Sender: TObject);
 
   private
 
@@ -90,6 +93,9 @@ type
     fCacheRejections: Integer;
     fCacheBook: TCachedServerReplyBook;
     fCacheFileName: String;
+
+    fRegistrationDatabaseFileName: String;
+    fRegistrationDatabase: TRegistrationDatabase;
 
     fClientDatabaseFileName: String;
     fClientDatabase: TClientDatabase;
@@ -134,6 +140,11 @@ type
     procedure AnalyzeThisPositionForClient(theFEN: String;
                                            theClientID: String;
                                            var theReplyForTheClient: String);
+
+    procedure ProcessRegistrationRequest(theEmailAddress: String;
+                                         theProductKey: String;
+                                         theIPAddress: String;
+                                         var theReplyForTheClient: String);
   end;
 
 var
@@ -162,20 +173,27 @@ uses
 {$IFDEF MSWINDOWS}
   WinApi.Windows, Winapi.ShellApi, Winsock,
 {$ENDIF}
+  Form.CowRegistrations,
   System.Generics.Collections;
 
 
 const
 
+  kCOWRegistrationDatabaseFolder = 'COW Registration Database';
   kINIFileName = 'ServerSettings.INI';
   kINIEngineFilenameTag = 'EngineEXEFile';
   kINICacheFileNameTag = 'CacheFileName';  // /Cache Database/PocketGMCacheBook.PGC
   kINIStartUpAutomatically = 'StartUpAutomatically';
   kININumberOfEngines = 'NumberOfEngines';
   kINICientDatabaseFileNameTag = 'ClientDatabaseFilename';
+  kINIRegistrationDatabaseFileNameTag = 'RegistrationDatabaseFilename';
   // kMaximumChessEngines = 10;
   kRESTEngineServerBusy = '#ServerBusy';
   kRESTEngineServerStartedThinking = '#StartedThinking';
+  kRESTRegistrationServerValid = '#Valid';
+  kRESTRegistrationServerNotValidTimeExceeded = '#NotValidTimeExceeded';
+  kRESTRegistrationServerNotValidRefused = '#NotValidTimeRefused';
+  kRESTRegistrationServerNotValidStillWaitingForApproval = '#NotValidStillWaitingForApproval';
   kPocketGMCacheBookFileName = 'PocketGMCacheBook.PGC';
   kFolderCache = 'Cache Database';
 
@@ -225,6 +243,18 @@ begin
   end;
   WSACleanup;
 end;
+
+
+procedure TMainForm.ProcessRegistrationRequest(theEmailAddress: String;
+                                         theProductKey: String;
+                                         theIPAddress: String;
+                                         var theReplyForTheClient: String);
+begin
+  theReplyForTheClient := kRESTRegistrationServerNotValidStillWaitingForApproval;
+
+
+end;
+
 
 
 procedure TMainForm.AnalyzeThisPositionForClient(theFEN: String; theClientID: String;
@@ -514,6 +544,13 @@ end;
 
 
 
+procedure TMainForm.Button1Click(Sender: TObject);
+begin
+  COWRegistrationWindow.Show;
+end;
+
+
+
 procedure TMainForm.ButtonOpenBrowserClick(Sender: TObject);
 {$IFDEF MSWINDOWS}
 var
@@ -719,7 +756,8 @@ begin
 
   NumberOfEnginesSpinBox.value := fNumberOfEngines;
 
-  fClientDatabaseFileName := theINIFile.ReadString('ProgramPreferences', kINICientDatabaseFileNameTag, 'ClientDatabase.db');
+  fClientDatabaseFileName       := theINIFile.ReadString('ProgramPreferences', kINICientDatabaseFileNameTag, 'ClientDatabase.db');
+  fRegistrationDatabaseFileName := theINIFile.ReadString('ProgramPreferences', kINIRegistrationDatabaseFileNameTag, 'RegistrationDatabase.db');
 
   theINIFile.Free;
 
@@ -729,7 +767,9 @@ begin
   // CacheFolder := IncludeTrailingPathDelimiter(System.IOUtils.TPath.Combine(ExtractFilePath(ParamStr(0)), kFolderCache));
   // CacheFileName := System.IOUtils.TPath.Combine(CacheFolder, kPocketGMCacheBookFileName);
 
+
   fClientDatabase := TClientDatabase.Create;
+
   theFolder := TPath.Combine(TPath.GetDocumentsPath, 'Client Database');
 
   ForceDirectories(theFolder);
@@ -740,6 +780,20 @@ begin
     then fClientDatabase.CreateDatabase(fClientDatabaseFileName);
 
   fClientDatabase.OpenDatabase(fClientDatabaseFileName);
+
+
+  fRegistrationDatabase := TRegistrationDatabase.Create;
+
+  theFolder := TPath.Combine(TPath.GetDocumentsPath, kCOWRegistrationDatabaseFolder);
+
+  ForceDirectories(theFolder);
+
+  fRegistrationDatabaseFileName := TPath.Combine(theFolder, fRegistrationDatabaseFileName);
+
+  if not FileExists(fRegistrationDatabaseFileName)
+    then fRegistrationDatabase.CreateDatabase(fRegistrationDatabaseFileName);
+
+  fRegistrationDatabase.OpenDatabase(fRegistrationDatabaseFileName);
 
   if not FileExists(fCacheFileName)
     then
@@ -804,6 +858,9 @@ begin
   fClientDatabase.CloseDatabase;
   fClientDatabase.Free;
 
+  fRegistrationDatabase.CloseDatabase;
+  fRegistrationDatabase.Free;
+
   theINIFileName := TPath.Combine(ExtractFilePath(ParamStr(0)), kINIFileName);
 
   theINIFile := TIniFile.Create(theINIFileName);
@@ -821,6 +878,8 @@ begin
   // fClientDatabaseFileName := theINIFile.ReadString('ProgramPreferences', kINICientDatabaseFileNameTag, 'ClientDatabase.db');
 
   theINIFile.Free;
+
+  fServer.Free;
 end;
 
 
@@ -1029,7 +1088,8 @@ begin
         Exit;
       end;
 
-  if (theNodeCount > (NodeCountCutOffSpinBox.Value * 1000000))
+  if (theNodeCount > (NodeCountCutOffSpinBox
+  .Value * 1000000))
     then
       begin
         RequestsMemo.Lines.Add('Cache rejected analysis - not enough nodes');

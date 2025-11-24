@@ -184,8 +184,8 @@ end;
 
 
 constructor TCachedServerReplyBook.Create;
-var
-  ForTesting: Integer;
+// var
+  // ForTesting: Integer;
 
 begin
   inherited Create;
@@ -198,7 +198,7 @@ begin
   fSQLite3Connection := TFDConnection.Create(nil);
   fSQLite3Connection.OptionsIntf.FormatOptions.StrsTrim := False;
 
-  ForTesting := fSQLite3Connection.Params.Count;
+  // ForTesting := fSQLite3Connection.Params.Count;
 
   fSQLite3Connection.DriverName := 'SQLite';
 
