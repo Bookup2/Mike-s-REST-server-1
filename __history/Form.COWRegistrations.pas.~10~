@@ -1,0 +1,94 @@
+unit Form.COWRegistrations;
+
+interface
+
+uses
+  System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants,
+  FMX.Types, FMX.Controls, FMX.Forms, FMX.Graphics, FMX.Dialogs,
+  FMX.Controls.Presentation, FMX.StdCtrls, FMX.Menus;
+
+type
+  TCOWRegistrationWindow = class(TForm)
+    DatabaseFileNameLabel: TLabel;
+    PopupMenu1: TPopupMenu;
+    MenuItem1: TMenuItem;
+    ExportRegistrationsSaveDialog: TSaveDialog;
+    procedure FormActivate(Sender: TObject);
+    procedure MenuItem1Click(Sender: TObject);
+  private
+    { Private declarations }
+    procedure ExportRegistrations;
+
+  public
+    { Public declarations }
+  end;
+
+var
+  COWRegistrationWindow: TCOWRegistrationWindow;
+
+implementation
+
+{$R *.fmx}
+
+uses Form.Main;
+
+procedure TCOWRegistrationWindow.FormActivate(Sender: TObject);
+begin
+  DatabaseFileNameLabel.Text := MainForm.fRegistrationDatabaseFileName;
+end;
+
+
+
+procedure TCOWRegistrationWindow.MenuItem1Click(Sender: TObject);
+begin
+  ExportRegistrations;
+end;
+
+
+
+procedure TCOWRegistrationWindow.ExportRegistrations;
+var
+  theExportFile: TextFile;
+  theEmailAddress: String;
+
+begin
+  if not ExportRegistrationsSaveDialog.Execute then Exit;
+
+  AssignFile(theExportFile, ExportRegistrationsSaveDialog.FileName);
+
+  try
+
+    try
+
+      Rewrite(theExportFile);
+
+      if not fClientDatabase.GetFirstClientID(theEmailAddress)
+        then
+          begin
+            CloseFile(theExportFile);
+            Exit;
+          end;
+
+      repeat
+
+        fClientDatabase.FillInEverything(theEmailAddress, theTime, theNumberOfAccesses);
+
+        WriteLn(theExportFile, theClientID + ',' + theTime + ',' + theNumberOfAccesses.ToString);
+
+      until not fClientDatabase.GetClientIDAfter(theClientID);
+
+    except
+
+      ShowMessage('Error writing to file: ' + ExportClientsSaveDialog.FileName);
+    end;
+
+  finally
+
+    CloseFile(thExportFile);
+
+  end;
+
+end;
+
+
+end.

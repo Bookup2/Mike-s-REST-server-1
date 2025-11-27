@@ -12,10 +12,23 @@ object COWRegistrationWindow: TCOWRegistrationWindow
   object DatabaseFileNameLabel: TLabel
     Position.X = 24.000000000000000000
     Position.Y = 8.000000000000000000
-    Size.Width = 801.000000000000000000
+    Size.Width = 1057.000000000000000000
     Size.Height = 17.000000000000000000
     Size.PlatformDefault = False
     Text = 'DatabaseFileNameLabel'
     TabOrder = 0
+  end
+  object ExportRegistrationsSaveDialog: TSaveDialog
+    DefaultExt = 'CSV'
+    Left = 88
+    Top = 64
+  end
+  object PopupMenu1: TPopupMenu
+    Left = 24
+    Top = 40
+    object MenuItem1: TMenuItem
+      Text = 'Export Registrations...'
+      OnClick = MenuItem1Click
+    end
   end
 end

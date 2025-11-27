@@ -94,9 +94,6 @@ type
     fCacheBook: TCachedServerReplyBook;
     fCacheFileName: String;
 
-    fRegistrationDatabaseFileName: String;
-    fRegistrationDatabase: TRegistrationDatabase;
-
     fClientDatabaseFileName: String;
     fClientDatabase: TClientDatabase;
 
@@ -135,6 +132,9 @@ type
 
   public
 
+    fRegistrationDatabaseFileName: String;
+    fRegistrationDatabase: TRegistrationDatabase;
+
     function ServerStatusForBrowser: String;
 
     procedure AnalyzeThisPositionForClient(theFEN: String;
@@ -145,6 +145,7 @@ type
                                          theProductKey: String;
                                          theIPAddress: String;
                                          var theReplyForTheClient: String);
+
   end;
 
 var
@@ -179,6 +180,7 @@ uses
 
 const
 
+  kClientDatabaseFolder = 'Client Database';
   kCOWRegistrationDatabaseFolder = 'COW Registration Database';
   kINIFileName = 'ServerSettings.INI';
   kINIEngineFilenameTag = 'EngineEXEFile';
@@ -461,7 +463,7 @@ end;
 function TMainForm.ServerStatusForBrowser: String;
 begin
     // FIXEDIN build 3
-  Result := 'PocketGMServer build 3 July 2025 <br>' +
+  Result := 'PocketGMServer build 4 November 2025 <br>' +
             'Number of engines running = ' + gNumberOfEnginesRunning.ToString + '<br>' +
             'Number of engines analyzing = ' + NumberOfEnginesAnalyzing.ToString + '<br>' +
             'Number of requests served = ' + AddCommasTo(fNumberOfRequestsServed.ToString);
@@ -546,6 +548,16 @@ end;
 
 procedure TMainForm.Button1Click(Sender: TObject);
 begin
+  if not Assigned(fClientDatabase)
+    then
+      begin
+        ShowMessage('Database not open.');
+        Exit;
+      end;
+
+
+  // COWRegistrationWindow.DatabaseFileNameLabel.Text := fRegistrationDatabaseFileName;
+
   COWRegistrationWindow.Show;
 end;
 
@@ -756,6 +768,7 @@ begin
 
   NumberOfEnginesSpinBox.value := fNumberOfEngines;
 
+
   fClientDatabaseFileName       := theINIFile.ReadString('ProgramPreferences', kINICientDatabaseFileNameTag, 'ClientDatabase.db');
   fRegistrationDatabaseFileName := theINIFile.ReadString('ProgramPreferences', kINIRegistrationDatabaseFileNameTag, 'RegistrationDatabase.db');
 
@@ -770,7 +783,7 @@ begin
 
   fClientDatabase := TClientDatabase.Create;
 
-  theFolder := TPath.Combine(TPath.GetDocumentsPath, 'Client Database');
+  theFolder := TPath.Combine(TPath.GetDocumentsPath, kClientDatabaseFolder);
 
   ForceDirectories(theFolder);
 
