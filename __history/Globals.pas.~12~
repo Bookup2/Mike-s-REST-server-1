@@ -1,0 +1,805 @@
+unit Globals;
+
+interface
+
+uses
+  System.UITypes,    // TAlphaColorRec
+  System.IOUtils,    // TPath.GetDocumentsPath
+  // System.SyncObjs,
+  FMX.Forms,         // TApplication
+  FMX.Dialogs,       // ShowMessage()
+
+  {$IFDEF MACOS}
+  Macapi.Foundation,  // for GetBuildNumberMacintosh   FIXEDIN build 192
+  Macapi.Helpers,
+  {$ENDIF}
+
+  {$IFDEF MSWINDOWS}
+  WinTypes, WinProcs,
+  ShellAPI,  // ShellExecute()
+  {$ENDIF}
+
+  SysUtils, Classes,
+
+  ChessEngineController,
+  // ChessEngineControllerUCIForWindows,
+
+  RegistrationDatabase,
+
+  DiagramTypes,
+  gTypes;
+
+  {$IFDEF MACOS}
+type
+
+  osxNSBundle = class           // FIXEDIN build 192
+  private
+    class function MainBundle: NSBundle;
+  public
+    class function BundlePath: string;
+    class function BundleVersionStr: string;
+    class procedure BundleVersion(var aMajor,aMinor,aBuild: integer);
+  end;
+  {$ENDIF MACOS}
+
+const
+  kMaximumChessEngines = 10;
+
+    { Global variables }
+var
+  // gCriticalSection: System.SyncObjs.TCriticalSection;
+
+  gProgramBuildNumber,
+  gURLUpdateDownload,
+  gPreferencesFileName,
+  gProgramPreferencesINIFileName,
+  gUpdateURL: String;           // FIXEDIN build 192
+
+  gRegistrationDatabaseFileName: String;
+  gRegistrationDatabase: TRegistrationDatabase;
+
+  {$IFDEF OSX}
+  gPermissionToUseMicrophoneGrantedOnOSX: Boolean;     // FIXEDIN build 148
+  {$ENDIF}
+
+  gLoadingLichessLastGameTaskStatus: TLoadingLichessLastGameTaskStatus;
+  gFoleyFunctionLichessTaskStatus: TFoleyFunctionLichessGameTaskStatus;   // FIXEDIN build 130
+  gFoleyFunctionLichessTaskErrorMessage: String;   // FIXEDIN build 131
+
+  gProgramSettingsPath: String;
+
+  gNumberOfChessEngineDataThreadExecutes: LongInt;
+
+  gPreferences: TProgramPreferencesRecord;
+
+  gCompiledWithDebugging: Boolean;
+  gDebugging: Boolean;
+
+  gProgrammerMode: Boolean;
+
+  gLanguage: Word;
+
+  gProgramIsRegistered: Boolean;
+  gProductKey: String;
+
+  // gChessEngineController: TChessEngineController;   // a singleton
+  // gChessEngineControllerREST: TChessEngineController;   // a singleton    FIXEDIN build 197
+
+  gNumberOfEnginesRunning: Integer;
+  gChessEngineControllers: Array[1..kMaximumChessEngines] of TChessEngineController;
+
+  gAppIsClosing: Boolean;
+
+  // procedure OpenHelpURLDEPRACATED(theURL: String);      // FIXEDIN build 158
+
+
+implementation
+
+{
+uses
+  Utils;
+}
+
+
+{$IFDEF MSWINDOWS}
+function GetBuildNumberWindows: string;      // FIXEDIN build 192
+var
+  FileName: string;
+  Size, Dummy: DWORD;
+  Buffer: TBytes;
+  VersionInfo: Pointer;
+  VersionValue: PVSFixedFileInfo;
+begin
+  // Get the application's file name
+  FileName := ParamStr(0);
+
+  // Get the size of the version information
+  Size := GetFileVersionInfoSize(PChar(FileName), Dummy);
+  if Size = 0 then
+    Exit('');
+
+  // Allocate memory for the version information
+  SetLength(Buffer, Size);
+
+  // Retrieve the version information
+  if not GetFileVersionInfo(PChar(FileName), 0, Size, @Buffer[0]) then
+    Exit('');
+
+  // Retrieve the product version value
+  if not VerQueryValue(@Buffer[0], '\', VersionInfo, Size) then
+    Exit('');
+
+  // Convert the version information to a usable format
+  VersionValue := VersionInfo;
+  Result := IntToStr(VersionValue.dwFileVersionLS and $FFFF);
+end;
+{$ENDIF MSWINDOWS}
+
+
+
+
+procedure SetPreferencesToDefaults;
+var
+  K: Integer;
+begin
+    // The purpose of this procedure is to set some decent defaults
+    // for a program startup with no PREFS record in the registry.  That way the windows
+    // and their splitters will have something to work with before
+    // the main window is up and switches to better defaults.
+
+    // DO NOT CALL THIS PROCEDURE from the regular program!
+    // This procedure does not have access to things that
+    // TxxxxxxMainForm.SwitchPreferencesToDefault() has.
+
+  with gPreferences do
+    begin
+        // FIXEDIN build 124
+      LichessWhiteRepertoire := '';
+      LichessBlackRepertoire := '';
+      LichessPGNFile := '';
+      LichessAddGamesToPGNFile := False;
+      LichessHandle := '';
+
+      ShowICCMessageDuringStartup := True;
+      ShowInstallSampleEbooksMessageDuringStartup := True;   // FIXEDIN build 140
+      ShowMissingInstallerSettingsMessage := True;
+
+      UseECOMasterDescriptions := True;
+
+      ShowInterbookTranspositions := True;
+
+      DebugBeepForOvercalls := True;
+
+      LogChessEngine := False;
+
+      // Use3DInBookWindow := False;
+      // Use3DInGameWindow := False;
+
+      // RootDataFolder := ShortString(TPath.GetDocumentsPath + TPath.DirectorySeparatorChar + kFolderNameRootData);
+      RootDataFolder := TPath.GetDocumentsPath + TPath.DirectorySeparatorChar + kFolderNameRootData;    // FIXEDIN build 124
+
+      {
+      if (Length(RootDataFolder) < 5)
+        then ShowMessage('TPath.GetDocumentsPath() returned a path that is too short.');
+      }
+
+      // NalimovFolder   := '';
+        // FIXEDIN build 127
+      BookFolder            := RootDataFolder + TPath.DirectorySeparatorChar + kFolderNameEbook;
+      GameMasterTreeFolder  := RootDataFolder + TPath.DirectorySeparatorChar + kFolderNameGameMasterTree;
+      TemporaryFolder       := RootDataFolder + TPath.DirectorySeparatorChar + kFolderNameTemporary;
+      PGNFolder             := RootDataFolder + TPath.DirectorySeparatorChar + kFolderNameGame;
+      EPDFolder             := RootDataFolder + TPath.DirectorySeparatorChar + kFolderNameAnalysis;
+
+      SoundIsOn := True;
+
+      WantsRealTimeBacksolving := False;
+      WantsBackSolveInformationDisplayed := True;
+      WantsBreadcrumbsDisplayed := True;
+      WantsFloatingHintsDisplayed := True;
+      WantsEngineAnalysisWindowOpen := True;
+
+      AskForPromotionPiece := True;
+
+      WantsNumericAssessmentsBackSolved := True;
+      WantsInformantRatesBackSolved := True;
+      WantsAccumulationsBackSolved := True;
+
+      GameMasterTreeFileName := kGameMasterTreeFileName;
+      ECOMasterFileName := kECOMasterFileName;
+
+        { Set to the default drive and directory. }
+      {
+      ASCIIFileName := 'EXPORT.TXT';
+      ASCIIAppendOrErase := kAppend;
+      ASCIIFileExtension := 'TXT';
+      }
+
+      PGNExportFileName := 'EXPORT.PGN';
+
+      PGNExportAppendOrErase := kAppend;
+      PGNExportExportComments := True;
+      PGNExportEvent := '';
+      PGNExportSite := '';
+      PGNExportDateYear := '';
+      PGNExportDateMonth := '';
+      PGNExportDateDay := '';
+      PGNExportRound := '';
+      PGNExportWhite := '';
+      PGNExportBlack := '';
+      PGNExportGameResult := kGameResultUnknown;
+      PGNExportECO := '';
+
+
+        { Set to the default drive and directory. }
+      EPDFileName := 'POSITION.EPD';
+
+      EPDAppendOrErase := kAppend;
+      EPDAllLeaf := kEPDAll;
+
+      EPDReplaceExistingNumericAssessments := True;
+      EPDReplaceExistingPVCommentLines := True;
+      EPDPositiveCEFavorsWhite := False;
+      EPDExportBlankCEsOnly := False;
+
+      EPDBatchExportAppendOrErase := kAppend;
+      EPDBatchExportStartExportFrom := kStartEPDExportFromCurrentPosition;
+      EPDBatchExportExportOnlyLeafNodes := False;
+      EPDBatchExportExportNamedPositions := False;
+      EPDBatchExportDoNotExportPositionsWithNumericAssessments := False;
+      EPDBatchExportBeyondMoveNumber := 0;
+
+      // SelectPositionsFileName := 'Set-1';
+      SelectPositionsSetName := 'Set-1';
+      SelectPositionsAppendOrErase := kAppend;
+      SelectPositionsStartFrom := kSelectPositionsFromStartingPosition;
+      SelectPositionsSideToMove := kSelectOnlyWhiteToMove;
+      SelectPositionsIgnoreLeafNodes := True;
+      SelectPositionsSelectNamedPositions := False;
+      SelectPositionsBeyondMove := 0;
+      SelectPositionsUpToMove := 999;
+
+      SpeedLearningTimeBeforeArrow := 5;
+      SpeedLearningTimeAfterArrow := 5;
+      SpeedLearningTimeBetweenDiagrams := 5;
+
+      SpeedLearningSideToMoveAtBottom := True;
+      SpeedLearningLoop := True;  // fixedin COW build 40
+
+      SpeedTestingSideToMoveAtBottom := True;
+      SpeedTestingLoop := True;  
+
+        { Set to blank.  The program will not use }
+        { these paths if they are blank. }
+      Analyst1Path := '';
+      Analyst2Path := '';
+
+      VariationBeginsWithMoveNumber := 1;
+
+      ExportComments := kExportCommentsSeparately;
+      ExportMoves := kExportMovesParagraph;
+      ExportMoveNumbers := kExportMoveNumbersBoth;
+      ExportStartWithWhiteMove := True;
+      ExportStartAtMoveNumber := 1;
+      ExportStopAtMoveNumber := kMaximumPlies div 2;
+      ExportNumberOfTabsLeftofMoves := 0;
+      ExportNumberofReturnsAfterMoves := 2;
+      ExportNumberOfTabsLeftOfDiagram := 0;
+      ExportNumberOfReturnsAfterDiagram := 2;
+      ExportWantsFramesOnDiagrams := True;
+      ExportDiagramPrefixTagText := '';
+      ExportDiagramPostfixTagText := '';
+      ExportMovesPrefixTagText := '';
+      ExportMovesPostfixTagText := '';
+      ExportCommentsPrefixTagText := '';
+      ExportCommentsPostfixTagText := '';
+
+      ImportNumberOfPlies := kMaximumPlies;
+      ImportRecordGamesUsingFirstHeaderLine := True;
+      ImportPutGameHeaderInLastPositionComment := True;
+      ImportSuppressDuplicateCommentLines := True;
+
+      ImportBookAddNamedPositions := True;
+      ImportBookIgnoreRedColorCode := False;
+      ImportBookIgnoreYellowColorCode := False;
+      ImportBookIgnoreGreenColorCode := False;
+      ImportBookMaximumPlyDepth := 500;
+
+      PGNRecordGamesUsingPlayerNames := True;
+
+      NumberOfSecondsToAnimate := 1;
+      AfterAnimatingGame := kAfterAnimatingGameStop;
+
+      PromotionPiece := 6;  // kWhiteQueen;
+
+      IndicateCaptures := True;
+      IndicateChecks := True;
+      UseFigurines := False;
+      UseFigurinesForAnalysisSheets := False;
+
+      FigurineKingNumber := 190;
+      FigurineQueenNumber := 189;
+      FigurineRookNumber := 188;
+      FigurineBishopNumber := 186;
+      FigurineKnightNumber := 187;
+      FigurinePawnNumber := 185;
+
+      KingLetter := 'K'; // LocalizedString (kDlgStrKingLetter)[1];
+      QueenLetter := 'Q'; // LocalizedString (kDlgStrQueenLetter)[1];
+      RookLetter := 'R'; // LocalizedString (kDlgStrRookLetter)[1];
+      BishopLetter := 'B'; // LocalizedString (kDlgStrBishopLetter)[1];
+      KnightLetter := 'N'; // LocalizedString (kDlgStrKnightLetter)[1];
+      PawnLetter := 'P'; // LocalizedString (kDlgStrPawnLetter)[1];
+      WhiteLetter := 'W'; // LocalizedString (kDlgStrWhiteLetter)[1];
+      BlackLetter := 'B'; // LocalizedString (kDlgStrBlackLetter)[1];
+
+      // SlidingPieceSpeed := 900;
+      SortCandidatesBy := kSortCandidatesNotAtAll;
+      FavorUnclearOverEquality := False;
+      BacksolveNamedPositions := True;
+      BacksolveIgnoreUnassessedLeafNodes := False;
+      StartSolvingFrom := kStartBackSolveFromStartingPosition;
+
+      TrainingMode := kSequentialCoverage;                           
+
+      TrainingRandomComputerPlays := kTrainingComputerPlaysBlack;    
+      TrainingRandomComputerMustPlayTopCandidate := False;           
+      TrainingRandomHumanMustPlayTopCandidate := False;              
+      TrainingRandomShowNotInTheBookMessage := True;                 
+      TrainingRandomShowNoMoreCandidatesMessage := True;             
+      TrainingRandomHideInformation := True;                         
+      TrainingRandomRewindTo := kTrainingRewindToStartingPosition;   
+
+      TrainingRandomCoverageComputerPlays := kTrainingComputerPlaysBlack;    
+      TrainingRandomCoverageComputerMustPlayTopCandidate := False;           
+      TrainingRandomCoverageHumanMustPlayTopCandidate := False;
+      TrainingRandomCoverageShowNotInTheBookMessage := True;                 
+      TrainingRandomCoverageShowNoMoreCandidatesMessage := True;             
+      TrainingRandomCoverageShowTrainingCompleteMessage := True;             
+      TrainingRandomCoverageHideInformation := True;
+      TrainingRandomCoverageRewindTo := kTrainingRewindToStartingPosition;   
+      TrainingRandomCoverageHowManyInARowToComplete := 3;
+      TrainingRandomCoverageFirstTimeCredit := 3;           
+
+      TrainingSequentialCoverageComputerPlays := kTrainingComputerPlaysBlack;    
+      TrainingSequentialCoverageComputerMustPlayTopCandidate := False;           
+      TrainingSequentialCoverageHumanMustPlayTopCandidate := False;              
+      TrainingSequentialCoverageShowNotInTheBookMessage := True;                 
+      TrainingSequentialCoverageShowNoMoreCandidatesMessage := True;             
+      TrainingSequentialCoverageShowTrainingCompleteMessage := True;             
+      TrainingSequentialCoverageHideInformation := True;                         
+      TrainingSequentialCoverageRewindTo := kTrainingRewindToStartingPosition;
+      TrainingSequentialCoverageHowManyInARowToComplete := 3;
+      TrainingSequentialCoverageFirstTimeCredit := 3;            
+
+      // CommentFont.Color := TAlphaColorRec.Black;  // legacy clBlack;
+      CommentFont.Name := 'Times New Roman';
+      CommentFont.Size := 12;
+      CommentFont.Style := [];   // [fsBold]
+
+      // CandidateFont.Color := TAlphaColorRec.Black;  // legacy clBlack;
+      CandidateFont.Name := 'Times New Roman';
+      CandidateFont.Size := 50;
+      CandidateFont.Style := [];
+
+      // CandidateAreaHeight := 188;
+
+      // DiagramFont.Color := TAlphaColorRec.Black;  // legacy clBlack;
+      DiagramFont.Name := 'Chess Merida';
+      DiagramFont.Size := 20;
+      DiagramFont.Style := [];
+
+      DiagramFontKind := kFontMeridaSingleAlgebraicBorder;
+
+      DiagramPrintHorizontalOffset := 0;
+      DiagramPrintVerticalOffset := 0;
+
+      // AnalysisSheetFont.Color := TAlphaColorRec.Black;  // legacy clBlack;
+      AnalysisSheetFont.Name := 'Times New Roman';
+      AnalysisSheetFont.Size := 32;
+      AnalysisSheetFont.Style := [];
+
+      PastMovesFontSize := 28;
+
+      {$IFDEF MSWINDOWS}
+        { Assume the Crafty engine is wherever the app was launched from. }
+      // ChessEngineWinboardFileName := ExtractFilePath(Application.EXEName);   legacy
+      // ChessEngineWinboardFileName := ShortString(ExtractFilePath(Application.GetNamePath));
+      ChessEngineWinboardFileName := ExtractFilePath(Application.GetNamePath);      // FIXEDIN build 127
+        { Add a trailing backslash if necessary. }
+      if (ChessEngineWinboardFileName > '')     // FIXEDIN build 127
+        then
+          begin
+            if (ChessEngineWinboardFileName[Length(ChessEngineWinboardFileName)] <> '\')
+              then ChessEngineWinboardFileName := ChessEngineWinboardFileName + '\';
+          end;
+
+      ChessEngineWinboardFileName := ChessEngineWinboardFileName + kFolderNameEngine + '\crafty.exe';
+
+        // If it wasn't in the app's Engine folder like it used to be then
+        // try the Crafty folder within the Engine folder.
+      if not FileExists(ChessEngineWinboardFileName)  // FIXEDIN build 128
+        then
+          begin
+            // ChessEngineWinboardFileName := ShortString(ExtractFilePath(Application.GetNamePath));   // legacy was EXEName
+            ChessEngineWinboardFileName := ExtractFilePath(Application.GetNamePath);   // FIXEDIN build 127
+              // Add a trailing backslash if necessary.
+            if (ChessEngineWinboardFileName > '')   // FIXEDIN build 127
+              then
+                begin
+                  if (ChessEngineWinboardFileName[Length(ChessEngineWinboardFileName)] <> '\')
+                    then ChessEngineWinboardFileName := ChessEngineWinboardFileName + '\';
+                end;
+
+            ChessEngineWinboardFileName := ChessEngineWinboardFileName + kFolderNameEngine + '\Crafty\crafty.exe';
+          end;
+      {$ENDIF}
+      {$IFNDEF MSWINDOWS}
+      ChessEngineWinboardFileName := '';
+      {$ENDIF}
+
+      ChessEngineWinboardConnectionType := kChessEngineConnectViaDDE;
+
+      // ChessEngineKind := kChessEngineWinboard;
+      ChessEngineKind := kChessEngineUCI;
+
+      {$IFDEF MSWINDOWS}
+        // For MSWINDOWS assume the engine is in a folder named after the engine in the
+        // Engine folder where the app was launched from. }
+      // ChessEngineUCIFileName := ShortString(ExtractFilePath(ParamStr(0)));  // This call ends with a PathDelim
+      ChessEngineUCIFileName := ExtractFilePath(ParamStr(0));  // This call ends with a PathDelim   FIXEDIN build 127
+
+      // ChessEngineUCIFileName := ChessEngineUCIFileName + kFolderNameEngine + '\Ruffian\ruffian.exe';
+      // ChessEngineUCIFileName := ChessEngineUCIFileName + kFolderNameEngine + '\Stockfish\stockfish-171-32-ja.exe';
+      gPreferences.ChessEngineUCIFileName := ChessEngineUCIFileName + kFolderNameEngine + '\Houdini\Houdini_15a_w32.exe';
+      {$ENDIF}
+
+      {$IFDEF MACOS}
+      ChessEngineUCIFileName := ExtractFilePath(ParamStr(0));
+        { Add a trailing backslash if necessary. }
+      if (ChessEngineUCIFileName[Length(ChessEngineUCIFileName)] <> PathDelim)
+        then ChessEngineUCIFileName := ChessEngineUCIFileName + PathDelim;  { '/' }
+
+      ChessEngineUCIFileName := Copy(ChessEngineUCIFileName,
+                                     1,
+                                Pos('.app/Contents/', ChessEngineUCIFileName) + Length('.app/Contents/') - 1);
+
+      ChessEngineUCIFileName := ChessEngineUCIFileName + 'Resources/Engines/Stockfish/stockfish-5-64';
+      ChessEngineNicknameUCI := 'Stockfish 5-64';
+      {$ENDIF}
+
+      ChessEngineSendStartupCommands := True;
+
+      WinboardChessEngineStartupCommands [1] := 'xboard';
+      WinboardChessEngineStartupCommands [2] := 'new';
+      WinboardChessEngineStartupCommands [3] := 'noise 25000';
+      WinboardChessEngineStartupCommands [4] := 'log off';
+
+      for K := 5 to kMaximumWinboardStartupCommands do
+        WinboardChessEngineStartupCommands[K] := '';
+
+      UCIChessEngineStartupCommands [1] := 'uci';
+      // UCIChessEngineStartupCommands [2] := '';
+      // UCIChessEngineStartupCommands [3] := '';
+      // UCIChessEngineStartupCommands [4] := '';
+
+      for K := 2 to kMaximumUCIStartupCommands do
+        UCIChessEngineStartupCommands[K] := '';
+
+      ChessEngineNicknameWinboard := 'Crafty';
+      ChessEngineNicknameUCI := 'Stockfish 1.8';
+
+      ChessEngineAppendNodeCount := True;
+      // WinboardChessEngineAppendNodeCount := False;
+      // UCIChessEngineAppendNodeCount := False;
+
+      ChessEngineEPDMinimumNodesInMillions := 100;
+      ChessEngineEPDMinimumTime := 60;
+      ChessEngineEPDMinimumDepth := 32;
+
+      DrawEngineMoveArrow := True;                 // FIXEDIN build 140
+
+      InformantRateScoreForWins := 200;       // was 133 FIXEDIN build 140
+      InformantRateScoreForClearAd := 110;    // FIXEDIN build 140
+      InformantRateScoreForSlightAd := 78;    // FIXEDIN build 140
+
+      LanguageOffset := kLanguageEnglish;
+
+      // DiagramSize := 0; // kDiagramSize1;
+
+      UCIEngineWindowLeft := 371;
+      UCIEngineWindowTop := 129;
+      UCIEngineWindowWidth := 285;
+      UCIEngineWindowHeight := 176;
+
+      WinboardEngineWindowLeft := 391;
+      WinboardEngineWindowTop := 149;
+      WinboardEngineWindowWidth := 285;
+      WinboardEngineWindowHeight := 174;
+
+      AnalysisBankWindowLeft := 307;
+      AnalysisBankWindowTop := 296;
+      AnalysisBankWindowWidth := 306;
+      AnalysisBankWindowHeight := 157;
+
+      AnalysisBankColumnZeroWidth := 70;
+      AnalysisBankColumnOneWidth := 45;
+      // AnalysisBankSplitterPosition := 139;
+      AnalysisBankHideWhenNoMatch := False;
+
+      // MainWindowState := wsNormal;
+      MainWindowLeft := 3;
+      MainWindowTop := 2;
+      MainWindowWidth := 543;
+      MainWindowHeight := 311;
+
+      // GameListWindowState := wsNormal;
+      GameListWindowLeft := 7;
+      GameListWindowTop := 30;
+      GameListWindowWidth := 611;
+      GameListWindowHeight := 280;
+
+      for K := 0 to kGameListWindowNumberOfColumns - 1 do
+        GameListWindowColumnWidthArray[K] := 0;     // the window knows the defaults
+
+      // GameWindowState := wsNormal;
+      GameWindowLeft := 20;
+      GameWindowTop := 20;
+      GameWindowWidth := 806;
+      GameWindowHeight := 547;
+
+        // Game window, left side
+      GameWindowLeftPanelWidth := 400;
+      GameWindowEnginePanelHeight := 111;
+      GameWindowEngineRightPanelWidth := 200;
+
+        // Game window, right side
+      GameWindowCommandsPanelHeight := 46;
+      GameWindowHeaderMemoHeight := 89;
+      GameWindowPastMovesPanelHeight := 122;
+      GameWindowCandidatePanelHeight := 100;
+
+      SortGameMasterTreeCandidatesBy := kSortMCCandidatesByNumberOfGames;
+
+      NoveltyHighlightColors.Green := False;
+      NoveltyHighlightColors.Yellow := True;
+      NoveltyHighlightColors.Red := False;
+
+      JoyOfChessDatabaseFileName := RootDataFolder + kFolderNameAnalysis + '\' + kJoyOfChessMainFileName;
+
+      ShowWelcomeMessage := True;
+      UserName := '';
+
+      FENImportNamingInstruction := kFENImportCreateSequentialNames;
+      FENImportStartingSequentialName := 'Puzzle';
+      FENImportStartingSequentialNumber := 1;
+      FENImportDoNotOverwriteExistingNames := True;
+
+      NoveltyFinderWhiteWinsHighNOLONGERUSED := 9999;
+      NoveltyFinderWhiteWinsLow := 100;
+
+      NoveltyFinderWhiteClearAdHighNOLONGERUSED := 150;
+      NoveltyFinderWhiteClearAdLow := 50;
+
+      NoveltyFinderWhiteSlightAdHighNOLONGERUSED := 100;
+      NoveltyFinderWhiteSlightAdLow := 0;
+
+      NoveltyFinderEqualHigh := 50;
+      NoveltyFinderEqualLow := -50;
+
+      NoveltyFinderUnclearHigh := 50;
+      NoveltyFinderUnclearLow := -50;
+
+      NoveltyFinderWithCompensationHigh := 50;
+      NoveltyFinderWithCompensationLow := -50;
+
+      NoveltyFinderLoopHigh := 0;
+      NoveltyFinderLoopLow := 0;
+
+      NoveltyFinderBlackWinsHighNOLONGERUSED := -100;
+      NoveltyFinderBlackWinsLow := -9999;
+
+      NoveltyFinderBlackClearAdHighNOLONGERUSED := -50;
+      NoveltyFinderBlackClearAdLow := -150;
+
+      NoveltyFinderBlackSlightAdHighNOLONGERUSED := 0;
+      NoveltyFinderBlackSlightAdLow := -100;
+
+      NoveltyFinderStartingSequentialName := 'Novelty';
+      NoveltyFinderStartingSequentialNumber := 1;
+      NoveltyFinderDoNotOverwriteExistingNames := True;
+      NoveltyFinderMaximumNovelties := 100;
+
+      NoveltyFinderBasedOn := kNoveltyFinderBasedOnEitherSymbol;
+      NoveltyFinderLeafNodesOnly := False;
+
+      LeafNodeFinderOnlyWithoutAssessment := False;
+      LeafNodeFinderOnlyWithoutInformantRate := False;
+      LeafNodeFinderStartingSequentialName := 'Leaf Node';
+      LeafNodeFinderStartingSequentialNumber := 1;
+      LeafNodeFinderDoNotOverwriteExistingNames := True;
+      LeafNodeFinderMaximumPositions := 100;
+
+      ShowMissingInstallerSettingsMessage := False;  // Set to True in the main program's proc.
+
+      SentinelValue := kSentinelValue;
+    end;
+end;
+
+
+
+    // From https://synaptica.info/it/2014/03/27/execute-or-open-a-file-with-delphi-on-all-platforms/
+procedure OpenURLorFile(URL: string; const DisplayError: Boolean = False);  // was function : Boolean;    FIXEDIN build 192
+{$IFDEF MSWINDOWS}
+begin
+  ShellExecute(0, 'OPEN', PChar(URL), '', '', SW_SHOWNORMAL);
+end;
+
+
+{$ELSE}
+{$IFDEF ANDROID}
+var
+  Intent: JIntent;
+  idMimeTable: TIdMimeTable;
+begin
+// There may be an issue with the geo: prefix and URLEncode.
+// will need to research
+  if URl.toLower.StartsWith('http://') then
+    Begin
+      Intent := TJIntent.JavaClass.init(TJIntent.JavaClass.ACTION_VIEW,
+      TJnet_Uri.JavaClass.parse(StringToJString(TIdURI.URLEncode(URL))));
+    End
+  Else
+    Begin
+     try
+       idMimeTable := TidMimeTable.Create;
+       Intent := TJIntent.Create;
+       Intent.setAction(TJIntent.JavaClass.ACTION_VIEW);
+       if not url.ToLower.StartsWith('file://') then
+         url := 'file://' + url;
+       Intent.setDataAndType(StrToJURI(Url),  StringToJString(idMimeTable.GetFileMIMEType(Url)));
+
+     Finally
+       try idMimeTable.Free; except end;
+     End;
+
+
+    End;
+  try
+    SharedActivity.startActivity(Intent);
+    exit(true);
+  except
+    on e: Exception do
+    begin
+      if DisplayError then ShowMessage('Error: ' + e.Message);
+      exit(false);
+    end;
+  end;
+end;
+{$ELSE}
+{$IFDEF IOS}
+var
+  NSU: NSUrl;
+begin
+  // iOS doesn't like spaces, so URL encode is important.
+  NSU := StrToNSUrl(TIdURI.URLEncode(URL));
+  if SharedApplication.canOpenURL(NSU) then
+    exit(SharedApplication.openUrl(NSU))
+  else
+  begin
+    if DisplayError then
+      ShowMessage('Error: Opening "' + URL + '" not supported.');
+    exit(false);
+  end;
+end;
+{$ELSE}
+begin
+  raise Exception.Create('Not supported!');
+end;
+{$ENDIF IOS}
+{$ENDIF ANDROID}
+{$ENDIF WINDOWS}
+
+
+
+{
+procedure OpenHelpURLDEPRACATED(theURL: String);
+begin
+  OpenURLOrFile(kURLHelpPrefix + theURL, True);    // FIXEDIN build 158
+end;
+}
+
+
+{$IFDEF MACOS}
+function GetBuildNumberMacintosh: string;       // FIXEDIN build 192
+var
+  aMajor, aMinor, aBuild: Integer;
+
+begin
+  osxNSBundle.BundleVersion(aMajor,aMinor,aBuild);
+
+  GetBuildNumberMacintosh := aBuild.ToString;
+end;
+
+
+
+class function osxNSBundle.MainBundle: NSBundle;
+begin
+  result := TNSBundle.Wrap(TNSBundle.OCClass.mainBundle);
+end;
+
+
+
+class function osxNSBundle.BundlePath: string;
+begin
+  result := NSStrToStr(MainBundle.bundlePath);
+end;
+
+
+
+class function osxNSBundle.BundleVersionStr: string;
+begin
+  Result := NSStrToStr(TNSString.Wrap(MainBundle.objectForInfoDictionaryKey(StrToNSStr('CFBundleVersion'))));
+end;
+
+
+
+class procedure osxNSBundle.BundleVersion(var aMajor,aMinor,aBuild: integer);
+var lStrArray: TArray<string>;
+i: Integer;
+begin
+  aMajor := 0; aMinor := 0; aBuild := 0;
+  lStrArray := BundleVersionStr.Split(['.']);
+  if Length(lStrArray)>=3 then
+  begin
+    aMajor := lStrArray[0].ToInteger;
+    aMinor := lStrArray[1].ToInteger;
+    aBuild := lStrArray[2].ToInteger;
+  end;
+end;
+{$ENDIF MACOS}
+
+
+
+begin
+  {$IFDEF MSWINDOWS}
+  gProgramBuildNumber := GetBuildNumberWindows;      // FIXEDIN build 192
+  {$ENDIF}
+
+  {$IFDEF MACOS}
+  gProgramBuildNumber := GetBuildNumberMacintosh;      // FIXEDIN build 192
+  {$ENDIF}
+
+  {$IFDEF OSX}
+  gPermissionToUseMicrophoneGrantedOnOSX := False;  // FIXEDIN build 148
+  {$ENDIF}
+
+  gRegistrationDatabase := nil;
+
+  gLoadingLichessLastGameTaskStatus := kLoadingLichessLastGameTaskStatusIdle;   // FIXEDIN build 124
+
+  gProgramSettingsPath := '';
+
+  gProgrammerMode := False;
+
+  gAppIsClosing := False;
+
+  // gCriticalSection := nil;
+  gNumberOfChessEngineDataThreadExecutes := 0;
+
+  gLanguage := kLanguageEnglish;   { default }
+
+  {$IFDEF DEBUG}
+  gCompiledWithDebugging := True;
+  {$ELSE}
+  gCompiledWithDebugging := False;
+  {$ENDIF DEBUG}
+
+  gProgramIsRegistered := True;  // ***************
+  gProductKey := '(no key)';
+
+  // gChessEngineController := nil;
+  // gChessEngineControllerREST := nil;    // FIXEDIN build 197
+
+  SetPreferencesToDefaults;
+end.

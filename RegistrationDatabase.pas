@@ -35,6 +35,8 @@ uses
 
   Data.db,  // ftBlob?
 
+  DateUtils,  // IncDay()
+
   // gTypes,
   Utils;
 
@@ -43,8 +45,9 @@ const
 
   kRegistrationStatusUnknown = 'U';
   kRegistrationStatusGood = 'G';
+  kRegistrationStatusBad = 'B';
   kRegistrationStatusExpiring = 'E';
-  kRegistrationStatusExpired = 'X';
+  // kRegistrationStatusExpired = 'X';
 
   kCarriageReturn = #13;
 
@@ -67,6 +70,7 @@ const
   kSQLFieldIPAddresses = 'fIPAddresses';
   kSQLFieldFirstName = 'ffirst_name';
   kSQLFieldLastName = 'flast_name';
+  kSQLFieldProductKey = 'fproduct_key';
   kSQLFieldExpirationDate = 'fExpirationDate';   // TDateTime double
 
   kSQLFieldCountResult = 'fcount_result';
@@ -84,7 +88,8 @@ const
                                   kSQLFieldLastName                      + ' TEXT, ' +
                                   kSQLFieldRegistrationStatus            + ' CHAR(1), ' +
                                   kSQLFieldIPAddresses                   + ' TEXT, ' +
-                                  kSQLFieldExpirationDate                 + ' DOUBLE)';
+                                  kSQLFieldProductKey                    + ' TEXT, ' +
+                                  kSQLFieldExpirationDate                + ' DOUBLE)';
 
   kSQLCountRegistrations       = 'SELECT COUNT(*) AS ' + kSQLFieldCountResult + ' FROM ' + kSQLTableRegistrations;
 
@@ -99,8 +104,9 @@ const
                            kSQLFieldFirstName                   + ' = :' + kSQLFieldFirstName            + ', ' +
                            kSQLFieldLastName                    + ' = :' + kSQLFieldLastName             + ', ' +
                            kSQLFieldRegistrationStatus          + ' = :' + kSQLFieldRegistrationStatus   + ', ' +
-                           kSQLFieldIPAddresses                 + ' = :' + kSQLFieldIPAddresses          + ' ' +
-                           kSQLFieldExpirationDate               + ' = :' + kSQLFieldExpirationDate        + ' ' +
+                           kSQLFieldIPAddresses                 + ' = :' + kSQLFieldIPAddresses          + ', ' +
+                           kSQLFieldProductKey                  + ' = :' + kSQLFieldProductKey           + ', ' +
+                           kSQLFieldExpirationDate              + ' = :' + kSQLFieldExpirationDate       + ' ' +
                            'WHERE ' + kSQLFieldEmailAddress     + ' = :' + kSQLFieldEmailAddress;
 
   kSQLInsertDataVersion = 'INSERT INTO ' + kSQLTableDataVersion + ' (' +
@@ -112,13 +118,16 @@ const
                            kSQLFieldEmailAddress           + ', ' +
                            kSQLFieldRegistrationStatus     + ', ' +
                            kSQLFieldIPAddresses            + ', ' +
-                           kSQLFieldExpirationDate          + ', ' +
+                           kSQLFieldProductKey             + ', ' +
+                           kSQLFieldExpirationDate         + ', ' +
                            kSQLFieldFirstName              + ', ' +
                            kSQLFieldLastName               + ') ' +
                            'VALUES (' +
                            ':' + kSQLFieldEmailAddress                  + ', ' +
                            ':' + kSQLFieldRegistrationStatus            + ', ' +
                            ':' + kSQLFieldIPAddresses                   + ', ' +
+                           ':' + kSQLFieldProductKey                    + ', ' +
+                           ':' + kSQLFieldExpirationDate                + ', ' +
                            ':' + kSQLFieldFirstName                     + ', ' +
                            ':' + kSQLFieldLastName                      + ')';
 
@@ -131,7 +140,7 @@ const
 type
   // TChessFENKeyString = String[100];
 
-  TRegistrationDatabase = class(TObject)
+  TCOWRegistrationDatabase = class(TObject)
     constructor Create;
 
     destructor Destroy; override;
@@ -154,17 +163,19 @@ type
     function RegistrationExists(const anEmailAddress: String): Boolean;
 
     procedure FillInEverything(anEmailAddress: String;
-                                                 var theIPAddresses: String;
-                                                 var theFirstName: String;
-                                                 var theLastName: String;
-                                                 var theRegistrationStatus: String;
-                                                 var theExpirationDate: TDateTime);
+                               var theIPAddresses: String;
+                               var theFirstName: String;
+                               var theLastName: String;
+                               var theProductKey: String;
+                               var theRegistrationStatus: Char;
+                               var theExpirationDate: TDateTime);
 
     procedure UpdateEverything(theEmailAddress: String;
+                               theIPAddresses: String;
                                theFirstName,
                                theLastName: String;
-                               theIPAddresses: String;
-                               theRegistrationStatus: String;
+                               theProductKey: String;
+                               theRegistrationStatus: Char;
                                theExpirationDate: TDateTime);
 
     function NumberOfRegistrations: LongInt;
@@ -187,12 +198,14 @@ type
     fSQLite3Query: TFDQuery;
   end;
 
+  TCOWType = (kCOWProWin, kCOWProMac, kCOWExpressWin, kCOWExpressMac);
+
 {=============================================================================}
 
 implementation
 
 
-procedure TRegistrationDatabase.CloseDatabase;
+procedure TCOWRegistrationDatabase.CloseDatabase;
 begin
   if fSQLite3Connection.Connected
     then fSQLite3Connection.Connected := False;
@@ -203,7 +216,7 @@ end;
 
 
 
-constructor TRegistrationDatabase.Create;
+constructor TCOWRegistrationDatabase.Create;
 // var
 //   ForTesting: Integer;
 
@@ -232,7 +245,7 @@ end;
 
 
 
-destructor TRegistrationDatabase.Destroy;
+destructor TCOWRegistrationDatabase.Destroy;
 var
   TESTName: String;
 
@@ -260,7 +273,7 @@ end;
 
 
   { This method creates a new database but does not open it. }
-function TRegistrationDatabase.CreateDatabase(aFileName: String): Boolean;
+function TCOWRegistrationDatabase.CreateDatabase(aFileName: String): Boolean;
 var
   ExpandedFileName: String;
   // theFilePath: String;
@@ -355,7 +368,7 @@ end;
 
 
 
-function TRegistrationDatabase.GetPragma(aPragma: String): String;
+function TCOWRegistrationDatabase.GetPragma(aPragma: String): String;
 begin
   fSQLite3Query.SQL.Text := 'PRAGMA ' + aPragma;
   fSQLite3Query.Open;
@@ -364,7 +377,7 @@ end;
 
 
 
-function TRegistrationDatabase.GetDriverName: String;
+function TCOWRegistrationDatabase.GetDriverName: String;
 begin
   Result := 'FireDAC ' + fSQLite3Connection.DriverName;
 end;
@@ -373,7 +386,7 @@ end;
 
   { This method opens a database based on SQLite. }
   // NOTE: The default folder must be set before calling this method.
-procedure TRegistrationDatabase.OpenDatabase(aFileName: String);
+procedure TCOWRegistrationDatabase.OpenDatabase(aFileName: String);
 // var
 //   theCurrentMode: String;
 
@@ -426,7 +439,7 @@ end;
 
 
 
-procedure TRegistrationDatabase.SetDataVersion;
+procedure TCOWRegistrationDatabase.SetDataVersion;
 begin
   fSQLite3Query.SQL.Text := 'PRAGMA user_version=' + IntToStr(kDataVersion) + ';';
   fSQLite3Query.ExecSQL;
@@ -434,7 +447,7 @@ end;
 
 
 
-function TRegistrationDatabase.TableExists(aTablename: String): Boolean;
+function TCOWRegistrationDatabase.TableExists(aTablename: String): Boolean;
 begin
   fSQLite3Query.SQL.Text := 'SELECT count(*) AS ' + kSQLFieldCountResult + ' FROM sqlite_master WHERE type=' + #39 +  'table' + #39 +
                             ' AND name=' + #39 + aTablename + #39;
@@ -463,17 +476,18 @@ end;
 
 
 
-procedure TRegistrationDatabase.UpdateEverything(theEmailAddress: String;
-                                                 theFirstName,
-                                                 theLastName: String;
-                                                 theIPAddresses: String;
-                                                 theRegistrationStatus: String;
-                                                 theExpirationDate: TDateTime);
+procedure TCOWRegistrationDatabase.UpdateEverything(theEmailAddress: String;
+                                                     theIPAddresses: String;
+                                                     theFirstName,
+                                                     theLastName: String;
+                                                     theProductKey: String;
+                                                     theRegistrationStatus: Char;
+                                                     theExpirationDate: TDateTime);
 begin
-  Assert(Length(theEmailAddress) < 5, 'TRegistrationDatabase.UpdateEverything has a short email address.');
-  Assert(Length(theRegistrationStatus) = 1, 'TRegistrationDatabase.UpdateEverything has an incorrect status.');
+  Assert(Length(theEmailAddress) > 7, 'TCOWRegistrationDatabase.UpdateEverything has a short email address.');
+  // Assert(Length(theRegistrationStatus) = 1, 'TCOWRegistrationDatabase.UpdateEverything has an incorrect status.');
 
-  if (Length(theEmailAddress) < 5) then Exit;
+  if (Length(theEmailAddress) <= 7) then Exit;
 
   StringReplace(theEmailAddress, ' ', '', [rfReplaceAll]); // remove all blanks
   theEmailAddress := LowerCase(theEmailAddress);
@@ -484,10 +498,24 @@ begin
         begin
           fSQLite3Query.SQL.Text := kSQLUpdateRegistration;
 
+          {
+            kSQLUpdateRegistration = 'UPDATE ' + kSQLTableRegistrations + ' SET ' +
+                           kSQLFieldFirstName                   + ' = :' + kSQLFieldFirstName            + ', ' +
+                           kSQLFieldLastName                    + ' = :' + kSQLFieldLastName             + ', ' +
+                           kSQLFieldRegistrationStatus          + ' = :' + kSQLFieldRegistrationStatus   + ', ' +
+                           kSQLFieldIPAddresses                 + ' = :' + kSQLFieldIPAddresses          + ', ' +
+                           kSQLFieldProductKey                  + ' = :' + kSQLFieldProductKey           + ', ' +
+                           kSQLFieldExpirationDate              + ' = :' + kSQLFieldExpirationDate       + ' ' +
+                           'WHERE ' + kSQLFieldEmailAddress     + ' = :' + kSQLFieldEmailAddress;
+           }
+
           fSQLite3Query.ParamByName(kSQLFieldEmailAddress).AsString           := theEmailAddress;
           fSQLite3Query.ParamByName(kSQLFieldRegistrationStatus).AsString     := theRegistrationStatus;
           fSQLite3Query.ParamByName(kSQLFieldIPAddresses).AsString            := theIPAddresses;
-          fSQLite3Query.ParamByName(kSQLFieldExpirationDate).AsFloat        := theExpirationDate;
+          fSQLite3Query.ParamByName(kSQLFieldFirstName).AsString              := theFirstName;
+          fSQLite3Query.ParamByName(kSQLFieldLastName).AsString               := theLastName;
+          fSQLite3Query.ParamByName(kSQLFieldProductKey).AsString             := theProductKey;
+          fSQLite3Query.ParamByName(kSQLFieldExpirationDate).AsFloat          := theExpirationDate;
 
           try
 
@@ -511,6 +539,9 @@ begin
           fSQLite3Query.ParamByName(kSQLFieldEmailAddress).AsString           := theEmailAddress;
           fSQLite3Query.ParamByName(kSQLFieldRegistrationStatus).AsString     := theRegistrationStatus;
           fSQLite3Query.ParamByName(kSQLFieldIPAddresses).AsString            := theIPAddresses;
+          fSQLite3Query.ParamByName(kSQLFieldFirstName).AsString              := theFirstName;
+          fSQLite3Query.ParamByName(kSQLFieldLastName).AsString               := theLastName;
+          fSQLite3Query.ParamByName(kSQLFieldProductKey).AsString             := theProductKey;
           fSQLite3Query.ParamByName(kSQLFieldExpirationDate).AsFloat          := theExpirationDate;
 
           try
@@ -545,14 +576,14 @@ end;
 
 
 
-function TRegistrationDatabase.GetFileName: String;
+function TCOWRegistrationDatabase.GetFileName: String;
 begin
   GetFileName := fFileName;
 end;
 
 
 
-function TRegistrationDatabase.RegistrationExists(const anEmailAddress: String): Boolean;
+function TCOWRegistrationDatabase.RegistrationExists(const anEmailAddress: String): Boolean;
 var
   theEmailAddress: String;
 
@@ -591,16 +622,16 @@ end;
 
 
 
-procedure TRegistrationDatabase.FillInEverything(anEmailAddress: String;
-                                                 var theIPAddresses: String;
-                                                 var theFirstName: String;
-                                                 var theLastName: String;
-                                                 var theRegistrationStatus: String;
-                                                 var theExpirationDate: TDateTime);
+procedure TCOWRegistrationDatabase.FillInEverything(anEmailAddress: String;
+                                                     var theIPAddresses: String;
+                                                     var theFirstName: String;
+                                                     var theLastName: String;
+                                                     var theProductKey: String;
+                                                     var theRegistrationStatus: Char;
+                                                     var theExpirationDate: TDateTime);
 var
   theRegistrationExists: Boolean;
   theEmailAddress: String;
-  // theClientIDFromSQLite: String;
 
 begin
   theEmailAddress := anEmailAddress;
@@ -611,7 +642,8 @@ begin
   theRegistrationStatus := kRegistrationStatusUnknown;
   theFirstName := '';
   theLastName := '';
-  theExpirationDate := Now;
+  theProductKey := '';
+  theExpirationDate := IncDay(Now, 10);
 
   fSQLite3Query.SQL.Text := kSQLSelectRegistrationsEverything;
 
@@ -648,7 +680,8 @@ begin
   theIPAddresses := fSQLite3Query.FieldByName(kSQLFieldIPAddresses).AsString;
   theFirstName := fSQLite3Query.FieldByName(kSQLFieldFirstName).AsString;
   theLastName := fSQLite3Query.FieldByName(kSQLFieldLastName).AsString;
-  theRegistrationStatus := fSQLite3Query.FieldByName(kSQLFieldRegistrationStatus).AsString;
+  theProductKey := fSQLite3Query.FieldByName(kSQLFieldProductKey).AsString;
+  theRegistrationStatus := fSQLite3Query.FieldByName(kSQLFieldRegistrationStatus).AsString[1];
   theExpirationDate := fSQLite3Query.FieldByName(kSQLFieldExpirationDate).AsFloat;
 
   fSQLite3Query.Close();
@@ -656,7 +689,7 @@ end;
 
 
 
-function TRegistrationDatabase.GetDataVersion: Integer;
+function TCOWRegistrationDatabase.GetDataVersion: Integer;
 var
   theVersionString: String;
   theVersionNumber, theErrorCode: Integer;
@@ -706,7 +739,7 @@ end;
 
 
 
-function TRegistrationDatabase.NumberOfRegistrations: LongInt;
+function TCOWRegistrationDatabase.NumberOfRegistrations: LongInt;
 begin
   fSQLite3Query.SQL.Text := kSQLCountRegistrations;
 
@@ -714,7 +747,7 @@ begin
     fSQLite3Query.Open();
 
     Assert((fSQLite3Query.RecordCount = 1),
-           'TRegistrationDatabase.NumberOfRegistrations() has an invalid RecordCount of ' + IntToStr(fSQLite3Query.RecordCount));
+           'TCOWRegistrationDatabase.NumberOfRegistrations() has an invalid RecordCount of ' + IntToStr(fSQLite3Query.RecordCount));
 
   except
 
@@ -734,7 +767,7 @@ end;
 
 
 
-function TRegistrationDatabase.GetFirstRegistration(var theEmailAddress: String): Boolean;
+function TCOWRegistrationDatabase.GetFirstRegistration(var theEmailAddress: String): Boolean;
 begin
   fSQLite3Query.SQL.Text := fSQLSelectFirstRegistration;
 
@@ -742,7 +775,7 @@ begin
     fSQLite3Query.Open();
 
     Assert((fSQLite3Query.RecordCount = 0) or (fSQLite3Query.RecordCount = 1),
-           'TRegistrationDatabase.GetFirstRegistration() has an invalid RecordCount of ' + IntToStr(fSQLite3Query.RecordCount));
+           'TCOWRegistrationDatabase.GetFirstRegistration() has an invalid RecordCount of ' + IntToStr(fSQLite3Query.RecordCount));
 
   except
 
@@ -772,7 +805,7 @@ end;
 
 
 
-function TRegistrationDatabase.GetRegistrationAfter(var theEmailAddress: String): Boolean;
+function TCOWRegistrationDatabase.GetRegistrationAfter(var theEmailAddress: String): Boolean;
 begin
   fSQLite3Query.SQL.Text := fSQLSelectRegistrationAfter;
 
@@ -782,7 +815,7 @@ begin
     fSQLite3Query.Open();
 
     Assert((fSQLite3Query.RecordCount = 0) or (fSQLite3Query.RecordCount = 1),
-           'TRegistrationDatabase.GetRegistrationAfter() has an invalid RecordCount of ' + IntToStr(fSQLite3Query.RecordCount));
+           'TCOWRegistrationDatabase.GetRegistrationAfter() has an invalid RecordCount of ' + IntToStr(fSQLite3Query.RecordCount));
 
     if (fSQLite3Query.RecordCount = 0)
       then

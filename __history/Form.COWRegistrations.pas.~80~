@@ -1,0 +1,447 @@
+unit Form.COWRegistrations;
+
+interface
+
+uses
+  System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants,
+  FMX.Types, FMX.Controls, FMX.Forms, FMX.Graphics, FMX.Dialogs,
+  FMX.Controls.Presentation, FMX.StdCtrls, FMX.Menus,
+
+  Globals,
+  Utils, FMX.Memo.Types, FMX.ScrollBox, FMX.Memo, FMX.Edit, FMX.ExtCtrls,
+  FMX.DateTimeCtrls;
+
+type
+  TCOWRegistrationWindow = class(TForm)
+    DatabaseFileNameLabel: TLabel;
+    PopupMenu1: TPopupMenu;
+    MenuItem1: TMenuItem;
+    ExportRegistrationsSaveDialog: TSaveDialog;
+    Label1: TLabel;
+    NumberOfCOWProWinRegistrationsLabel: TLabel;
+    MenuButton: TButton;
+    EmailAddressEdit: TEdit;
+    SearchResultsMemo: TMemo;
+    UpdateButton: TButton;
+    RegistrationStatusPopupBox: TPopupBox;
+    ExpirationDateEdit: TDateEdit;
+    Label2: TLabel;
+    Label3: TLabel;
+    Label4: TLabel;
+    IPAddressesEdit: TEdit;
+    Label5: TLabel;
+    Label6: TLabel;
+    FirstNameEdit: TEdit;
+    LastNameEdit: TEdit;
+    Label7: TLabel;
+    FindButton: TButton;
+    RegistrationTypePopupBox: TPopupBox;
+    NumberOfCOWProMacRegistrationsSign: TLabel;
+    NumberOfCOWProMacRegistrationsLabel: TLabel;
+    NumberOfCOWExpressWinRegistrationsSign: TLabel;
+    NumberOfCOWExpressWinRegistrationsLabel: TLabel;
+    NumberOfCOWExpressMacRegistrationsSign: TLabel;
+    NumberOfCOWExpressMacRegistrationsLabel: TLabel;
+    MenuItem2: TMenuItem;
+    MenuItem3: TMenuItem;
+    Label8: TLabel;
+    ProductKeyEdit: TEdit;
+    procedure FormActivate(Sender: TObject);
+    procedure MenuItem1Click(Sender: TObject);
+    procedure MenuButtonClick(Sender: TObject);
+    procedure UpdateButtonClick(Sender: TObject);
+    procedure FindButtonClick(Sender: TObject);
+    procedure RegistrationTypePopupBoxChange(Sender: TObject);
+    procedure MenuItem2Click(Sender: TObject);
+    procedure MenuItem3Click(Sender: TObject);
+  private
+    { Private declarations }
+    procedure ExportRegistrations;
+    procedure RefreshEverything;
+    procedure SearchForRecords;
+
+  public
+    { Public declarations }
+  end;
+
+var
+  COWRegistrationWindow: TCOWRegistrationWindow;
+
+implementation
+
+{$R *.fmx}
+
+uses Form.Main, RegistrationDatabase;
+
+procedure TCOWRegistrationWindow.FormActivate(Sender: TObject);
+begin
+  case RegistrationTypePopupBox.ItemIndex of
+
+    0: DatabaseFileNameLabel.Text := gCOWProWinRegistrationDatabaseFileName;
+    1: DatabaseFileNameLabel.Text := gCOWProMacRegistrationDatabaseFileName;
+    2: DatabaseFileNameLabel.Text := gCOWExpressWinRegistrationDatabaseFileName;
+    3: DatabaseFileNameLabel.Text := gCOWExpressMacRegistrationDatabaseFileName;
+
+  end;
+
+  RefreshEverything;
+
+  {$IFDEF DEBUG}
+
+  EmailAddressEdiT.Text := 'mikeleahy@bookup.com';
+  IPAddressesEdit.Text := '186.99.99.01';
+  FirstNameEdit.Text := 'Mike';
+  LastNameEdit.Text := 'Leahy';
+
+  {$ENDIF}
+end;
+
+
+
+procedure TCOWRegistrationWindow.MenuItem1Click(Sender: TObject);
+begin
+  ExportRegistrations;
+end;
+
+
+
+procedure TCOWRegistrationWindow.MenuItem2Click(Sender: TObject);
+begin
+  RefreshEverything;
+end;
+
+
+
+procedure TCOWRegistrationWindow.MenuItem3Click(Sender: TObject);
+begin
+  SearchForRecords;
+end;
+
+
+
+procedure TCOWRegistrationWindow.SearchForRecords;
+var
+  theEmailAddress: String;
+  theIPAddresses: String;
+  theFirstName: String;
+  theLastName: String;
+  theProductKey: String;
+  theRegistrationStatus: Char;
+  theExpirationDate: TDateTime;
+  theRegistrationDatabase: TCOWRegistrationDatabase;
+
+begin
+  SearchResultsMemo.Text := '';
+
+  case RegistrationTypePopupBox.ItemIndex of
+
+    0: theRegistrationDatabase := gCOWProWinRegistrationDatabase;
+    1: theRegistrationDatabase := gCOWProMacRegistrationDatabase;
+    2: theRegistrationDatabase := gCOWExpressWinRegistrationDatabase;
+    3: theRegistrationDatabase := gCOWExpressMacRegistrationDatabase;
+
+  end;
+
+    try
+
+      if not theRegistrationDatabase.GetFirstRegistration(theEmailAddress)
+        then
+          begin
+            Exit;
+          end;
+
+      repeat
+
+        theRegistrationDatabase.FillInEverything(theEmailAddress,
+                                                theIPAddresses,
+                                                thefirstName,
+                                                theLastName,
+                                                theProductKey,
+                                                theRegistrationStatus,
+                                                theExpirationDate);
+
+        SearchResultsMemo.lines.Add(theEmailAddress + ',' +
+                                    theIPAddresses + ',' +
+                                    theFirstName + ',' +
+                                    theLastName + ',' +
+                                    theProductKey + ',' +
+                                    theRegistrationStatus + ',' +
+                                    DateTimeToStr(theExpirationDate));
+
+      until not theRegistrationDatabase.GetRegistrationAfter(theEmailAddress);
+
+    except
+
+      ShowMessage('Error while searching ');
+    end;
+end;
+
+
+
+procedure TCOWRegistrationWindow.RegistrationTypePopupBoxChange(
+  Sender: TObject);
+begin
+  case RegistrationTypePopupBox.ItemIndex of
+
+    0: DatabaseFileNameLabel.Text := gCOWProWinRegistrationDatabaseFileName;
+    1: DatabaseFileNameLabel.Text := gCOWProMacRegistrationDatabaseFileName;
+    2: DatabaseFileNameLabel.Text := gCOWExpressWinRegistrationDatabaseFileName;
+    3: DatabaseFileNameLabel.Text := gCOWExpressMacRegistrationDatabaseFileName;
+
+  end;
+end;
+
+
+
+procedure TCOWRegistrationWindow.MenuButtonClick(Sender: TObject);
+begin
+  if not Assigned(gCOWProWinRegistrationDatabase)
+    then
+      begin
+        ShowMessage('gCOWProWinRegistrationDatabase is nil');
+        Exit
+      end;
+
+  PopupMenu1.Popup(Self.Left + MenuButton.Position.X + 5, Self.Top + MenuButton.Position.Y - 5);
+end;
+
+
+
+procedure TCOWRegistrationWindow.RefreshEverything;
+begin
+  if not Assigned(gCOWProWinRegistrationDatabase)
+    then
+      begin
+        ShowMessage('gRegistrationDatabase is nil');
+        Exit
+      end;
+
+  NumberOfCOWProWinRegistrationsLabel.Text     := AddCommasTo(gCOWProWinRegistrationDatabase.NumberOfRegistrations.ToString);
+  NumberOfCOWProMacRegistrationsLabel.Text     := AddCommasTo(gCOWProMacRegistrationDatabase.NumberOfRegistrations.ToString);
+  NumberOfCOWExpressWinRegistrationsLabel.Text := AddCommasTo(gCOWExpressWinRegistrationDatabase.NumberOfRegistrations.ToString);
+  NumberOfCOWExpressMacRegistrationsLabel.Text := AddCommasTo(gCOWExpressMacRegistrationDatabase.NumberOfRegistrations.ToString);
+end;
+
+
+
+procedure TCOWRegistrationWindow.UpdateButtonClick(Sender: TObject);
+var
+  theEmailAddress: String;
+  theIPAddresses: String;
+  theFirstName: String;
+  theLastName: String;
+  theProductKey: String;
+  theRegistrationStatus: Char;
+  theExpirationDate: TDateTime;
+  theRegistrationDatabase: TCOWRegistrationDatabase;
+
+begin
+  if not Assigned(gCOWProWinRegistrationDatabase)
+    then
+      begin
+
+        ShowMessage('Database is not open.');
+        Exit;
+      end;
+
+  if (Length(EmailAddressEdit.Text) < 8)
+    then
+      begin
+        ShowMessage('Email address is too short.');
+        Exit;
+      end;
+
+  case RegistrationTypePopupBox.ItemIndex of
+
+    0: theRegistrationDatabase := gCOWProWinRegistrationDatabase;
+    1: theRegistrationDatabase := gCOWProMacRegistrationDatabase;
+    2: theRegistrationDatabase := gCOWExpressWinRegistrationDatabase;
+    3: theRegistrationDatabase := gCOWExpressMacRegistrationDatabase;
+
+  end;
+
+  theEmailAddress := LowerCase(EmailAddressEdit.Text);
+
+  theIPAddresses := IPAddressesEdit.Text;
+
+  theFirstName := FirstNameEdit.Text;
+  theLastName := LastNameEdit.Text;
+
+  case RegistrationStatusPopupBox.ItemIndex of
+    -1 : theRegistrationStatus := kRegistrationStatusUnknown;
+     0 : theRegistrationStatus := kRegistrationStatusUnknown;
+     1 : theRegistrationStatus := kRegistrationStatusGood;
+     2 : theRegistrationStatus := kRegistrationStatusBad;
+     3 : theRegistrationStatus := kRegistrationStatusExpiring;
+
+    else theRegistrationStatus := kRegistrationStatusUnknown;
+  end;
+
+  theRegistrationDatabase.UpdateEverything(theEmailAddress,
+                                           theIPAddresses,
+                                           theFirstName,
+                                           theLastName,
+                                           theProductKey,
+                                           theRegistrationStatus,
+                                           ExpirationDateEdit.Date);
+end;
+
+
+
+procedure TCOWRegistrationWindow.FindButtonClick(Sender: TObject);
+var
+  theEmailAddress: String;
+  theIPAddresses: String;
+  theFirstName: String;
+  theLastName: String;
+  theProductKey: String;
+  theRegistrationStatus: Char;
+  theExpirationDate: TDateTime;
+  theRegistrationDatabase: TCOWRegistrationDatabase;
+
+begin
+  SearchResultsMemo.Text := '';
+
+  theEmailAddress := LowerCase(EmailAddressEdit.Text);
+
+  case RegistrationTypePopupBox.ItemIndex of
+
+    0: theRegistrationDatabase := gCOWProWinRegistrationDatabase;
+    1: theRegistrationDatabase := gCOWProMacRegistrationDatabase;
+    2: theRegistrationDatabase := gCOWExpressWinRegistrationDatabase;
+    3: theRegistrationDatabase := gCOWExpressMacRegistrationDatabase;
+
+  end;
+
+  if not theRegistrationDatabase.RegistrationExists(theEmailAddress)
+    then
+      begin
+        ShowMessage('Does not exist');
+        Exit;
+      end;
+
+  theRegistrationDatabase.FillInEverything(theEmailAddress,
+                                           theIPAddresses,
+                                           theFirstName,
+                                           theLastName,
+                                           theProductKey,
+                                           theRegistrationStatus,
+                                           theExpirationDate);
+
+  EmailAddressEdit.Text := theEmailAddress;
+  IPAddressesEdit.Text := theIPAddresses;
+  FirstNameEdit.Text := theFirstName;
+  LastNameEdit.Text := theLastName;
+  ProductKeyEdit.Text := theProductKey;
+
+  if theRegistrationStatus = kRegistrationStatusUnknown  then RegistrationStatusPopupBox.ItemIndex := 0;
+  if theRegistrationStatus = kRegistrationStatusGood     then RegistrationStatusPopupBox.ItemIndex := 1;
+  if theRegistrationStatus = kRegistrationStatusBad      then RegistrationStatusPopupBox.ItemIndex := 2;
+  if theRegistrationStatus = kRegistrationStatusExpiring then RegistrationStatusPopupBox.ItemIndex := 3;
+
+  ExpirationDateEdit.Date := theExpirationDate;
+
+  SearchResultsMemo.lines.Add(theEmailAddress + ',' +
+                              theIPAddresses + ',' +
+                              theFirstName + ',' +
+                              theLastName + ',' +
+                              theProductKey + ',' +
+                              theRegistrationStatus + ',' +
+                              DateTimeToStr(theExpirationDate));
+end;
+
+
+
+procedure TCOWRegistrationWindow.ExportRegistrations;
+var
+  theExportFile: TextFile;
+  theEmailAddress: String;
+  theIPAddresses: String;
+  theFirstName: String;
+  theLastName: String;
+  theProductKey: String;
+  theRegistrationStatus: Char;
+  theExpirationDate: TDateTime;
+  theRegistrationDatabase: TCOWRegistrationDatabase;
+
+begin
+  case RegistrationTypePopupBox.ItemIndex of
+
+    0:
+      begin
+        theRegistrationDatabase := gCOWProWinRegistrationDatabase;
+        ExportRegistrationsSaveDialog.FileName := 'COWProWinRegistrations';
+      end;
+
+    1:
+      begin
+        theRegistrationDatabase := gCOWProMacRegistrationDatabase;
+        ExportRegistrationsSaveDialog.FileName := 'COWProMacRegistrations';
+      end;
+
+    2:
+      begin
+        theRegistrationDatabase := gCOWExpressWinRegistrationDatabase;
+        ExportRegistrationsSaveDialog.FileName := 'COWExpressWinRegistrations';
+      end;
+
+    3:
+      begin
+        theRegistrationDatabase := gCOWExpressMacRegistrationDatabase;
+        ExportRegistrationsSaveDialog.FileName := 'COWExpressMacRegistrations';
+      end;
+
+  end;
+
+  if not ExportRegistrationsSaveDialog.Execute then Exit;
+
+  AssignFile(theExportFile, ExportRegistrationsSaveDialog.FileName);
+
+  try
+
+    try
+
+      Rewrite(theExportFile);
+
+      if not theRegistrationDatabase.GetFirstRegistration(theEmailAddress)
+        then
+          begin
+            CloseFile(theExportFile);
+            Exit;
+          end;
+
+      repeat
+
+        theRegistrationDatabase.FillInEverything(theEmailAddress,
+                                                        theIPAddresses,
+                                                        theFirstName,
+                                                        theLastName,
+                                                        theProductKey,
+                                                        theRegistrationStatus,
+                                                        theExpirationDate);
+
+        WriteLn(theExportFile, theEmailAddress + ',' +
+                               theIPAddresses + ',' +
+                               theFirstName + ',' +
+                               theLastName + ',' +
+                               theProductKey + ',' +
+                               theRegistrationStatus + ',' +
+                               DateTimeToStr(theExpirationDate));
+
+      until not theRegistrationDatabase.GetRegistrationAfter(theEmailAddress);
+
+    except
+
+      ShowMessage('Error writing to file: ' + ExportRegistrationsSaveDialog.FileName);
+    end;
+
+  finally
+
+    CloseFile(theExportFile);
+
+  end;
+end;
+
+
+
+end.

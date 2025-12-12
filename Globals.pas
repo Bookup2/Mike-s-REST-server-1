@@ -24,6 +24,8 @@ uses
   ChessEngineController,
   // ChessEngineControllerUCIForWindows,
 
+  RegistrationDatabase,
+
   DiagramTypes,
   gTypes;
 
@@ -52,6 +54,16 @@ var
   gPreferencesFileName,
   gProgramPreferencesINIFileName,
   gUpdateURL: String;           // FIXEDIN build 192
+
+  gCOWProWinRegistrationDatabaseFileName: String;
+  gCOWProWinRegistrationDatabase: TCOWRegistrationDatabase;
+  gCOWProMacRegistrationDatabaseFileName: String;
+  gCOWProMacRegistrationDatabase: TCOWRegistrationDatabase;
+
+  gCOWExpressWinRegistrationDatabaseFileName: String;
+  gCOWExpressWinRegistrationDatabase: TCOWRegistrationDatabase;
+  gCOWExpressMacRegistrationDatabaseFileName: String;
+  gCOWExpressMacRegistrationDatabase: TCOWRegistrationDatabase;
 
   {$IFDEF OSX}
   gPermissionToUseMicrophoneGrantedOnOSX: Boolean;     // FIXEDIN build 148
@@ -768,6 +780,16 @@ begin
   {$IFDEF OSX}
   gPermissionToUseMicrophoneGrantedOnOSX := False;  // FIXEDIN build 148
   {$ENDIF}
+
+  gCOWProWinRegistrationDatabaseFileName := '';
+  gCOWProWinRegistrationDatabase := nil;
+  gCOWProMacRegistrationDatabaseFileName := '';
+  gCOWProMacRegistrationDatabase := nil;
+
+  gCOWExpressWinRegistrationDatabaseFileName := '';
+  gCOWExpressWinRegistrationDatabase := nil;
+  gCOWExpressMacRegistrationDatabaseFileName := '';
+  gCOWExpressMacRegistrationDatabase := nil;
 
   gLoadingLichessLastGameTaskStatus := kLoadingLichessLastGameTaskStatusIdle;   // FIXEDIN build 124
 

@@ -13,6 +13,7 @@ uses
   ChessEngineControllerUCIForWindows,
   ChessEngineDataThread,
 
+  DateUtils,
   Globals,
 
   PocketGMBook,
@@ -132,8 +133,8 @@ type
 
   public
 
-    fRegistrationDatabaseFileName: String;
-    fRegistrationDatabase: TRegistrationDatabase;
+    // fRegistrationDatabaseFileName: String;
+    // fRegistrationDatabase: TRegistrationDatabase;
 
     function ServerStatusForBrowser: String;
 
@@ -141,9 +142,12 @@ type
                                            theClientID: String;
                                            var theReplyForTheClient: String);
 
-    procedure ProcessRegistrationRequest(theEmailAddress: String;
+    procedure ProcessRegistrationRequest(theCOWType: TCOWType;
+                                         theEmailAddress: String;
                                          theProductKey: String;
                                          theIPAddress: String;
+                                         theFirstName: String;
+                                         theLastName: String;
                                          var theReplyForTheClient: String);
 
   end;
@@ -190,12 +194,16 @@ const
   kINICientDatabaseFileNameTag = 'ClientDatabaseFilename';
   kINIRegistrationDatabaseFileNameTag = 'RegistrationDatabaseFilename';
   // kMaximumChessEngines = 10;
+
   kRESTEngineServerBusy = '#ServerBusy';
   kRESTEngineServerStartedThinking = '#StartedThinking';
+
   kRESTRegistrationServerValid = '#Valid';
-  kRESTRegistrationServerNotValidTimeExceeded = '#NotValidTimeExceeded';
-  kRESTRegistrationServerNotValidRefused = '#NotValidTimeRefused';
-  kRESTRegistrationServerNotValidStillWaitingForApproval = '#NotValidStillWaitingForApproval';
+  kRESTRegistrationServerValidExpiring = '#ValidExpiring';
+  kRESTRegistrationServerNotValidExpired = '#NotValidExpired';
+  kRESTRegistrationServerNotValidRefused = '#NotValidRefused';
+  // kRESTRegistrationServerNotValidStillWaitingForApproval = '#NotValidStillWaitingForApproval';
+
   kPocketGMCacheBookFileName = 'PocketGMCacheBook.PGC';
   kFolderCache = 'Cache Database';
 
@@ -247,14 +255,105 @@ begin
 end;
 
 
-procedure TMainForm.ProcessRegistrationRequest(theEmailAddress: String;
-                                         theProductKey: String;
-                                         theIPAddress: String;
-                                         var theReplyForTheClient: String);
+procedure TMainForm.ProcessRegistrationRequest(theCOWType: TCOWType;
+                                               theEmailAddress: String;
+                                               theProductKey: String;
+                                               theIPAddress: String;
+                                               theFirstName: String;
+                                               theLastName: String;
+                                               var theReplyForTheClient: String);
+var
+  theStoredProductKey,
+  theStoredIPAddress,
+  theStoredFirstName,
+  theStoredLastName: String;
+  theStoredRegistrationStatus: Char;
+  theStoredExpirationDate: TDateTime;
+  theExpirationDate: TDateTime;
+  theRegistrationStatus: Char;
+  theRegistrationDatabase: TCOWRegistrationDatabase;
+
 begin
-  theReplyForTheClient := kRESTRegistrationServerNotValidStillWaitingForApproval;
+  theStoredProductKey := '';
+  theStoredIPAddress := '';
+  theStoredFirstName := '';
+  theStoredLastName := '';
+  theStoredRegistrationStatus := kRegistrationStatusUnknown;
+  theStoredExpirationDate := Now;
+  theRegistrationStatus := kRegistrationStatusUnknown;
 
+  theEmailAddress := LowerCase(theEmailAddress);
 
+  case theCOWType of
+
+    kCOWProWin: theRegistrationDatabase := gCOWProWinRegistrationDatabase;
+    kCOWProMac: theRegistrationDatabase := gCOWProMacRegistrationDatabase;
+    kCOWExpressWin: theRegistrationDatabase := gCOWExpressWinRegistrationDatabase;
+    kCOWExpressMac: theRegistrationDatabase := gCOWExpressMacRegistrationDatabase;
+
+  end;
+
+  if theRegistrationDatabase.RegistrationExists(theEmailAddress)
+    then
+      begin
+        theRegistrationDatabase.FillInEverything(theEmailAddress,
+                                                theStoredIPAddress,
+                                                theStoredFirstName,
+                                                theStoredLastName,
+                                                theStoredProductKey,
+                                                theStoredRegistrationStatus,
+                                                theStoredExpirationDate);
+
+          // Prefer the stored name.
+        if (theStoredFirstName > '') then theFirstName := theStoredFirstName;
+        if (theStoredLastName > '') then theLastName := theStoredLastName;
+
+        if (theStoredIPAddress > '')
+          then
+            begin
+                // If the IP address is not in the stored IP address, then add it.
+              if (Pos(theIPAddress, theStoredIPAddress) = 0)
+                then theIPAddress := theIPAddress + ',' + theStoredIPAddress;
+            end;
+
+        if (theStoredProductKey > '')
+          then
+            begin
+                // Prefer the stored product key.
+              theProductKey := theStoredProductKey;
+            end;
+
+        theReplyForTheClient := kRESTRegistrationServerNotValidRefused;
+
+        if (theStoredRegistrationStatus = kRegistrationStatusGood)
+          then theReplyForTheClient := kRESTRegistrationServerValid;
+
+        if (theStoredRegistrationStatus = kRegistrationStatusBad)
+          then theReplyForTheClient := kRESTRegistrationServerNotValidRefused;
+
+        if (theStoredRegistrationStatus = kRegistrationStatusExpiring)
+          then
+            begin
+              if (theStoredExpirationDate < Now)
+                then theReplyForTheClient := kRESTRegistrationServerNotValidExpired
+                else theReplyForTheClient := kRESTRegistrationServerValidExpiring + ' ' + Trunc(theStoredExpirationDate - Now).ToString;
+            end;
+
+        Exit;
+      end;
+
+    // This email does not exist. Set it up to expire in ten days.
+  theExpirationDate := IncDay(Now, 10);
+
+  theRegistrationDatabase.UpdateEverything(theEmailAddress,
+                                           theIPAddress,
+                                           theFirstName,
+                                           theLastName,
+                                           theProductKey,
+                                           kRegistrationStatusExpiring,
+                                           theExpirationDate);
+
+  theReplyForTheClient := kRESTRegistrationServerValidExpiring + ' ' + Trunc(theExpirationDate - Now).ToString;
 end;
 
 
@@ -770,7 +869,10 @@ begin
 
 
   fClientDatabaseFileName       := theINIFile.ReadString('ProgramPreferences', kINICientDatabaseFileNameTag, 'ClientDatabase.db');
-  fRegistrationDatabaseFileName := theINIFile.ReadString('ProgramPreferences', kINIRegistrationDatabaseFileNameTag, 'RegistrationDatabase.db');
+  gCOWProWinRegistrationDatabaseFileName     := theINIFile.ReadString('ProgramPreferences', kINIRegistrationDatabaseFileNameTag, 'COWProWinRegistrationDatabase.db');
+  gCOWProMacRegistrationDatabaseFileName     := theINIFile.ReadString('ProgramPreferences', kINIRegistrationDatabaseFileNameTag, 'COWProMacRegistrationDatabase.db');
+  gCOWExpressWinRegistrationDatabaseFileName := theINIFile.ReadString('ProgramPreferences', kINIRegistrationDatabaseFileNameTag, 'COWExpressWinRegistrationDatabase.db');
+  gCOWExpressMacRegistrationDatabaseFileName := theINIFile.ReadString('ProgramPreferences', kINIRegistrationDatabaseFileNameTag, 'COWExpressMacRegistrationDatabase.db');
 
   theINIFile.Free;
 
@@ -795,18 +897,45 @@ begin
   fClientDatabase.OpenDatabase(fClientDatabaseFileName);
 
 
-  fRegistrationDatabase := TRegistrationDatabase.Create;
-
   theFolder := TPath.Combine(TPath.GetDocumentsPath, kCOWRegistrationDatabaseFolder);
-
   ForceDirectories(theFolder);
 
-  fRegistrationDatabaseFileName := TPath.Combine(theFolder, fRegistrationDatabaseFileName);
 
-  if not FileExists(fRegistrationDatabaseFileName)
-    then fRegistrationDatabase.CreateDatabase(fRegistrationDatabaseFileName);
+  gCOWProWinRegistrationDatabase := TCOWRegistrationDatabase.Create;
+  gCOWProWinRegistrationDatabaseFileName := TPath.Combine(theFolder, gCOWProWinRegistrationDatabaseFileName);
 
-  fRegistrationDatabase.OpenDatabase(fRegistrationDatabaseFileName);
+  if not FileExists(gCOWProWinRegistrationDatabaseFileName)
+    then gCOWProWinRegistrationDatabase.CreateDatabase(gCOWProWinRegistrationDatabaseFileName);
+
+  gCOWProWinRegistrationDatabase.OpenDatabase(gCOWProWinRegistrationDatabaseFileName);
+
+
+  gCOWProMacRegistrationDatabase := TCOWRegistrationDatabase.Create;
+  gCOWProMacRegistrationDatabaseFileName := TPath.Combine(theFolder, gCOWProMacRegistrationDatabaseFileName);
+
+  if not FileExists(gCOWProMacRegistrationDatabaseFileName)
+    then gCOWProMacRegistrationDatabase.CreateDatabase(gCOWProMacRegistrationDatabaseFileName);
+
+  gCOWProMacRegistrationDatabase.OpenDatabase(gCOWProMacRegistrationDatabaseFileName);
+
+
+  gCOWExpressWinRegistrationDatabase := TCOWRegistrationDatabase.Create;
+  gCOWExpressWinRegistrationDatabaseFileName := TPath.Combine(theFolder, gCOWExpressWinRegistrationDatabaseFileName);
+
+  if not FileExists(gCOWExpressWinRegistrationDatabaseFileName)
+    then gCOWExpressWinRegistrationDatabase.CreateDatabase(gCOWExpressWinRegistrationDatabaseFileName);
+
+  gCOWExpressWinRegistrationDatabase.OpenDatabase(gCOWExpressWinRegistrationDatabaseFileName);
+
+
+  gCOWExpressMacRegistrationDatabase := TCOWRegistrationDatabase.Create;
+  gCOWExpressMacRegistrationDatabaseFileName := TPath.Combine(theFolder, gCOWExpressMacRegistrationDatabaseFileName);
+
+  if not FileExists(gCOWExpressMacRegistrationDatabaseFileName)
+    then gCOWExpressMacRegistrationDatabase.CreateDatabase(gCOWExpressMacRegistrationDatabaseFileName);
+
+  gCOWExpressMacRegistrationDatabase.OpenDatabase(gCOWExpressMacRegistrationDatabaseFileName);
+
 
   if not FileExists(fCacheFileName)
     then
@@ -871,8 +1000,14 @@ begin
   fClientDatabase.CloseDatabase;
   fClientDatabase.Free;
 
-  fRegistrationDatabase.CloseDatabase;
-  fRegistrationDatabase.Free;
+  gCOWProWinRegistrationDatabase.CloseDatabase;
+  gCOWProWinRegistrationDatabase.Free;
+  gCOWProMacRegistrationDatabase.CloseDatabase;
+  gCOWProMacRegistrationDatabase.Free;
+  gCOWExpressWinRegistrationDatabase.CloseDatabase;
+  gCOWExpressWinRegistrationDatabase.Free;
+  gCOWExpressMacRegistrationDatabase.CloseDatabase;
+  gCOWExpressMacRegistrationDatabase.Free;
 
   theINIFileName := TPath.Combine(ExtractFilePath(ParamStr(0)), kINIFileName);
 
@@ -1011,6 +1146,7 @@ procedure TMainForm.StartServer;
 begin
   if not FServer.Active then
   begin
+
     FServer.Bindings.Clear;
     FServer.DefaultPort := StrToInt(EditPort.Text);
     FServer.Active := True;
