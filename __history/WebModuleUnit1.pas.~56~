@@ -43,7 +43,6 @@ uses
 procedure TWebModule1.WebModule1DefaultHandlerAction(Sender: TObject;
   Request: TWebRequest; Response: TWebResponse; var Handled: Boolean);
 begin
-
   Response.Content :=
     '<html>' +
     '<head><title>PocketGM Server</title></head>' +

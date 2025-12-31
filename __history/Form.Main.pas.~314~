@@ -13,6 +13,7 @@ uses
   ChessEngineControllerUCIForWindows,
   ChessEngineDataThread,
 
+  DateUtils,
   Globals,
 
   PocketGMBook,
@@ -193,12 +194,16 @@ const
   kINICientDatabaseFileNameTag = 'ClientDatabaseFilename';
   kINIRegistrationDatabaseFileNameTag = 'RegistrationDatabaseFilename';
   // kMaximumChessEngines = 10;
+
   kRESTEngineServerBusy = '#ServerBusy';
   kRESTEngineServerStartedThinking = '#StartedThinking';
+
   kRESTRegistrationServerValid = '#Valid';
-  kRESTRegistrationServerNotValidTimeExceeded = '#NotValidTimeExceeded';
-  kRESTRegistrationServerNotValidRefused = '#NotValidTimeRefused';
-  kRESTRegistrationServerNotValidStillWaitingForApproval = '#NotValidStillWaitingForApproval';
+  kRESTRegistrationServerValidExpiring = '#ValidExpiring';
+  kRESTRegistrationServerNotValidExpired = '#NotValidExpired';
+  kRESTRegistrationServerNotValidRefused = '#NotValidRefused';
+  // kRESTRegistrationServerNotValidStillWaitingForApproval = '#NotValidStillWaitingForApproval';
+
   kPocketGMCacheBookFileName = 'PocketGMCacheBook.PGC';
   kFolderCache = 'Cache Database';
 
@@ -264,6 +269,8 @@ var
   theStoredLastName: String;
   theStoredRegistrationStatus: Char;
   theStoredExpirationDate: TDateTime;
+  theExpirationDate: TDateTime;
+  theRegistrationStatus: Char;
   theRegistrationDatabase: TCOWRegistrationDatabase;
 
 begin
@@ -273,6 +280,7 @@ begin
   theStoredLastName := '';
   theStoredRegistrationStatus := kRegistrationStatusUnknown;
   theStoredExpirationDate := Now;
+  theRegistrationStatus := kRegistrationStatusUnknown;
 
   theEmailAddress := LowerCase(theEmailAddress);
 
@@ -315,20 +323,37 @@ begin
               theProductKey := theStoredProductKey;
             end;
 
+        theReplyForTheClient := kRESTRegistrationServerNotValidRefused;
 
+        if (theStoredRegistrationStatus = kRegistrationStatusGood)
+          then theReplyForTheClient := kRESTRegistrationServerValid;
+
+        if (theStoredRegistrationStatus = kRegistrationStatusBad)
+          then theReplyForTheClient := kRESTRegistrationServerNotValidRefused;
+
+        if (theStoredRegistrationStatus = kRegistrationStatusExpiring)
+          then
+            begin
+              if (theStoredExpirationDate < Now)
+                then theReplyForTheClient := kRESTRegistrationServerNotValidExpired
+                else theReplyForTheClient := kRESTRegistrationServerValidExpiring + ' ' + Trunc(theStoredExpirationDate - Now).ToString;
+            end;
 
         Exit;
       end;
 
+    // This email does not exist. Set it up to expire in ten days.
+  theExpirationDate := IncDay(Now, 10);
+
   theRegistrationDatabase.UpdateEverything(theEmailAddress,
+                                           theIPAddress,
                                            theFirstName,
                                            theLastName,
-                                           theIPAddress,
-                                           )
+                                           theProductKey,
+                                           kRegistrationStatusExpiring,
+                                           theExpirationDate);
 
-  theReplyForTheClient := kRESTRegistrationServerNotValidStillWaitingForApproval;
-
-
+  theReplyForTheClient := kRESTRegistrationServerValidExpiring + ' ' + Trunc(theExpirationDate - Now).ToString;
 end;
 
 

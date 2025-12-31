@@ -35,13 +35,21 @@ object COWRegistrationWindow: TCOWRegistrationWindow
       OnClick = MenuItem2Click
     end
     object MenuItem3: TMenuItem
-      Text = 'Search'
+      Text = 'List All'
       OnClick = MenuItem3Click
+    end
+    object ListBadAndExpiredMenuItem: TMenuItem
+      Text = 'List Bad and Expired'
+      OnClick = ListBadAndExpiredMenuItemClick
+    end
+    object ListExpiringMenuItem: TMenuItem
+      Text = 'List Expiring'
+      OnClick = ListExpiringMenuItemClick
     end
   end
   object Label1: TLabel
-    Position.X = 88.000000000000000000
-    Position.Y = 169.000000000000000000
+    Position.X = 81.000000000000000000
+    Position.Y = 152.000000000000000000
     Size.Width = 89.000000000000000000
     Size.Height = 17.000000000000000000
     Size.PlatformDefault = False
@@ -49,8 +57,8 @@ object COWRegistrationWindow: TCOWRegistrationWindow
     TabOrder = 9
   end
   object NumberOfCOWProWinRegistrationsLabel: TLabel
-    Position.X = 24.000000000000000000
-    Position.Y = 169.000000000000000000
+    Position.X = 17.000000000000000000
+    Position.Y = 152.000000000000000000
     Size.Width = 56.000000000000000000
     Size.Height = 17.000000000000000000
     Size.PlatformDefault = False
@@ -74,7 +82,7 @@ object COWRegistrationWindow: TCOWRegistrationWindow
     Position.X = 159.000000000000000000
     Position.Y = 58.000000000000000000
     Size.Width = 177.000000000000000000
-    Size.Height = 28.000000000000000000
+    Size.Height = 22.000000000000000000
     Size.PlatformDefault = False
     object UpdateButton: TButton
       Position.X = 273.000000000000000000
@@ -83,48 +91,40 @@ object COWRegistrationWindow: TCOWRegistrationWindow
       OnClick = UpdateButtonClick
     end
   end
-  object SearchButton: TButton
-    Position.X = 24.000000000000000000
-    Position.Y = 131.000000000000000000
-    TabOrder = 13
-    Text = 'Show All'
-    OnClick = SearchButtonClick
-  end
   object SearchResultsMemo: TMemo
     Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
     DataDetectorTypes = []
     Align = Bottom
-    Position.Y = 269.000000000000000000
+    Position.Y = 232.000000000000000000
     Size.Width = 1100.000000000000000000
-    Size.Height = 251.000000000000000000
+    Size.Height = 288.000000000000000000
     Size.PlatformDefault = False
-    TabOrder = 14
+    TabOrder = 13
     Viewport.Width = 1096.000000000000000000
-    Viewport.Height = 247.000000000000000000
+    Viewport.Height = 284.000000000000000000
   end
   object RegistrationStatusPopupBox: TPopupBox
     Items.Strings = (
       'Unknown'
       'Good'
       'Bad'
-      'Expiring'
-      'Expired')
+      'Expiring')
     ItemIndex = 0
     Position.X = 536.000000000000000000
     Position.Y = 58.000000000000000000
     Size.Width = 129.000000000000000000
     Size.Height = 22.000000000000000000
     Size.PlatformDefault = False
-    TabOrder = 15
+    TabOrder = 14
   end
   object ExpirationDateEdit: TDateEdit
     Date = 45995.000000000000000000
     Position.X = 673.000000000000000000
     Position.Y = 58.000000000000000000
-    Size.Width = 161.000000000000000000
+    Size.Width = 119.000000000000000000
     Size.Height = 22.000000000000000000
     Size.PlatformDefault = False
-    TabOrder = 16
+    TabOrder = 15
   end
   object Label2: TLabel
     Position.X = 168.000000000000000000
@@ -133,7 +133,7 @@ object COWRegistrationWindow: TCOWRegistrationWindow
     Size.Height = 17.000000000000000000
     Size.PlatformDefault = False
     Text = 'Email Address'
-    TabOrder = 17
+    TabOrder = 16
   end
   object Label3: TLabel
     Position.X = 544.000000000000000000
@@ -142,7 +142,7 @@ object COWRegistrationWindow: TCOWRegistrationWindow
     Size.Height = 16.000000000000000000
     Size.PlatformDefault = False
     Text = 'Status'
-    TabOrder = 18
+    TabOrder = 17
   end
   object Label4: TLabel
     Position.X = 688.000000000000000000
@@ -151,14 +151,14 @@ object COWRegistrationWindow: TCOWRegistrationWindow
     Size.Height = 17.000000000000000000
     Size.PlatformDefault = False
     Text = 'Expires'
-    TabOrder = 19
+    TabOrder = 18
   end
   object IPAddressesEdit: TEdit
     Touch.InteractiveGestures = [LongTap, DoubleTap]
-    TabOrder = 20
-    Position.X = 842.000000000000000000
+    TabOrder = 19
+    Position.X = 816.000000000000000000
     Position.Y = 58.000000000000000000
-    Size.Width = 209.000000000000000000
+    Size.Width = 160.000000000000000000
     Size.Height = 22.000000000000000000
     Size.PlatformDefault = False
   end
@@ -166,23 +166,23 @@ object COWRegistrationWindow: TCOWRegistrationWindow
     Position.X = 856.000000000000000000
     Position.Y = 33.000000000000000000
     Text = 'IP Address'
-    TabOrder = 21
+    TabOrder = 20
   end
   object Label6: TLabel
     Position.X = 48.000000000000000000
-    Position.Y = 104.000000000000000000
+    Position.Y = 127.000000000000000000
     Size.Width = 65.000000000000000000
     Size.Height = 17.000000000000000000
     Size.PlatformDefault = False
     TextSettings.HorzAlign = Trailing
     Text = 'First:'
-    TabOrder = 22
+    TabOrder = 21
   end
   object FirstNameEdit: TEdit
     Touch.InteractiveGestures = [LongTap, DoubleTap]
-    TabOrder = 23
+    TabOrder = 22
     Position.X = 121.000000000000000000
-    Position.Y = 106.000000000000000000
+    Position.Y = 122.000000000000000000
     Size.Width = 184.000000000000000000
     Size.Height = 22.000000000000000000
     Size.PlatformDefault = False
@@ -197,18 +197,18 @@ object COWRegistrationWindow: TCOWRegistrationWindow
   end
   object Label7: TLabel
     Position.X = 320.000000000000000000
-    Position.Y = 106.000000000000000000
+    Position.Y = 127.000000000000000000
     Size.Width = 89.000000000000000000
     Size.Height = 17.000000000000000000
     Size.PlatformDefault = False
     TextSettings.HorzAlign = Trailing
     Text = 'Last:'
-    TabOrder = 24
+    TabOrder = 23
   end
   object FindButton: TButton
     Position.X = 344.000000000000000000
     Position.Y = 58.000000000000000000
-    TabOrder = 25
+    TabOrder = 24
     Text = 'Find'
     OnClick = FindButtonClick
   end
@@ -224,12 +224,12 @@ object COWRegistrationWindow: TCOWRegistrationWindow
     Size.Width = 127.000000000000000000
     Size.Height = 22.000000000000000000
     Size.PlatformDefault = False
-    TabOrder = 28
+    TabOrder = 27
     OnChange = RegistrationTypePopupBoxChange
   end
   object NumberOfCOWProMacRegistrationsSign: TLabel
-    Position.X = 240.000000000000000000
-    Position.Y = 169.000000000000000000
+    Position.X = 233.000000000000000000
+    Position.Y = 152.000000000000000000
     Size.Width = 89.000000000000000000
     Size.Height = 17.000000000000000000
     Size.PlatformDefault = False
@@ -237,8 +237,8 @@ object COWRegistrationWindow: TCOWRegistrationWindow
     TabOrder = 7
   end
   object NumberOfCOWProMacRegistrationsLabel: TLabel
-    Position.X = 176.000000000000000000
-    Position.Y = 169.000000000000000000
+    Position.X = 169.000000000000000000
+    Position.Y = 152.000000000000000000
     Size.Width = 56.000000000000000000
     Size.Height = 17.000000000000000000
     Size.PlatformDefault = False
@@ -247,8 +247,8 @@ object COWRegistrationWindow: TCOWRegistrationWindow
     TabOrder = 8
   end
   object NumberOfCOWExpressWinRegistrationsSign: TLabel
-    Position.X = 384.000000000000000000
-    Position.Y = 169.000000000000000000
+    Position.X = 377.000000000000000000
+    Position.Y = 152.000000000000000000
     Size.Width = 89.000000000000000000
     Size.Height = 17.000000000000000000
     Size.PlatformDefault = False
@@ -256,8 +256,8 @@ object COWRegistrationWindow: TCOWRegistrationWindow
     TabOrder = 5
   end
   object NumberOfCOWExpressWinRegistrationsLabel: TLabel
-    Position.X = 320.000000000000000000
-    Position.Y = 169.000000000000000000
+    Position.X = 313.000000000000000000
+    Position.Y = 152.000000000000000000
     Size.Width = 56.000000000000000000
     Size.Height = 17.000000000000000000
     Size.PlatformDefault = False
@@ -266,8 +266,8 @@ object COWRegistrationWindow: TCOWRegistrationWindow
     TabOrder = 6
   end
   object NumberOfCOWExpressMacRegistrationsSign: TLabel
-    Position.X = 536.000000000000000000
-    Position.Y = 169.000000000000000000
+    Position.X = 529.000000000000000000
+    Position.Y = 152.000000000000000000
     Size.Width = 89.000000000000000000
     Size.Height = 17.000000000000000000
     Size.PlatformDefault = False
@@ -275,13 +275,44 @@ object COWRegistrationWindow: TCOWRegistrationWindow
     TabOrder = 3
   end
   object NumberOfCOWExpressMacRegistrationsLabel: TLabel
-    Position.X = 472.000000000000000000
-    Position.Y = 169.000000000000000000
+    Position.X = 465.000000000000000000
+    Position.Y = 152.000000000000000000
     Size.Width = 56.000000000000000000
     Size.Height = 17.000000000000000000
     Size.PlatformDefault = False
     TextSettings.HorzAlign = Trailing
     Text = '???'
     TabOrder = 4
+  end
+  object Label8: TLabel
+    Position.X = 648.000000000000000000
+    Position.Y = 127.000000000000000000
+    Size.Width = 105.000000000000000000
+    Size.Height = 17.000000000000000000
+    Size.PlatformDefault = False
+    TextSettings.HorzAlign = Trailing
+    Text = 'Product Key:'
+    TabOrder = 28
+  end
+  object ProductKeyEdit: TEdit
+    Touch.InteractiveGestures = [LongTap, DoubleTap]
+    TabOrder = 29
+    Position.X = 761.000000000000000000
+    Position.Y = 122.000000000000000000
+    Size.Width = 215.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+  end
+  object UpdatedSinceCheckbox: TCheckBox
+    Position.X = 24.000000000000000000
+    Position.Y = 88.000000000000000000
+    TabOrder = 32
+    Text = 'Updated since:'
+  end
+  object UpdatedSinceDateEdit: TDateEdit
+    Date = 46022.000000000000000000
+    Position.X = 152.000000000000000000
+    Position.Y = 88.000000000000000000
+    TabOrder = 33
   end
 end

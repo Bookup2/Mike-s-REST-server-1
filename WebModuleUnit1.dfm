@@ -8,14 +8,14 @@ object WebModule1: TWebModule1
     end
     item
       MethodType = mtGet
-      Name = 'WebActionItem1'
-      PathInfo = '/ChessEngine'
+      Name = 'WebActionChessEngine'
+      PathInfo = '/chessengine'
       OnAction = WebModule1WebActionItem1Action
     end
     item
       MethodType = mtGet
-      Name = 'WebActionItem2'
-      PathInfo = '/checkcowproregistration'
+      Name = 'WebActionCheckCOWRegistration'
+      PathInfo = '/checkcowregistration'
       OnAction = WebModule1WebActionItem2Action
     end>
   Height = 230

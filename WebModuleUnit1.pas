@@ -33,6 +33,7 @@ uses
   // System.UITypes,
 
   RegistrationDatabase,
+  Globals,
 
   Form.Main;
 
@@ -43,12 +44,18 @@ uses
 procedure TWebModule1.WebModule1DefaultHandlerAction(Sender: TObject;
   Request: TWebRequest; Response: TWebResponse; var Handled: Boolean);
 begin
+
   Response.Content :=
     '<html>' +
     '<head><title>PocketGM Server</title></head>' +
     '<body>' +
     'Welcome to the Bookup Chess Engine Server for PocketGM.<br><br>' +
-    MainForm.ServerStatusForBrowser +
+    'The time is now ' + DateTimeToStr(Now) + '.<br>' +
+    MainForm.ServerStatusForBrowser + ' <br><br><hr>' +
+    gCOWProWinRegistrationDatabase.NumberOfRegistrations.ToString + ' PW<br>' +
+    gCOWProMacRegistrationDatabase.NumberOfRegistrations.ToString + ' PM<br>' +
+    gCOWExpressWinRegistrationDatabase.NumberOfRegistrations.ToString + ' EW<br>' +
+    gCOWExpressMacRegistrationDatabase.NumberOfRegistrations.ToString + ' EM<br>' +
     '</body>' +
     '</html>';
 end;
@@ -129,8 +136,8 @@ var
   theCOWType: TCOWType;
 
 begin
-  // localhost:80/checkcowproregistration?emailaddress=testemail@bookup.com&productkey=COWPRO-XXXX&IPAddress=186.0.0.1&FirstName=Mike&LastName=Leahy&COWType=PW
-  // localhost:80/checkcowproregistration?testemail@bookup.com&COWPRO-XXXX&186.0.0.1&Mike&Leahy&PW
+  // localhost:80/checkcowregistration?emailaddress=testemail@bookup.com&productkey=COWPRO-XXXX&IPAddress=186.0.0.1&FirstName=Mike&LastName=Leahy&COWType=PW
+  // localhost:80/checkcowregistration?testemail@bookup.com&COWPRO-XXXX&186.0.0.1&Mike&Leahy&PW
 
   if (Request.MethodType <> mtGet)
     then Exit;

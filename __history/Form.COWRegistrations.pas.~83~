@@ -45,7 +45,9 @@ type
     MenuItem2: TMenuItem;
     MenuItem3: TMenuItem;
     Label8: TLabel;
-    Edit1: TEdit;
+    ProductKeyEdit: TEdit;
+    ListBadAndExpiredMenuItem: TMenuItem;
+    ListExpiringMenuItem: TMenuItem;
     procedure FormActivate(Sender: TObject);
     procedure MenuItem1Click(Sender: TObject);
     procedure MenuButtonClick(Sender: TObject);
@@ -54,6 +56,8 @@ type
     procedure RegistrationTypePopupBoxChange(Sender: TObject);
     procedure MenuItem2Click(Sender: TObject);
     procedure MenuItem3Click(Sender: TObject);
+    procedure ListBadAndExpiredMenuItemClick(Sender: TObject);
+    procedure ListExpiringMenuItemClick(Sender: TObject);
   private
     { Private declarations }
     procedure ExportRegistrations;
@@ -119,6 +123,140 @@ end;
 
 
 
+procedure TCOWRegistrationWindow.ListBadAndExpiredMenuItemClick(Sender: TObject);
+var
+  theEmailAddress: String;
+  theIPAddresses: String;
+  theFirstName: String;
+  theLastName: String;
+  theProductKey: String;
+  theRegistrationStatus: Char;
+  theExpirationDate: TDateTime;
+  theRegistrationDatabase: TCOWRegistrationDatabase;
+  theDatabaseNumber: Integer;
+
+begin
+  SearchResultsMemo.Text := '';
+
+  for theDatabaseNumber := 0 to 3 do
+    begin
+
+      case theDatabaseNumber of
+
+        0: theRegistrationDatabase := gCOWProWinRegistrationDatabase;
+        1: theRegistrationDatabase := gCOWProMacRegistrationDatabase;
+        2: theRegistrationDatabase := gCOWExpressWinRegistrationDatabase;
+        3: theRegistrationDatabase := gCOWExpressMacRegistrationDatabase;
+
+      end;
+
+        try
+
+          if not theRegistrationDatabase.GetFirstRegistration(theEmailAddress)
+            then
+              begin
+                Exit;
+              end;
+
+          repeat
+
+            theRegistrationDatabase.FillInEverything(theEmailAddress,
+                                                    theIPAddresses,
+                                                    thefirstName,
+                                                    theLastName,
+                                                    theProductKey,
+                                                    theRegistrationStatus,
+                                                    theExpirationDate);
+
+            if (theRegistrationStatus = kRegistrationStatusBad) or (theExpirationDate < Now) then
+
+            SearchResultsMemo.lines.Add(theEmailAddress + ',' +
+                                        theIPAddresses + ',' +
+                                        theFirstName + ',' +
+                                        theLastName + ',' +
+                                        theProductKey + ',' +
+                                        theRegistrationStatus + ',' +
+                                        DateTimeToStr(theExpirationDate));
+
+          until not theRegistrationDatabase.GetRegistrationAfter(theEmailAddress);
+
+        except
+
+          ShowMessage('Error while searching ');
+        end;
+
+    end;
+end;
+
+
+
+procedure TCOWRegistrationWindow.ListExpiringMenuItemClick(Sender: TObject);
+var
+  theEmailAddress: String;
+  theIPAddresses: String;
+  theFirstName: String;
+  theLastName: String;
+  theProductKey: String;
+  theRegistrationStatus: Char;
+  theExpirationDate: TDateTime;
+  theRegistrationDatabase: TCOWRegistrationDatabase;
+  theDatabaseNumber: Integer;
+
+begin
+  SearchResultsMemo.Text := '';
+
+  for theDatabaseNumber := 0 to 3 do
+    begin
+
+      case theDatabaseNumber of
+
+        0: theRegistrationDatabase := gCOWProWinRegistrationDatabase;
+        1: theRegistrationDatabase := gCOWProMacRegistrationDatabase;
+        2: theRegistrationDatabase := gCOWExpressWinRegistrationDatabase;
+        3: theRegistrationDatabase := gCOWExpressMacRegistrationDatabase;
+
+      end;
+
+        try
+
+          if not theRegistrationDatabase.GetFirstRegistration(theEmailAddress)
+            then
+              begin
+                Exit;
+              end;
+
+          repeat
+
+            theRegistrationDatabase.FillInEverything(theEmailAddress,
+                                                    theIPAddresses,
+                                                    thefirstName,
+                                                    theLastName,
+                                                    theProductKey,
+                                                    theRegistrationStatus,
+                                                    theExpirationDate);
+
+            if (theRegistrationStatus = kRegistrationStatusExpiring) and (theExpirationDate > Now) then
+
+            SearchResultsMemo.lines.Add(theEmailAddress + ',' +
+                                        theIPAddresses + ',' +
+                                        theFirstName + ',' +
+                                        theLastName + ',' +
+                                        theProductKey + ',' +
+                                        theRegistrationStatus + ',' +
+                                        DateTimeToStr(theExpirationDate));
+
+          until not theRegistrationDatabase.GetRegistrationAfter(theEmailAddress);
+
+        except
+
+          ShowMessage('Error while searching ');
+        end;
+
+    end;
+end;
+
+
+
 procedure TCOWRegistrationWindow.SearchForRecords;
 var
   theEmailAddress: String;
@@ -132,8 +270,6 @@ var
 
 begin
   SearchResultsMemo.Text := '';
-
-  theEmailAddress := LowerCase(EmailAddressEdit.Text);
 
   case RegistrationTypePopupBox.ItemIndex of
 
@@ -164,10 +300,10 @@ begin
 
         SearchResultsMemo.lines.Add(theEmailAddress + ',' +
                                     theIPAddresses + ',' +
-                                    thefirstName + ',' +
+                                    theFirstName + ',' +
                                     theLastName + ',' +
-                                    theRegistrationStatus + ',' +
                                     theProductKey + ',' +
+                                    theRegistrationStatus + ',' +
                                     DateTimeToStr(theExpirationDate));
 
       until not theRegistrationDatabase.GetRegistrationAfter(theEmailAddress);
@@ -268,6 +404,7 @@ begin
 
   theFirstName := FirstNameEdit.Text;
   theLastName := LastNameEdit.Text;
+  theProductKey := ProductKeyEdit.Text;
 
   case RegistrationStatusPopupBox.ItemIndex of
     -1 : theRegistrationStatus := kRegistrationStatusUnknown;
@@ -275,7 +412,6 @@ begin
      1 : theRegistrationStatus := kRegistrationStatusGood;
      2 : theRegistrationStatus := kRegistrationStatusBad;
      3 : theRegistrationStatus := kRegistrationStatusExpiring;
-     4 : theRegistrationStatus := kRegistrationStatusExpired;
 
     else theRegistrationStatus := kRegistrationStatusUnknown;
   end;
@@ -297,6 +433,7 @@ var
   theIPAddresses: String;
   theFirstName: String;
   theLastName: String;
+  theProductKey: String;
   theRegistrationStatus: Char;
   theExpirationDate: TDateTime;
   theRegistrationDatabase: TCOWRegistrationDatabase;
@@ -334,12 +471,12 @@ begin
   IPAddressesEdit.Text := theIPAddresses;
   FirstNameEdit.Text := theFirstName;
   LastNameEdit.Text := theLastName;
+  ProductKeyEdit.Text := theProductKey;
 
   if theRegistrationStatus = kRegistrationStatusUnknown  then RegistrationStatusPopupBox.ItemIndex := 0;
   if theRegistrationStatus = kRegistrationStatusGood     then RegistrationStatusPopupBox.ItemIndex := 1;
   if theRegistrationStatus = kRegistrationStatusBad      then RegistrationStatusPopupBox.ItemIndex := 2;
   if theRegistrationStatus = kRegistrationStatusExpiring then RegistrationStatusPopupBox.ItemIndex := 3;
-  if theRegistrationStatus = kRegistrationStatusExpired  then RegistrationStatusPopupBox.ItemIndex := 4;
 
   ExpirationDateEdit.Date := theExpirationDate;
 
@@ -347,6 +484,7 @@ begin
                               theIPAddresses + ',' +
                               theFirstName + ',' +
                               theLastName + ',' +
+                              theProductKey + ',' +
                               theRegistrationStatus + ',' +
                               DateTimeToStr(theExpirationDate));
 end;
@@ -360,6 +498,7 @@ var
   theIPAddresses: String;
   theFirstName: String;
   theLastName: String;
+  theProductKey: String;
   theRegistrationStatus: Char;
   theExpirationDate: TDateTime;
   theRegistrationDatabase: TCOWRegistrationDatabase;
@@ -414,15 +553,17 @@ begin
 
         theRegistrationDatabase.FillInEverything(theEmailAddress,
                                                         theIPAddresses,
-                                                        thefirstName,
+                                                        theFirstName,
                                                         theLastName,
+                                                        theProductKey,
                                                         theRegistrationStatus,
                                                         theExpirationDate);
 
         WriteLn(theExportFile, theEmailAddress + ',' +
                                theIPAddresses + ',' +
-                               thefirstName + ',' +
+                               theFirstName + ',' +
                                theLastName + ',' +
+                               theProductKey + ',' +
                                theRegistrationStatus + ',' +
                                DateTimeToStr(theExpirationDate));
 

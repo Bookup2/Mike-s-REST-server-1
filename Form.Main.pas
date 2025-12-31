@@ -268,7 +268,8 @@ var
   theStoredFirstName,
   theStoredLastName: String;
   theStoredRegistrationStatus: Char;
-  theStoredExpirationDate: TDateTime;
+  theStoredExpirationDate,
+  theStoredLastUpdateDate: TDateTime;
   theExpirationDate: TDateTime;
   theRegistrationStatus: Char;
   theRegistrationDatabase: TCOWRegistrationDatabase;
@@ -302,7 +303,8 @@ begin
                                                 theStoredLastName,
                                                 theStoredProductKey,
                                                 theStoredRegistrationStatus,
-                                                theStoredExpirationDate);
+                                                theStoredExpirationDate,
+                                                theStoredLastUpdateDate);
 
           // Prefer the stored name.
         if (theStoredFirstName > '') then theFirstName := theStoredFirstName;

@@ -11,6 +11,12 @@ object WebModule1: TWebModule1
       Name = 'WebActionItem1'
       PathInfo = '/ChessEngine'
       OnAction = WebModule1WebActionItem1Action
+    end
+    item
+      MethodType = mtGet
+      Name = 'WebActionItem2'
+      PathInfo = '/checkcowregistration'
+      OnAction = WebModule1WebActionItem2Action
     end>
   Height = 230
   Width = 415

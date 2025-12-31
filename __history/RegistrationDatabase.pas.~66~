@@ -35,6 +35,8 @@ uses
 
   Data.db,  // ftBlob?
 
+  DateUtils,  // IncDay()
+
   // gTypes,
   Utils;
 
@@ -45,7 +47,7 @@ const
   kRegistrationStatusGood = 'G';
   kRegistrationStatusBad = 'B';
   kRegistrationStatusExpiring = 'E';
-  kRegistrationStatusExpired = 'X';
+  // kRegistrationStatusExpired = 'X';
 
   kCarriageReturn = #13;
 
@@ -68,6 +70,7 @@ const
   kSQLFieldIPAddresses = 'fIPAddresses';
   kSQLFieldFirstName = 'ffirst_name';
   kSQLFieldLastName = 'flast_name';
+  kSQLFieldProductKey = 'fproduct_key';
   kSQLFieldExpirationDate = 'fExpirationDate';   // TDateTime double
 
   kSQLFieldCountResult = 'fcount_result';
@@ -85,6 +88,7 @@ const
                                   kSQLFieldLastName                      + ' TEXT, ' +
                                   kSQLFieldRegistrationStatus            + ' CHAR(1), ' +
                                   kSQLFieldIPAddresses                   + ' TEXT, ' +
+                                  kSQLFieldProductKey                    + ' TEXT, ' +
                                   kSQLFieldExpirationDate                + ' DOUBLE)';
 
   kSQLCountRegistrations       = 'SELECT COUNT(*) AS ' + kSQLFieldCountResult + ' FROM ' + kSQLTableRegistrations;
@@ -101,6 +105,7 @@ const
                            kSQLFieldLastName                    + ' = :' + kSQLFieldLastName             + ', ' +
                            kSQLFieldRegistrationStatus          + ' = :' + kSQLFieldRegistrationStatus   + ', ' +
                            kSQLFieldIPAddresses                 + ' = :' + kSQLFieldIPAddresses          + ', ' +
+                           kSQLFieldProductKey                  + ' = :' + kSQLFieldProductKey           + ', ' +
                            kSQLFieldExpirationDate              + ' = :' + kSQLFieldExpirationDate       + ' ' +
                            'WHERE ' + kSQLFieldEmailAddress     + ' = :' + kSQLFieldEmailAddress;
 
@@ -113,6 +118,7 @@ const
                            kSQLFieldEmailAddress           + ', ' +
                            kSQLFieldRegistrationStatus     + ', ' +
                            kSQLFieldIPAddresses            + ', ' +
+                           kSQLFieldProductKey             + ', ' +
                            kSQLFieldExpirationDate         + ', ' +
                            kSQLFieldFirstName              + ', ' +
                            kSQLFieldLastName               + ') ' +
@@ -120,6 +126,7 @@ const
                            ':' + kSQLFieldEmailAddress                  + ', ' +
                            ':' + kSQLFieldRegistrationStatus            + ', ' +
                            ':' + kSQLFieldIPAddresses                   + ', ' +
+                           ':' + kSQLFieldProductKey                    + ', ' +
                            ':' + kSQLFieldExpirationDate                + ', ' +
                            ':' + kSQLFieldFirstName                     + ', ' +
                            ':' + kSQLFieldLastName                      + ')';
@@ -156,17 +163,19 @@ type
     function RegistrationExists(const anEmailAddress: String): Boolean;
 
     procedure FillInEverything(anEmailAddress: String;
-                                                 var theIPAddresses: String;
-                                                 var theFirstName: String;
-                                                 var theLastName: String;
-                                                 var theRegistrationStatus: String;
-                                                 var theExpirationDate: TDateTime);
+                               var theIPAddresses: String;
+                               var theFirstName: String;
+                               var theLastName: String;
+                               var theProductKey: String;
+                               var theRegistrationStatus: Char;
+                               var theExpirationDate: TDateTime);
 
     procedure UpdateEverything(theEmailAddress: String;
+                               theIPAddresses: String;
                                theFirstName,
                                theLastName: String;
-                               theIPAddresses: String;
-                               theRegistrationStatus: String;
+                               theProductKey: String;
+                               theRegistrationStatus: Char;
                                theExpirationDate: TDateTime);
 
     function NumberOfRegistrations: LongInt;
@@ -188,6 +197,8 @@ type
     fSQLite3Connection: TFDConnection;
     fSQLite3Query: TFDQuery;
   end;
+
+  TCOWType = (kCOWProWin, kCOWProMac, kCOWExpressWin, kCOWExpressMac);
 
 {=============================================================================}
 
@@ -466,14 +477,15 @@ end;
 
 
 procedure TCOWRegistrationDatabase.UpdateEverything(theEmailAddress: String;
-                                                 theFirstName,
-                                                 theLastName: String;
-                                                 theIPAddresses: String;
-                                                 theRegistrationStatus: String;
-                                                 theExpirationDate: TDateTime);
+                                                     theIPAddresses: String;
+                                                     theFirstName,
+                                                     theLastName: String;
+                                                     theProductKey: String;
+                                                     theRegistrationStatus: Char;
+                                                     theExpirationDate: TDateTime);
 begin
   Assert(Length(theEmailAddress) > 7, 'TCOWRegistrationDatabase.UpdateEverything has a short email address.');
-  Assert(Length(theRegistrationStatus) = 1, 'TCOWRegistrationDatabase.UpdateEverything has an incorrect status.');
+  // Assert(Length(theRegistrationStatus) = 1, 'TCOWRegistrationDatabase.UpdateEverything has an incorrect status.');
 
   if (Length(theEmailAddress) <= 7) then Exit;
 
@@ -486,11 +498,23 @@ begin
         begin
           fSQLite3Query.SQL.Text := kSQLUpdateRegistration;
 
+          {
+            kSQLUpdateRegistration = 'UPDATE ' + kSQLTableRegistrations + ' SET ' +
+                           kSQLFieldFirstName                   + ' = :' + kSQLFieldFirstName            + ', ' +
+                           kSQLFieldLastName                    + ' = :' + kSQLFieldLastName             + ', ' +
+                           kSQLFieldRegistrationStatus          + ' = :' + kSQLFieldRegistrationStatus   + ', ' +
+                           kSQLFieldIPAddresses                 + ' = :' + kSQLFieldIPAddresses          + ', ' +
+                           kSQLFieldProductKey                  + ' = :' + kSQLFieldProductKey           + ', ' +
+                           kSQLFieldExpirationDate              + ' = :' + kSQLFieldExpirationDate       + ' ' +
+                           'WHERE ' + kSQLFieldEmailAddress     + ' = :' + kSQLFieldEmailAddress;
+           }
+
           fSQLite3Query.ParamByName(kSQLFieldEmailAddress).AsString           := theEmailAddress;
           fSQLite3Query.ParamByName(kSQLFieldRegistrationStatus).AsString     := theRegistrationStatus;
           fSQLite3Query.ParamByName(kSQLFieldIPAddresses).AsString            := theIPAddresses;
           fSQLite3Query.ParamByName(kSQLFieldFirstName).AsString              := theFirstName;
           fSQLite3Query.ParamByName(kSQLFieldLastName).AsString               := theLastName;
+          fSQLite3Query.ParamByName(kSQLFieldProductKey).AsString             := theProductKey;
           fSQLite3Query.ParamByName(kSQLFieldExpirationDate).AsFloat          := theExpirationDate;
 
           try
@@ -517,6 +541,7 @@ begin
           fSQLite3Query.ParamByName(kSQLFieldIPAddresses).AsString            := theIPAddresses;
           fSQLite3Query.ParamByName(kSQLFieldFirstName).AsString              := theFirstName;
           fSQLite3Query.ParamByName(kSQLFieldLastName).AsString               := theLastName;
+          fSQLite3Query.ParamByName(kSQLFieldProductKey).AsString             := theProductKey;
           fSQLite3Query.ParamByName(kSQLFieldExpirationDate).AsFloat          := theExpirationDate;
 
           try
@@ -598,15 +623,15 @@ end;
 
 
 procedure TCOWRegistrationDatabase.FillInEverything(anEmailAddress: String;
-                                                 var theIPAddresses: String;
-                                                 var theFirstName: String;
-                                                 var theLastName: String;
-                                                 var theRegistrationStatus: String;
-                                                 var theExpirationDate: TDateTime);
+                                                     var theIPAddresses: String;
+                                                     var theFirstName: String;
+                                                     var theLastName: String;
+                                                     var theProductKey: String;
+                                                     var theRegistrationStatus: Char;
+                                                     var theExpirationDate: TDateTime);
 var
   theRegistrationExists: Boolean;
   theEmailAddress: String;
-  // theClientIDFromSQLite: String;
 
 begin
   theEmailAddress := anEmailAddress;
@@ -617,7 +642,8 @@ begin
   theRegistrationStatus := kRegistrationStatusUnknown;
   theFirstName := '';
   theLastName := '';
-  theExpirationDate := Now;
+  theProductKey := '';
+  theExpirationDate := IncDay(Now, 10);
 
   fSQLite3Query.SQL.Text := kSQLSelectRegistrationsEverything;
 
@@ -654,7 +680,8 @@ begin
   theIPAddresses := fSQLite3Query.FieldByName(kSQLFieldIPAddresses).AsString;
   theFirstName := fSQLite3Query.FieldByName(kSQLFieldFirstName).AsString;
   theLastName := fSQLite3Query.FieldByName(kSQLFieldLastName).AsString;
-  theRegistrationStatus := fSQLite3Query.FieldByName(kSQLFieldRegistrationStatus).AsString;
+  theProductKey := fSQLite3Query.FieldByName(kSQLFieldProductKey).AsString;
+  theRegistrationStatus := fSQLite3Query.FieldByName(kSQLFieldRegistrationStatus).AsString[1];
   theExpirationDate := fSQLite3Query.FieldByName(kSQLFieldExpirationDate).AsFloat;
 
   fSQLite3Query.Close();
