@@ -315,4 +315,42 @@ object COWRegistrationWindow: TCOWRegistrationWindow
     Position.Y = 88.000000000000000000
     TabOrder = 33
   end
+  object AcceptingRegistrationsSwitch: TSwitch
+    IsChecked = False
+    Position.X = 34.000000000000000000
+    Position.Y = 177.000000000000000000
+    Size.Width = 71.000000000000000000
+    Size.Height = 27.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 36
+    OnSwitch = AcceptingRegistrationsSwitchSwitch
+  end
+  object Label10: TLabel
+    Position.X = 120.000000000000000000
+    Position.Y = 177.000000000000000000
+    Size.Width = 120.000000000000000000
+    Size.Height = 27.000000000000000000
+    Size.PlatformDefault = False
+    Text = 'Active'
+    TabOrder = 37
+  end
+  object Label11: TLabel
+    Position.X = 202.000000000000000000
+    Position.Y = 177.000000000000000000
+    Size.Width = 120.000000000000000000
+    Size.Height = 27.000000000000000000
+    Size.PlatformDefault = False
+    TextSettings.HorzAlign = Trailing
+    Text = 'Ignored requests:'
+    TabOrder = 39
+  end
+  object NumberOfIgnoredRegistrations: TLabel
+    Position.X = 328.000000000000000000
+    Position.Y = 177.000000000000000000
+    Size.Width = 120.000000000000000000
+    Size.Height = 27.000000000000000000
+    Size.PlatformDefault = False
+    Text = 'NumberOfIgnoredRegistrations'
+    TabOrder = 40
+  end
 end

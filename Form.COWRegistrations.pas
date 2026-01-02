@@ -50,6 +50,10 @@ type
     ListExpiringMenuItem: TMenuItem;
     UpdatedSinceCheckbox: TCheckBox;
     UpdatedSinceDateEdit: TDateEdit;
+    AcceptingRegistrationsSwitch: TSwitch;
+    Label10: TLabel;
+    Label11: TLabel;
+    NumberOfIgnoredRegistrations: TLabel;
     procedure FormActivate(Sender: TObject);
     procedure MenuItem1Click(Sender: TObject);
     procedure MenuButtonClick(Sender: TObject);
@@ -60,6 +64,7 @@ type
     procedure MenuItem3Click(Sender: TObject);
     procedure ListBadAndExpiredMenuItemClick(Sender: TObject);
     procedure ListExpiringMenuItemClick(Sender: TObject);
+    procedure AcceptingRegistrationsSwitchSwitch(Sender: TObject);
   private
     { Private declarations }
     procedure ExportRegistrations;
@@ -81,6 +86,8 @@ uses Form.Main, RegistrationDatabase;
 
 procedure TCOWRegistrationWindow.FormActivate(Sender: TObject);
 begin
+  AcceptingRegistrationsSwitch.IsChecked := True;
+
   UpdatedSinceDateEdit.Date := Now - 7;  // last seven days
 
   case RegistrationTypePopupBox.ItemIndex of
@@ -388,6 +395,8 @@ begin
   NumberOfCOWProMacRegistrationsLabel.Text     := AddCommasTo(gCOWProMacRegistrationDatabase.NumberOfRegistrations.ToString);
   NumberOfCOWExpressWinRegistrationsLabel.Text := AddCommasTo(gCOWExpressWinRegistrationDatabase.NumberOfRegistrations.ToString);
   NumberOfCOWExpressMacRegistrationsLabel.Text := AddCommasTo(gCOWExpressMacRegistrationDatabase.NumberOfRegistrations.ToString);
+
+  NumberOfIgnoredRegistrations.Text := gIgnoredRegistrations.ToString;
 end;
 
 
@@ -536,6 +545,13 @@ begin
                               theProductKey + ',' +
                               theRegistrationStatus + ',' +
                               DateTimeToStr(theExpirationDate));
+end;
+
+
+
+procedure TCOWRegistrationWindow.AcceptingRegistrationsSwitchSwitch(Sender: TObject);
+begin
+  gAcceptingRegistrations := AcceptingRegistrationsSwitch.IsChecked;
 end;
 
 

@@ -49,6 +49,9 @@ const
 var
   // gCriticalSection: System.SyncObjs.TCriticalSection;
 
+  gAcceptingRegistrations: Boolean;
+  gIgnoredRegistrations: Integer;
+
   gProgramBuildNumber,
   gURLUpdateDownload,
   gPreferencesFileName,
@@ -815,6 +818,9 @@ begin
 
   // gChessEngineController := nil;
   // gChessEngineControllerREST := nil;    // FIXEDIN build 197
+
+  gAcceptingRegistrations := True;
+  gIgnoredRegistrations := 0;
 
   SetPreferencesToDefaults;
 end.

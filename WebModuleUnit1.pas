@@ -139,6 +139,13 @@ begin
   // localhost:80/checkcowregistration?emailaddress=testemail@bookup.com&productkey=COWPRO-XXXX&IPAddress=186.0.0.1&FirstName=Mike&LastName=Leahy&COWType=PW
   // localhost:80/checkcowregistration?testemail@bookup.com&COWPRO-XXXX&186.0.0.1&Mike&Leahy&PW
 
+  if not gAcceptingRegistrations
+    then
+      begin
+        Inc(gIgnoredRegistrations);
+        Exit;
+      end;
+
   if (Request.MethodType <> mtGet)
     then Exit;
 

@@ -85,8 +85,8 @@ object MainForm: TMainForm
     Size.Height = 280.000000000000000000
     Size.PlatformDefault = False
     TabOrder = 8
-    Viewport.Width = 1233.000000000000000000
-    Viewport.Height = 280.000000000000000000
+    Viewport.Width = 1229.000000000000000000
+    Viewport.Height = 276.000000000000000000
   end
   object StartEnginesButton: TButton
     Position.X = 16.000000000000000000
@@ -130,7 +130,7 @@ object MainForm: TMainForm
     object UseLogFileCheckBox: TCheckBox
       Position.X = 435.000000000000000000
       Position.Y = -251.000000000000000000
-      TabOrder = 3
+      TabOrder = 4
       Text = 'Use Log File'
     end
     object LogFileNameLabel: TLabel
@@ -141,7 +141,7 @@ object MainForm: TMainForm
       Size.PlatformDefault = False
       TextSettings.Trimming = None
       Text = 'LogFileNameLabel'
-      TabOrder = 4
+      TabOrder = 5
     end
   end
   object NodeCountCutOffSpinBox: TSpinBox
@@ -208,8 +208,8 @@ object MainForm: TMainForm
     TabOrder = 23
     RowCount = 10
     Options = [Editing, ColumnResize, ColumnMove, ColLines, RowLines, Tabs, AutoDisplacement]
-    Viewport.Width = 1229.000000000000000000
-    Viewport.Height = 106.000000000000000000
+    Viewport.Width = 1225.000000000000000000
+    Viewport.Height = 102.000000000000000000
   end
   object NumberOfEnginesRunningLabel: TLabel
     Position.X = 200.000000000000000000
@@ -277,7 +277,7 @@ object MainForm: TMainForm
         Size.Width = 201.000000000000000000
         Size.Height = 19.000000000000000000
         Size.PlatformDefault = False
-        TabOrder = 3
+        TabOrder = 4
         Text = 'Allow CacheUpdates'
       end
     end
@@ -434,7 +434,7 @@ object MainForm: TMainForm
     Size.Width = 177.000000000000000000
     Size.Height = 17.000000000000000000
     Size.PlatformDefault = False
-    Text = 'Nov 2025 build 4'
+    Text = 'Jan 2026 build 5'
     TabOrder = 40
   end
   object StartedAutomaticallyLabel: TLabel
