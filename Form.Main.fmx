@@ -461,7 +461,7 @@ object MainForm: TMainForm
     TabOrder = 54
     Text = 'Use SSL next time'
   end
-  object IdServerIOHandlerSSLOpenSSL: TIdServerIOHandlerSSLOpenSSL
+  object IdServerIOHandlerSSLOpenSSLHOLD: TIdServerIOHandlerSSLOpenSSL
     SSLOptions.Mode = sslmUnassigned
     SSLOptions.VerifyMode = []
     SSLOptions.VerifyDepth = 0
