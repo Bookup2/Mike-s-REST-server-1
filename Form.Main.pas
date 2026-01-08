@@ -571,8 +571,8 @@ end;
 
 function TMainForm.ServerStatusForBrowser: String;
 begin
-    // FIXEDIN build 3
-  Result := 'PocketGMServer build 6 January 8, 2026 <br>' +
+    // FIXEDIN build 7
+  Result := 'PocketGMServer build 7 64 bit January 8, 2026 <br>' +
             'Number of engines running = ' + gNumberOfEnginesRunning.ToString + '<br>' +
             'Number of engines analyzing = ' + NumberOfEnginesAnalyzing.ToString + '<br>' +
             'Number of requests served = ' + AddCommasTo(fNumberOfRequestsServed.ToString);

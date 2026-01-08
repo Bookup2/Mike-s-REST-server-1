@@ -427,7 +427,7 @@ object MainForm: TMainForm
     Size.Width = 177.000000000000000000
     Size.Height = 17.000000000000000000
     Size.PlatformDefault = False
-    Text = 'Jan 2026 build 6'
+    Text = 'Jan 2026 build 7 64bit'
     TabOrder = 39
   end
   object StartedAutomaticallyLabel: TLabel
