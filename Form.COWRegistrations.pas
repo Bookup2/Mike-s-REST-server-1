@@ -160,6 +160,8 @@ begin
         2: theRegistrationDatabase := gCOWExpressWinRegistrationDatabase;
         3: theRegistrationDatabase := gCOWExpressMacRegistrationDatabase;
 
+        else theRegistrationDatabase := gCOWProWinRegistrationDatabase;
+
       end;
 
         try
@@ -230,6 +232,8 @@ begin
         2: theRegistrationDatabase := gCOWExpressWinRegistrationDatabase;
         3: theRegistrationDatabase := gCOWExpressMacRegistrationDatabase;
 
+        else theRegistrationDatabase := gCOWProWinRegistrationDatabase;
+
       end;
 
         try
@@ -295,6 +299,8 @@ begin
     1: theRegistrationDatabase := gCOWProMacRegistrationDatabase;
     2: theRegistrationDatabase := gCOWExpressWinRegistrationDatabase;
     3: theRegistrationDatabase := gCOWExpressMacRegistrationDatabase;
+
+    else theRegistrationDatabase := gCOWProWinRegistrationDatabase;
 
   end;
 
@@ -409,7 +415,7 @@ var
   theLastName: String;
   theProductKey: String;
   theRegistrationStatus: Char;
-  theExpirationDate: TDateTime;
+  // theExpirationDate: TDateTime;
   theRegistrationDatabase: TCOWRegistrationDatabase;
 
 begin
@@ -434,6 +440,8 @@ begin
     1: theRegistrationDatabase := gCOWProMacRegistrationDatabase;
     2: theRegistrationDatabase := gCOWExpressWinRegistrationDatabase;
     3: theRegistrationDatabase := gCOWExpressMacRegistrationDatabase;
+
+    else theRegistrationDatabase := gCOWProWinRegistrationDatabase;
 
   end;
 
@@ -506,6 +514,8 @@ begin
         theRegistrationDatabase := gCOWExpressMacRegistrationDatabase;
         theDBName := 'COW Express Mac';
       end;
+
+    else theRegistrationDatabase := gCOWProWinRegistrationDatabase;
 
   end;
 
@@ -595,6 +605,8 @@ begin
         theRegistrationDatabase := gCOWExpressMacRegistrationDatabase;
         ExportRegistrationsSaveDialog.FileName := 'COWExpressMacRegistrations';
       end;
+
+    else theRegistrationDatabase := gCOWProWinRegistrationDatabase;
 
   end;
 

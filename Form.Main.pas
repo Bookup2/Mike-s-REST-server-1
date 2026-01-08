@@ -67,7 +67,7 @@ type
     ServerBusyCountLabel: TLabel;
     ExportClientsButton: TButton;
     ExportClientsSaveDialog: TSaveDialog;
-    Label13: TLabel;
+    ProgramVersionLabel: TLabel;
     StartedAutomaticallyLabel: TLabel;
     Button1: TButton;
     IdServerIOHandlerSSLOpenSSL: TIdServerIOHandlerSSLOpenSSL;
@@ -190,6 +190,7 @@ uses
 
 const
 
+  kProgramVersionString = 'PocketGM build 8 32 bit Jan 8, 2026';
   kClientDatabaseFolder = 'Client Database';
   kCOWRegistrationDatabaseFolder = 'COW Registration Database';
   kCertificateFileName = 'Certificate\cert.pem';
@@ -279,7 +280,7 @@ var
   theStoredExpirationDate,
   theStoredLastUpdateDate: TDateTime;
   theExpirationDate: TDateTime;
-  theRegistrationStatus: Char;
+  // theRegistrationStatus: Char;
   theRegistrationDatabase: TCOWRegistrationDatabase;
 
 begin
@@ -289,7 +290,7 @@ begin
   theStoredLastName := '';
   theStoredRegistrationStatus := kRegistrationStatusUnknown;
   theStoredExpirationDate := Now;
-  theRegistrationStatus := kRegistrationStatusUnknown;
+  // theRegistrationStatus := kRegistrationStatusUnknown;
 
   theEmailAddress := LowerCase(theEmailAddress);
 
@@ -300,6 +301,7 @@ begin
     kCOWExpressWin: theRegistrationDatabase := gCOWExpressWinRegistrationDatabase;
     kCOWExpressMac: theRegistrationDatabase := gCOWExpressMacRegistrationDatabase;
 
+    else theRegistrationDatabase := gCOWProWinRegistrationDatabase;
   end;
 
   if theRegistrationDatabase.RegistrationExists(theEmailAddress)
@@ -572,7 +574,7 @@ end;
 function TMainForm.ServerStatusForBrowser: String;
 begin
     // FIXEDIN build 7
-  Result := 'PocketGMServer build 7 64 bit January 8, 2026 <br>' +
+  Result := kProgramVersionString + '<br>' +
             'Number of engines running = ' + gNumberOfEnginesRunning.ToString + '<br>' +
             'Number of engines analyzing = ' + NumberOfEnginesAnalyzing.ToString + '<br>' +
             'Number of requests served = ' + AddCommasTo(fNumberOfRequestsServed.ToString);
@@ -787,6 +789,8 @@ var
   thePrivateKeyFileName: String;
 
 begin
+  ProgramVersionLabel.Text := kProgramVersionString;
+
   fCacheErrors := 0;
   fCacheUpdates := 0;
   fCacheAdditions := 0;
@@ -843,7 +847,7 @@ begin
 
     // FIXEDIN build 5
   FServer.IOHandler := IdServerIOHandlerSSLOpenSSL;
-  FServer.DefaultPort := 443;
+  FServer.DefaultPort := 8443;
 
   // fSSL := TIdServerIOHandlerSSLOpenSSL.Create(nil);     Using a component dropped onto the form instead.
 
@@ -879,6 +883,8 @@ begin
   StopEnginesButton.Enabled := False;
 
   theINIFileName := TPath.Combine(ExtractFilePath(ParamStr(0)), kINIFileName);
+
+  if not FileExists(theINIFileName)  then ShowMessage('The INI file was not found.');
 
   Assert(FileExists(theINIFileName), 'The INI file was not found.');
 
