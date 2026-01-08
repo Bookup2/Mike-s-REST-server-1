@@ -36,7 +36,7 @@ object MainForm: TMainForm
   object EditPort: TEdit
     Touch.InteractiveGestures = [LongTap, DoubleTap]
     TabOrder = 3
-    Text = '80'
+    Text = '445'
     Position.X = 16.000000000000000000
     Position.Y = 80.000000000000000000
     Size.Width = 100.000000000000000000
@@ -266,6 +266,9 @@ object MainForm: TMainForm
       StyledSettings = [Family, Style, FontColor]
       Position.X = 16.000000000000000000
       Position.Y = 8.000000000000000000
+      Size.Width = 89.000000000000000000
+      Size.Height = 17.000000000000000000
+      Size.PlatformDefault = False
       TextSettings.Font.Size = 16.000000000000000000
       TextSettings.Trimming = None
       Text = 'Cache'
@@ -430,11 +433,11 @@ object MainForm: TMainForm
   end
   object Label13: TLabel
     Position.X = 376.000000000000000000
-    Position.Y = 48.000000000000000000
+    Position.Y = 55.000000000000000000
     Size.Width = 177.000000000000000000
     Size.Height = 17.000000000000000000
     Size.PlatformDefault = False
-    Text = 'July 2025 build 4'
+    Text = 'Jan 2026 build 6'
     TabOrder = 40
   end
   object StartedAutomaticallyLabel: TLabel
@@ -442,5 +445,22 @@ object MainForm: TMainForm
     Position.Y = 110.000000000000000000
     Text = 'StartedAutomaticallyLabel'
     TabOrder = 41
+  end
+  object Button1: TButton
+    Position.X = 16.000000000000000000
+    Position.Y = 176.000000000000000000
+    Size.Width = 284.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 45
+    Text = 'COW Registrations Window'
+    OnClick = Button1Click
+  end
+  object IdServerIOHandlerSSLOpenSSL: TIdServerIOHandlerSSLOpenSSL
+    SSLOptions.Mode = sslmUnassigned
+    SSLOptions.VerifyMode = []
+    SSLOptions.VerifyDepth = 0
+    Left = 690
+    Top = 411
   end
 end

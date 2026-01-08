@@ -26,7 +26,6 @@ type
   TMainForm = class(TForm)
     ButtonStart: TButton;
     ButtonStop: TButton;
-    EditPort: TEdit;
     Label1: TLabel;
     ButtonOpenBrowser: TButton;
     EditLocalIP: TEdit;
@@ -72,6 +71,7 @@ type
     StartedAutomaticallyLabel: TLabel;
     Button1: TButton;
     IdServerIOHandlerSSLOpenSSL: TIdServerIOHandlerSSLOpenSSL;
+    PortLabel: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure ButtonStartClick(Sender: TObject);
     procedure ButtonStopClick(Sender: TObject);
@@ -135,6 +135,8 @@ type
     procedure LookForEnginesToCutOffByTooLongSinceLastClientRequest;
     function NumberOfEnginesAnalyzing: Integer;
 
+    procedure IdServerIOHandlerSSLOpenSSL1GetPassword(var Password: string);
+
   public
 
     // fRegistrationDatabaseFileName: String;
@@ -190,6 +192,8 @@ const
 
   kClientDatabaseFolder = 'Client Database';
   kCOWRegistrationDatabaseFolder = 'COW Registration Database';
+  kCertificateFileName = 'Certificate\cert.pem';
+  kPrivateKeyFileName = 'Certificate\privkey.pem';
   kINIFileName = 'ServerSettings.INI';
   kINIEngineFilenameTag = 'EngineEXEFile';
   kINICacheFileNameTag = 'CacheFileName';  // /Cache Database/PocketGMCacheBook.PGC
@@ -560,7 +564,7 @@ procedure TMainForm.ApplicationIdle(Sender: TObject; var Done: Boolean);
 begin
   ButtonStart.Enabled := not FServer.Active;
   ButtonStop.Enabled := FServer.Active;
-  EditPort.Enabled := not FServer.Active;
+  // EditPort.Enabled := not FServer.Active;
 end;
 
 
@@ -778,6 +782,8 @@ var
   theEXEFileName: String;
   K: Integer;
   theFolder: String;
+  theCertificateFileName,
+  thePrivateKeyFileName: String;
 
 begin
   fCacheErrors := 0;
@@ -838,11 +844,20 @@ begin
   FServer.IOHandler := IdServerIOHandlerSSLOpenSSL;
   FServer.DefaultPort := 443;
 
-  // fSSL := TIdServerIOHandlerSSLOpenSSL.Create(nil);
+  // fSSL := TIdServerIOHandlerSSLOpenSSL.Create(nil);     Using a component dropped onto the form instead.
 
-  IdServerIOHandlerSSLOpenSSL.SSLOptions.CertFile := 'C:\MikePFXFile\pocketgmserver.com';
-  IdServerIOHandlerSSLOpenSSL.SSLOptions.KeyFile  := 'C:\MikePFXFile\pocketgmserver.com';
-  IdServerIOHandlerSSLOpenSSL.SSLOptions.Password := 'Sicilian';
+  theCertificateFileName :=TPath.Combine(ExtractFilePath(ParamStr(0)), kCertificateFileName);
+  thePrivateKeyFileName :=TPath.Combine(ExtractFilePath(ParamStr(0)), kPrivateKeyFileName);
+
+  if not FileExists(theCertificateFileName) then ShowMessage('Certificate file is missing.' + #13 + theCertificateFileName);
+  if not FileExists(thePrivateKeyFileName) then ShowMessage('Privat key file is missing.' + #13 + thePrivateKeyFileName);
+
+  // add getpassword method
+
+  IdServerIOHandlerSSLOpenSSL.OnGetPassword := IdServerIOHandlerSSLOpenSSL1GetPassword;
+
+  IdServerIOHandlerSSLOpenSSL.SSLOptions.CertFile := theCertificateFileName;
+  IdServerIOHandlerSSLOpenSSL.SSLOptions.KeyFile  := thePrivateKeyFileName;
   IdServerIOHandlerSSLOpenSSL.SSLOptions.Method   := sslvTLSv1_2;
   IdServerIOHandlerSSLOpenSSL.SSLOptions.Mode     := sslmServer;
 
@@ -1051,6 +1066,13 @@ end;
 
 
 
+procedure TMainForm.IdServerIOHandlerSSLOpenSSL1GetPassword(var Password: string);
+begin
+  Password := 'Sicilian';
+end;
+
+
+
 procedure TMainForm.LogFileButtonClick(Sender: TObject);
 begin
   SaveDialog1.FileName := ExtractFileName(fEngineLogFileName);
@@ -1167,7 +1189,10 @@ begin
   begin
 
     FServer.Bindings.Clear;
-    FServer.DefaultPort := StrToInt(EditPort.Text);
+    // FServer.DefaultPort := StrToInt(EditPort.Text);
+
+    FServer.Bindings.Add.Port := 8443;
+    PortLabel.Text := '8443';
     FServer.Active := True;
   end;
 end;

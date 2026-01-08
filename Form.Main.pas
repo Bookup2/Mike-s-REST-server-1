@@ -26,7 +26,6 @@ type
   TMainForm = class(TForm)
     ButtonStart: TButton;
     ButtonStop: TButton;
-    EditPort: TEdit;
     Label1: TLabel;
     ButtonOpenBrowser: TButton;
     EditLocalIP: TEdit;
@@ -72,6 +71,7 @@ type
     StartedAutomaticallyLabel: TLabel;
     Button1: TButton;
     IdServerIOHandlerSSLOpenSSL: TIdServerIOHandlerSSLOpenSSL;
+    PortLabel: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure ButtonStartClick(Sender: TObject);
     procedure ButtonStopClick(Sender: TObject);
@@ -564,7 +564,7 @@ procedure TMainForm.ApplicationIdle(Sender: TObject; var Done: Boolean);
 begin
   ButtonStart.Enabled := not FServer.Active;
   ButtonStop.Enabled := FServer.Active;
-  EditPort.Enabled := not FServer.Active;
+  // EditPort.Enabled := not FServer.Active;
 end;
 
 
@@ -572,7 +572,7 @@ end;
 function TMainForm.ServerStatusForBrowser: String;
 begin
     // FIXEDIN build 3
-  Result := 'PocketGMServer build 4 November 2025 <br>' +
+  Result := 'PocketGMServer build 6 January 8, 2026 <br>' +
             'Number of engines running = ' + gNumberOfEnginesRunning.ToString + '<br>' +
             'Number of engines analyzing = ' + NumberOfEnginesAnalyzing.ToString + '<br>' +
             'Number of requests served = ' + AddCommasTo(fNumberOfRequestsServed.ToString);
@@ -680,7 +680,8 @@ var
 begin
   StartServer;
 {$IFDEF MSWINDOWS}
-  LURL := Format('http://localhost:%s', [EditPort.Text]);
+  // LURL := Format('http://localhost:%s', [EditPort.Text]);
+  LURL := 'http://localhost:8443';
   ShellExecute(0,
         nil,
         PChar(LURL), nil, nil, SW_SHOWNOACTIVATE);
@@ -1189,7 +1190,10 @@ begin
   begin
 
     FServer.Bindings.Clear;
-    FServer.DefaultPort := StrToInt(EditPort.Text);
+    // FServer.DefaultPort := StrToInt(EditPort.Text);
+
+    FServer.Bindings.Add.Port := 8443;
+    PortLabel.Text := '8443';
     FServer.Active := True;
   end;
 end;
