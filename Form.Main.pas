@@ -863,6 +863,8 @@ begin
       end
     else FServer.DefaultPort := 80;
 
+  UseSSLCheckBox.IsChecked := gUsingSSL;
+
   PortLabel.Text := FServer.DefaultPort.ToString;
 
   // fSSL := TIdServerIOHandlerSSLOpenSSL.Create(nil);     Using a component dropped onto the form instead.
