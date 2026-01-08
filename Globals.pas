@@ -49,6 +49,8 @@ const
 var
   // gCriticalSection: System.SyncObjs.TCriticalSection;
 
+  gUsingSSL: Boolean;
+
   gAcceptingRegistrations: Boolean;
   gIgnoredRegistrations: Integer;
 
@@ -784,6 +786,7 @@ begin
   gPermissionToUseMicrophoneGrantedOnOSX := False;  // FIXEDIN build 148
   {$ENDIF}
 
+  gUsingSSL := False;
   gCOWProWinRegistrationDatabaseFileName := '';
   gCOWProWinRegistrationDatabase := nil;
   gCOWProMacRegistrationDatabaseFileName := '';

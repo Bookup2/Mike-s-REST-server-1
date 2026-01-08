@@ -67,11 +67,12 @@ type
     ServerBusyCountLabel: TLabel;
     ExportClientsButton: TButton;
     ExportClientsSaveDialog: TSaveDialog;
-    Label13: TLabel;
+    ProgramVersionLabel: TLabel;
     StartedAutomaticallyLabel: TLabel;
     Button1: TButton;
     IdServerIOHandlerSSLOpenSSL: TIdServerIOHandlerSSLOpenSSL;
     PortLabel: TLabel;
+    UseSSLCheckBox: TCheckBox;
     procedure FormCreate(Sender: TObject);
     procedure ButtonStartClick(Sender: TObject);
     procedure ButtonStopClick(Sender: TObject);
@@ -190,11 +191,13 @@ uses
 
 const
 
+  kProgramVersionString = 'PocketGM build 8 32 bit Jan 8, 2026';
   kClientDatabaseFolder = 'Client Database';
   kCOWRegistrationDatabaseFolder = 'COW Registration Database';
   kCertificateFileName = 'Certificate\cert.pem';
   kPrivateKeyFileName = 'Certificate\privkey.pem';
   kINIFileName = 'ServerSettings.INI';
+  kINIUsingSSLTag = 'UsingSSL';
   kINIEngineFilenameTag = 'EngineEXEFile';
   kINICacheFileNameTag = 'CacheFileName';  // /Cache Database/PocketGMCacheBook.PGC
   kINIStartUpAutomatically = 'StartUpAutomatically';
@@ -279,7 +282,7 @@ var
   theStoredExpirationDate,
   theStoredLastUpdateDate: TDateTime;
   theExpirationDate: TDateTime;
-  theRegistrationStatus: Char;
+  // theRegistrationStatus: Char;
   theRegistrationDatabase: TCOWRegistrationDatabase;
 
 begin
@@ -289,7 +292,7 @@ begin
   theStoredLastName := '';
   theStoredRegistrationStatus := kRegistrationStatusUnknown;
   theStoredExpirationDate := Now;
-  theRegistrationStatus := kRegistrationStatusUnknown;
+  // theRegistrationStatus := kRegistrationStatusUnknown;
 
   theEmailAddress := LowerCase(theEmailAddress);
 
@@ -573,7 +576,7 @@ end;
 function TMainForm.ServerStatusForBrowser: String;
 begin
     // FIXEDIN build 7
-  Result := 'PocketGMServer build 7 64 bit January 8, 2026 <br>' +
+  Result := kProgramVersionString + '<br>' +
             'Number of engines running = ' + gNumberOfEnginesRunning.ToString + '<br>' +
             'Number of engines analyzing = ' + NumberOfEnginesAnalyzing.ToString + '<br>' +
             'Number of requests served = ' + AddCommasTo(fNumberOfRequestsServed.ToString);
@@ -788,6 +791,8 @@ var
   thePrivateKeyFileName: String;
 
 begin
+  ProgramVersionLabel.Text := kProgramVersionString;
+
   fCacheErrors := 0;
   fCacheUpdates := 0;
   fCacheAdditions := 0;
@@ -842,9 +847,16 @@ begin
   EditLocalIP.Text := GetLocalIP;
   FServer := TIdHTTPWebBrokerBridge.Create(Self);
 
-    // FIXEDIN build 5
-  FServer.IOHandler := IdServerIOHandlerSSLOpenSSL;
-  FServer.DefaultPort := 443;
+    // FIXEDIN build 8
+  if gUsingSSL
+    then
+      begin
+        FServer.IOHandler := IdServerIOHandlerSSLOpenSSL;
+        FServer.DefaultPort := 8443;
+      end
+    else FServer.DefaultPort := 80;
+
+  PortLabel.Text := FServer.DefaultPort.ToString;
 
   // fSSL := TIdServerIOHandlerSSLOpenSSL.Create(nil);     Using a component dropped onto the form instead.
 
@@ -907,6 +919,10 @@ begin
 
 
   fClientDatabaseFileName       := theINIFile.ReadString('ProgramPreferences', kINICientDatabaseFileNameTag, 'ClientDatabase.db');
+  gUsingSSL                                  := theINIFile.ReadBool('ProgramPreferences', kINIUsingSSLTag, False);
+
+  UseSSLCheckBox.IsChecked := gUsingSSL;
+
   gCOWProWinRegistrationDatabaseFileName     := theINIFile.ReadString('ProgramPreferences', kINIRegistrationDatabaseFileNameTag, 'COWProWinRegistrationDatabase.db');
   gCOWProMacRegistrationDatabaseFileName     := theINIFile.ReadString('ProgramPreferences', kINIRegistrationDatabaseFileNameTag, 'COWProMacRegistrationDatabase.db');
   gCOWExpressWinRegistrationDatabaseFileName := theINIFile.ReadString('ProgramPreferences', kINIRegistrationDatabaseFileNameTag, 'COWExpressWinRegistrationDatabase.db');
@@ -1058,6 +1074,8 @@ begin
   fStartUpAutomatically := theINIFile.ReadBool('ProgramPreferences', kINIStartUpAutomatically, True);
 
   theINIFile.WriteBool('ProgramPreferences', kINIStartUpAutomatically, fStartUpAutomatically);
+
+  theINIFile.WriteBool('ProgramPreferences', kINIUsingSSLTag, UseSSLCheckBox.IsChecked);
 
   theINIFile.WriteInteger('ProgramPreferences', kININumberOfEngines, Trunc(NumberOfEnginesSpinBox.value));
 

@@ -57,7 +57,7 @@ object MainForm: TMainForm
     Touch.InteractiveGestures = [LongTap, DoubleTap]
     TabOrder = 6
     ReadOnly = True
-    Position.X = 136.000000000000000000
+    Position.X = 224.000000000000000000
     Position.Y = 80.000000000000000000
     Size.Width = 337.000000000000000000
     Size.Height = 22.000000000000000000
@@ -447,13 +447,19 @@ object MainForm: TMainForm
     OnClick = Button1Click
   end
   object PortLabel: TLabel
-    Position.X = 16.000000000000000000
+    Position.X = 13.000000000000000000
     Position.Y = 80.000000000000000000
     Size.Width = 73.000000000000000000
     Size.Height = 17.000000000000000000
     Size.PlatformDefault = False
     Text = 'PortLabel'
     TabOrder = 49
+  end
+  object UseSSLCheckBox: TCheckBox
+    Position.X = 96.000000000000000000
+    Position.Y = 80.000000000000000000
+    TabOrder = 54
+    Text = 'Use SSL next time'
   end
   object IdServerIOHandlerSSLOpenSSL: TIdServerIOHandlerSSLOpenSSL
     SSLOptions.Mode = sslmUnassigned

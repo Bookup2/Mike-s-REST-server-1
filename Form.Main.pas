@@ -72,6 +72,7 @@ type
     Button1: TButton;
     IdServerIOHandlerSSLOpenSSL: TIdServerIOHandlerSSLOpenSSL;
     PortLabel: TLabel;
+    UseSSLCheckBox: TCheckBox;
     procedure FormCreate(Sender: TObject);
     procedure ButtonStartClick(Sender: TObject);
     procedure ButtonStopClick(Sender: TObject);
@@ -196,6 +197,7 @@ const
   kCertificateFileName = 'Certificate\cert.pem';
   kPrivateKeyFileName = 'Certificate\privkey.pem';
   kINIFileName = 'ServerSettings.INI';
+  kINIUsingSSLTag = 'UsingSSL';
   kINIEngineFilenameTag = 'EngineEXEFile';
   kINICacheFileNameTag = 'CacheFileName';  // /Cache Database/PocketGMCacheBook.PGC
   kINIStartUpAutomatically = 'StartUpAutomatically';
@@ -572,9 +574,16 @@ end;
 
 
 function TMainForm.ServerStatusForBrowser: String;
+var
+  theSSLLine: String;
+
 begin
+  if gUsingSSL
+    then theSSLLine := 'Using SSL'
+    else theSSLLine := 'Not using SSL';
+
     // FIXEDIN build 7
-  Result := kProgramVersionString + '<br>' +
+  Result := kProgramVersionString + ' ' + theSSLLine + '<br>' +
             'Number of engines running = ' + gNumberOfEnginesRunning.ToString + '<br>' +
             'Number of engines analyzing = ' + NumberOfEnginesAnalyzing.ToString + '<br>' +
             'Number of requests served = ' + AddCommasTo(fNumberOfRequestsServed.ToString);
@@ -845,9 +854,16 @@ begin
   EditLocalIP.Text := GetLocalIP;
   FServer := TIdHTTPWebBrokerBridge.Create(Self);
 
-    // FIXEDIN build 5
-  FServer.IOHandler := IdServerIOHandlerSSLOpenSSL;
-  FServer.DefaultPort := 8443;
+    // FIXEDIN build 8
+  if gUsingSSL
+    then
+      begin
+        FServer.IOHandler := IdServerIOHandlerSSLOpenSSL;
+        FServer.DefaultPort := 8443;
+      end
+    else FServer.DefaultPort := 80;
+
+  PortLabel.Text := FServer.DefaultPort.ToString;
 
   // fSSL := TIdServerIOHandlerSSLOpenSSL.Create(nil);     Using a component dropped onto the form instead.
 
@@ -910,6 +926,10 @@ begin
 
 
   fClientDatabaseFileName       := theINIFile.ReadString('ProgramPreferences', kINICientDatabaseFileNameTag, 'ClientDatabase.db');
+  gUsingSSL                                  := theINIFile.ReadBool('ProgramPreferences', kINIUsingSSLTag, False);
+
+  UseSSLCheckBox.IsChecked := gUsingSSL;
+
   gCOWProWinRegistrationDatabaseFileName     := theINIFile.ReadString('ProgramPreferences', kINIRegistrationDatabaseFileNameTag, 'COWProWinRegistrationDatabase.db');
   gCOWProMacRegistrationDatabaseFileName     := theINIFile.ReadString('ProgramPreferences', kINIRegistrationDatabaseFileNameTag, 'COWProMacRegistrationDatabase.db');
   gCOWExpressWinRegistrationDatabaseFileName := theINIFile.ReadString('ProgramPreferences', kINIRegistrationDatabaseFileNameTag, 'COWExpressWinRegistrationDatabase.db');
@@ -1062,6 +1082,8 @@ begin
 
   theINIFile.WriteBool('ProgramPreferences', kINIStartUpAutomatically, fStartUpAutomatically);
 
+  theINIFile.WriteBool('ProgramPreferences', kINIUsingSSLTag, UseSSLCheckBox.IsChecked);
+
   theINIFile.WriteInteger('ProgramPreferences', kININumberOfEngines, Trunc(NumberOfEnginesSpinBox.value));
 
   // fClientDatabaseFileName := theINIFile.ReadString('ProgramPreferences', kINICientDatabaseFileNameTag, 'ClientDatabase.db');
@@ -1198,8 +1220,21 @@ begin
     FServer.Bindings.Clear;
     // FServer.DefaultPort := StrToInt(EditPort.Text);
 
-    FServer.Bindings.Add.Port := 8443;
-    PortLabel.Text := '8443';
+    // FIXEDIN build 8
+    if gUsingSSL
+      then
+        begin
+          FServer.Bindings.Add.Port := 8443;
+          FServer.DefaultPort := 8443;
+        end
+      else
+        begin
+          FServer.Bindings.Add.Port := 80;
+          FServer.DefaultPort := 80;
+        end;
+
+    PortLabel.Text := FServer.DefaultPort.ToString;
+
     FServer.Active := True;
   end;
 end;
