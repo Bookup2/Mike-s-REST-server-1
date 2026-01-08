@@ -18,7 +18,8 @@ uses
 
   PocketGMBook,
   ClientDatabase,
-  RegistrationDatabase;
+  RegistrationDatabase, IdCTypes, IdSSLOpenSSLHeaders, IdBaseComponent,
+  IdComponent, IdServerIOHandler, IdSSL, IdSSLOpenSSL;
 
 
 type
@@ -70,6 +71,7 @@ type
     Label13: TLabel;
     StartedAutomaticallyLabel: TLabel;
     Button1: TButton;
+    IdServerIOHandlerSSLOpenSSL: TIdServerIOHandlerSSLOpenSSL;
     procedure FormCreate(Sender: TObject);
     procedure ButtonStartClick(Sender: TObject);
     procedure ButtonStopClick(Sender: TObject);
@@ -115,6 +117,8 @@ type
     fChessEngineDataThread: TChessEngineDataThread;
 
     FServer: TIdHTTPWebBrokerBridge;
+
+    // fSSL: TIdServerIOHandlerSSLOpenSSL;     // FIXEDIN build 5
 
     fNumberOfRequestsServed: Cardinal;
     fNumberOfServerBusy: Cardinal;
@@ -186,6 +190,8 @@ const
 
   kClientDatabaseFolder = 'Client Database';
   kCOWRegistrationDatabaseFolder = 'COW Registration Database';
+  kCertificateFileName = 'Certificate\cert.pem';
+  kPrivateKeyFileName = 'Certificate\privkey.pem';
   kINIFileName = 'ServerSettings.INI';
   kINIEngineFilenameTag = 'EngineEXEFile';
   kINICacheFileNameTag = 'CacheFileName';  // /Cache Database/PocketGMCacheBook.PGC
@@ -774,6 +780,8 @@ var
   theEXEFileName: String;
   K: Integer;
   theFolder: String;
+  theCertificateFileName,
+  thePrivateKeyFileName: String;
 
 begin
   fCacheErrors := 0;
@@ -829,6 +837,24 @@ begin
 
   EditLocalIP.Text := GetLocalIP;
   FServer := TIdHTTPWebBrokerBridge.Create(Self);
+
+    // FIXEDIN build 5
+  FServer.IOHandler := IdServerIOHandlerSSLOpenSSL;
+  FServer.DefaultPort := 443;
+
+  // fSSL := TIdServerIOHandlerSSLOpenSSL.Create(nil);     Using a component dropped onto the form instead.
+
+  theCertificateFileName :=TPath.Combine(ExtractFilePath(ParamStr(0)), kCertificateFileName);
+  thePrivateKeyFileName :=TPath.Combine(ExtractFilePath(ParamStr(0)), kPrivateKeyFileName);
+
+  if not FileExists(theCertificateFileName) then ShowMessage('Certificate file is missing.' + #13 + theCertificateFileName);
+  if not FileExists(thePrivateKeyFileName) then ShowMessage('Privat key file is missing.' + #13 + thePrivateKeyFileName);
+
+  IdServerIOHandlerSSLOpenSSL.SSLOptions.CertFile := theCertificateFileName;
+  IdServerIOHandlerSSLOpenSSL.SSLOptions.KeyFile  := thePrivateKeyFileName;
+  IdServerIOHandlerSSLOpenSSL.SSLOptions.Method   := sslvTLSv1_2;
+  IdServerIOHandlerSSLOpenSSL.SSLOptions.Mode     := sslmServer;
+
   Application.OnIdle := ApplicationIdle;
 
   // TESTMemoryLeak := TButton.Create(nil);
