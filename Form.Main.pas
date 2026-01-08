@@ -135,6 +135,8 @@ type
     procedure LookForEnginesToCutOffByTooLongSinceLastClientRequest;
     function NumberOfEnginesAnalyzing: Integer;
 
+    procedure IdServerIOHandlerSSLOpenSSL1GetPassword(var Password: string);
+
   public
 
     // fRegistrationDatabaseFileName: String;
@@ -850,6 +852,10 @@ begin
   if not FileExists(theCertificateFileName) then ShowMessage('Certificate file is missing.' + #13 + theCertificateFileName);
   if not FileExists(thePrivateKeyFileName) then ShowMessage('Privat key file is missing.' + #13 + thePrivateKeyFileName);
 
+  // add getpassword method
+
+  IdServerIOHandlerSSLOpenSSL.OnGetPassword := IdServerIOHandlerSSLOpenSSL1GetPassword;
+
   IdServerIOHandlerSSLOpenSSL.SSLOptions.CertFile := theCertificateFileName;
   IdServerIOHandlerSSLOpenSSL.SSLOptions.KeyFile  := thePrivateKeyFileName;
   IdServerIOHandlerSSLOpenSSL.SSLOptions.Method   := sslvTLSv1_2;
@@ -1056,6 +1062,13 @@ begin
   theINIFile.Free;
 
   fServer.Free;
+end;
+
+
+
+procedure TMainForm.IdServerIOHandlerSSLOpenSSL1GetPassword(var Password: string);
+begin
+  Password := 'Sicilian';
 end;
 
 
