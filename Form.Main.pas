@@ -209,7 +209,7 @@ uses
 
 const
 
-  kProgramVersionString = 'PocketGM build 9 32 bit Jan 9, 2026';
+  kProgramVersionString = 'PocketGM build 9 32 bit 2:34PM Jan 9, 2026';
   kClientDatabaseFolder = 'Client Database';
   kCOWRegistrationDatabaseFolder = 'COW Registration Database';
   kCertificateFileName = 'Certificate\cert.pem';
