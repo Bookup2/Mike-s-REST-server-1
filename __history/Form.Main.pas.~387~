@@ -74,6 +74,7 @@ type
     PortLabel: TLabel;
     UseSSLCheckBox: TCheckBox;
     SSLVersionPopupBox: TPopupBox;
+    WhichFailedToLoadButton: TButton;
     procedure FormCreate(Sender: TObject);
     procedure ButtonStartClick(Sender: TObject);
     procedure ButtonStopClick(Sender: TObject);
@@ -85,6 +86,7 @@ type
     procedure LogFileButtonClick(Sender: TObject);
     procedure ExportClientsButtonClick(Sender: TObject);
     procedure Button1Click(Sender: TObject);
+    procedure WhichFailedToLoadButtonClick(Sender: TObject);
 
   private
 
@@ -141,6 +143,10 @@ type
     function NumberOfEnginesAnalyzing: Integer;
 
     procedure IdServerIOHandlerSSLOpenSSL1GetPassword(var Password: string);
+
+    procedure IdServerIOHandlerSSLOpenSSLStatus(ASender: TObject;
+                                                const AStatus: TIdStatus; const AStatusText: string);
+
 
   public
 
@@ -270,6 +276,15 @@ begin
   end;
   WSACleanup;
 end;
+
+
+
+procedure TMainForm.IdServerIOHandlerSSLOpenSSLStatus(ASender: TObject;
+  const AStatus: TIdStatus; const AStatusText: string);
+begin
+  RequestsMemo.Lines.Add('Indy status: ' + AStatusText);
+end;
+
 
 
 procedure TMainForm.ProcessRegistrationRequest(theCOWType: TCOWType;
@@ -804,6 +819,7 @@ var
   thePrivateKeyFileName,
   theFullChainFileName: String;
   theSSLVersionString: String;
+  theErrorMessage: String;
 
 begin
   fSSLVersion := sslvTLSv1_1;
@@ -940,20 +956,7 @@ begin
 
   FServer := TIdHTTPWebBrokerBridge.Create(Self);
 
-    // FIXEDIN build 8
-  if gUsingSSL
-    then
-      begin
-        fIdServerIOHandlerSSLOpenSSL := TIdServerIOHandlerSSLOpenSSL.Create(nil);
-
-        FServer.IOHandler := fIdServerIOHandlerSSLOpenSSL; // IdServerIOHandlerSSLOpenSSL;
-        FServer.DefaultPort := 443;
-      end
-    else
-      begin
-        fIdServerIOHandlerSSLOpenSSL := nil;
-        FServer.DefaultPort := 80;
-      end;
+  RequestsMemo.Lines.Add('Indy version: ' + FServer.Version);
 
   UseSSLCheckBox.IsChecked := gUsingSSL;
 
@@ -966,6 +969,8 @@ begin
   if not FileExists(theCertificateFileName) then ShowMessage('Certificate file is missing.' + #13 + theCertificateFileName);
   if not FileExists(thePrivateKeyFileName) then ShowMessage('Private key file is missing.' + #13 + thePrivateKeyFileName);
   if not FileExists(theFullChainFileName) then ShowMessage('Fullchain file is missing.' + #13 + theFullChainFileName);
+
+  try
 
   if gUsingSSL
     then
@@ -980,12 +985,32 @@ begin
         fIdServerIOHandlerSSLOpenSSL.SSLOptions.Mode     := sslmServer;
       end;
 
+  except
+
+    ShowMessage('Exception - Indy says: ' + WhichFailedToLoad);
+  end;
+
+  FServer := TIdHTTPWebBrokerBridge.Create(Self);
+
+  if gUsingSSL
+    then
+      begin
+        fIdServerIOHandlerSSLOpenSSL := TIdServerIOHandlerSSLOpenSSL.Create(nil);
+
+        FServer.IOHandler := fIdServerIOHandlerSSLOpenSSL; // IdServerIOHandlerSSLOpenSSL;
+        FServer.DefaultPort := 443;
+      end
+    else
+      begin
+        fIdServerIOHandlerSSLOpenSSL := nil;
+        FServer.DefaultPort := 80;
+      end;
+
   fCacheBook := TCachedServerReplyBook.Create;
   fCacheFileName := TPath.Combine(ExtractFilePath(ParamStr(0)), 'Cache Database\' + fCacheFileName);
 
   // CacheFolder := IncludeTrailingPathDelimiter(System.IOUtils.TPath.Combine(ExtractFilePath(ParamStr(0)), kFolderCache));
   // CacheFileName := System.IOUtils.TPath.Combine(CacheFolder, kPocketGMCacheBookFileName);
-
 
   fClientDatabase := TClientDatabase.Create;
 
@@ -1295,7 +1320,15 @@ begin
 
     PortLabel.Text := FServer.DefaultPort.ToString;
 
-    FServer.Active := True;
+    try
+
+      FServer.Active := True;
+
+    except
+
+      ShowMessage('Exception - Indy says: ' + WhichFailedToLoad);
+
+    end;
   end;
 end;
 
@@ -1410,6 +1443,12 @@ begin
     then fCacheBook.UpdateEverything(theFEN, theReplyForTheClient);
 end;
 
+
+
+procedure TMainForm.WhichFailedToLoadButtonClick(Sender: TObject);
+begin
+  ShowMessage('From Indy: ' + WhichFailedToLoad);
+end;
 
 
 end.

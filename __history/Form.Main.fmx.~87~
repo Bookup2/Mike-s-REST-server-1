@@ -57,9 +57,9 @@ object MainForm: TMainForm
     Touch.InteractiveGestures = [LongTap, DoubleTap]
     TabOrder = 6
     ReadOnly = True
-    Position.X = 136.000000000000000000
+    Position.X = 368.000000000000000000
     Position.Y = 80.000000000000000000
-    Size.Width = 337.000000000000000000
+    Size.Width = 193.000000000000000000
     Size.Height = 22.000000000000000000
     Size.PlatformDefault = False
   end
@@ -421,13 +421,13 @@ object MainForm: TMainForm
     Left = 744
     Top = 296
   end
-  object Label13: TLabel
+  object ProgramVersionLabel: TLabel
     Position.X = 376.000000000000000000
     Position.Y = 55.000000000000000000
-    Size.Width = 177.000000000000000000
+    Size.Width = 233.000000000000000000
     Size.Height = 17.000000000000000000
     Size.PlatformDefault = False
-    Text = 'Jan 2026 build 7 64bit'
+    Text = 'Jan 2026 build 7 32bit'
     TabOrder = 39
   end
   object StartedAutomaticallyLabel: TLabel
@@ -447,7 +447,7 @@ object MainForm: TMainForm
     OnClick = Button1Click
   end
   object PortLabel: TLabel
-    Position.X = 16.000000000000000000
+    Position.X = 13.000000000000000000
     Position.Y = 80.000000000000000000
     Size.Width = 73.000000000000000000
     Size.Height = 17.000000000000000000
@@ -455,7 +455,38 @@ object MainForm: TMainForm
     Text = 'PortLabel'
     TabOrder = 49
   end
-  object IdServerIOHandlerSSLOpenSSL: TIdServerIOHandlerSSLOpenSSL
+  object UseSSLCheckBox: TCheckBox
+    Position.X = 96.000000000000000000
+    Position.Y = 80.000000000000000000
+    TabOrder = 54
+    Text = 'Use SSL next time'
+  end
+  object SSLVersionPopupBox: TPopupBox
+    Items.Strings = (
+      'sslvSSLv2'
+      'sslvSSLv23'
+      'sslvSSLv3'
+      'sslvTLSv1'
+      'sslvTLSv1_1'
+      'sslvTLSv1_2')
+    Position.X = 232.000000000000000000
+    Position.Y = 80.000000000000000000
+    Size.Width = 105.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 59
+  end
+  object WhichFailedToLoadButton: TButton
+    Position.X = 272.000000000000000000
+    Position.Y = 144.000000000000000000
+    Size.Width = 129.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 61
+    Text = 'WhichFailedToLoadButton'
+    OnClick = WhichFailedToLoadButtonClick
+  end
+  object IdServerIOHandlerSSLOpenSSLHOLD: TIdServerIOHandlerSSLOpenSSL
     SSLOptions.Mode = sslmUnassigned
     SSLOptions.VerifyMode = []
     SSLOptions.VerifyDepth = 0

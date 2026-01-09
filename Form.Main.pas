@@ -19,7 +19,8 @@ uses
   PocketGMBook,
   ClientDatabase,
   RegistrationDatabase, IdCTypes, IdSSLOpenSSLHeaders, IdBaseComponent,
-  IdComponent, IdServerIOHandler, IdSSL, IdSSLOpenSSL, FMX.ExtCtrls;
+  IdComponent, IdServerIOHandler, IdSSL, IdSSLOpenSSL, FMX.ExtCtrls,
+  IdIntercept, IdLogBase, IdLogFile;
 
 
 type
@@ -75,6 +76,7 @@ type
     UseSSLCheckBox: TCheckBox;
     SSLVersionPopupBox: TPopupBox;
     WhichFailedToLoadButton: TButton;
+    IdLogFile1: TIdLogFile;
     procedure FormCreate(Sender: TObject);
     procedure ButtonStartClick(Sender: TObject);
     procedure ButtonStopClick(Sender: TObject);
@@ -87,6 +89,12 @@ type
     procedure ExportClientsButtonClick(Sender: TObject);
     procedure Button1Click(Sender: TObject);
     procedure WhichFailedToLoadButtonClick(Sender: TObject);
+    procedure IdLogFile1Connect(ASender: TIdConnectionIntercept);
+    procedure IdLogFile1Disconnect(ASender: TIdConnectionIntercept);
+    procedure IdLogFile1Receive(ASender: TIdConnectionIntercept;
+      var ABuffer: TIdBytes);
+    procedure IdLogFile1Send(ASender: TIdConnectionIntercept;
+      var ABuffer: TIdBytes);
 
   private
 
@@ -144,6 +152,10 @@ type
 
     procedure IdServerIOHandlerSSLOpenSSL1GetPassword(var Password: string);
 
+    procedure IdServerIOHandlerSSLOpenSSLStatus(ASender: TObject;
+                                                const AStatus: TIdStatus; const AStatusText: string);
+
+
   public
 
     // fRegistrationDatabaseFileName: String;
@@ -197,7 +209,7 @@ uses
 
 const
 
-  kProgramVersionString = 'PocketGM build 9 64 bit Jan 9, 2026';
+  kProgramVersionString = 'PocketGM build 9 32 bit Jan 9, 2026';
   kClientDatabaseFolder = 'Client Database';
   kCOWRegistrationDatabaseFolder = 'COW Registration Database';
   kCertificateFileName = 'Certificate\cert.pem';
@@ -272,6 +284,15 @@ begin
   end;
   WSACleanup;
 end;
+
+
+
+procedure TMainForm.IdServerIOHandlerSSLOpenSSLStatus(ASender: TObject;
+  const AStatus: TIdStatus; const AStatusText: string);
+begin
+  RequestsMemo.Lines.Add('Indy status: ' + AStatusText);
+end;
+
 
 
 procedure TMainForm.ProcessRegistrationRequest(theCOWType: TCOWType;
@@ -809,7 +830,7 @@ var
   theErrorMessage: String;
 
 begin
-  fSSLVersion := sslvTLSv1_1;
+  fSSLVersion := sslvTLSv1_2;
 
   ProgramVersionLabel.Text := kProgramVersionString;
 
@@ -943,20 +964,7 @@ begin
 
   FServer := TIdHTTPWebBrokerBridge.Create(Self);
 
-    // FIXEDIN build 8
-  if gUsingSSL
-    then
-      begin
-        fIdServerIOHandlerSSLOpenSSL := TIdServerIOHandlerSSLOpenSSL.Create(nil);
-
-        FServer.IOHandler := fIdServerIOHandlerSSLOpenSSL; // IdServerIOHandlerSSLOpenSSL;
-        FServer.DefaultPort := 443;
-      end
-    else
-      begin
-        fIdServerIOHandlerSSLOpenSSL := nil;
-        FServer.DefaultPort := 80;
-      end;
+  RequestsMemo.Lines.Add('Indy version: ' + FServer.Version);
 
   UseSSLCheckBox.IsChecked := gUsingSSL;
 
@@ -975,27 +983,43 @@ begin
   if gUsingSSL
     then
       begin
+        fIdServerIOHandlerSSLOpenSSL := TIdServerIOHandlerSSLOpenSSL.Create(nil);
+
         fIdServerIOHandlerSSLOpenSSL.OnGetPassword := IdServerIOHandlerSSLOpenSSL1GetPassword;
 
         fIdServerIOHandlerSSLOpenSSL.SSLOptions.CertFile := theCertificateFileName;
         fIdServerIOHandlerSSLOpenSSL.SSLOptions.KeyFile  := thePrivateKeyFileName;
         fIdServerIOHandlerSSLOpenSSL.SSLOptions.RootCertFile := theFullChainFileName;
           // TIdSSLVersion = (sslvSSLv2, sslvSSLv23, sslvSSLv3, sslvTLSv1,sslvTLSv1_1,sslvTLSv1_2);
-        fIdServerIOHandlerSSLOpenSSL.SSLOptions.Method   := fSSLVersion;  // sslvTLSv1_2  Originally recommended by AI
-        fIdServerIOHandlerSSLOpenSSL.SSLOptions.Mode     := sslmServer;
-      end;
+        fIdServerIOHandlerSSLOpenSSL.SSLOptions.Method      := fSSLVersion;  // sslvTLSv1_2  Originally recommended by AI
+        fIdServerIOHandlerSSLOpenSSL.SSLOptions.SSLVersions := [fSSLVersion];
+        fIdServerIOHandlerSSLOpenSSL.SSLOptions.Mode        := sslmServer;
+      end
+    else fIdServerIOHandlerSSLOpenSSL := nil;
 
   except
 
-    ShowMessage('Exception - Indy says: ' + WhichFailedToLoad);
+    ShowMessage('Exception creating TIdServerIOHandlerSSLOpenSSL - Indy says: ' + WhichFailedToLoad);
   end;
+
+  FServer := TIdHTTPWebBrokerBridge.Create(Self);
+
+  if gUsingSSL
+    then
+      begin
+        FServer.IOHandler := fIdServerIOHandlerSSLOpenSSL; // IdServerIOHandlerSSLOpenSSL;
+        FServer.DefaultPort := 443;
+      end
+    else
+      begin
+        FServer.DefaultPort := 80;
+      end;
 
   fCacheBook := TCachedServerReplyBook.Create;
   fCacheFileName := TPath.Combine(ExtractFilePath(ParamStr(0)), 'Cache Database\' + fCacheFileName);
 
   // CacheFolder := IncludeTrailingPathDelimiter(System.IOUtils.TPath.Combine(ExtractFilePath(ParamStr(0)), kFolderCache));
   // CacheFileName := System.IOUtils.TPath.Combine(CacheFolder, kPocketGMCacheBookFileName);
-
 
   fClientDatabase := TClientDatabase.Create;
 
@@ -1159,6 +1183,36 @@ begin
   theINIFile.Free;
 
   fServer.Free;
+end;
+
+
+
+procedure TMainForm.IdLogFile1Connect(ASender: TIdConnectionIntercept);
+begin
+  RequestsMemo.Lines.Add('Indy log Connect.');
+end;
+
+
+
+procedure TMainForm.IdLogFile1Disconnect(ASender: TIdConnectionIntercept);
+begin
+  RequestsMemo.Lines.Add('Indy log Disconnect.');
+end;
+
+
+
+procedure TMainForm.IdLogFile1Receive(ASender: TIdConnectionIntercept;
+  var ABuffer: TIdBytes);
+begin
+  RequestsMemo.Lines.Add('Indy log Received bytes');
+end;
+
+
+
+procedure TMainForm.IdLogFile1Send(ASender: TIdConnectionIntercept;
+  var ABuffer: TIdBytes);
+begin
+  RequestsMemo.Lines.Add('Indy log Send.');
 end;
 
 

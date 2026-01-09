@@ -482,7 +482,7 @@ object MainForm: TMainForm
     Size.Width = 129.000000000000000000
     Size.Height = 22.000000000000000000
     Size.PlatformDefault = False
-    TabOrder = 61
+    TabOrder = 60
     Text = 'WhichFailedToLoadButton'
     OnClick = WhichFailedToLoadButtonClick
   end
@@ -492,5 +492,13 @@ object MainForm: TMainForm
     SSLOptions.VerifyDepth = 0
     Left = 690
     Top = 411
+  end
+  object IdLogFile1: TIdLogFile
+    OnConnect = IdLogFile1Connect
+    OnDisconnect = IdLogFile1Disconnect
+    OnReceive = IdLogFile1Receive
+    OnSend = IdLogFile1Send
+    Left = 890
+    Top = 507
   end
 end
