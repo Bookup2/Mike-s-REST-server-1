@@ -74,6 +74,7 @@ type
     PortLabel: TLabel;
     UseSSLCheckBox: TCheckBox;
     SSLVersionPopupBox: TPopupBox;
+    WhichFailedToLoadButton: TButton;
     procedure FormCreate(Sender: TObject);
     procedure ButtonStartClick(Sender: TObject);
     procedure ButtonStopClick(Sender: TObject);
@@ -85,6 +86,7 @@ type
     procedure LogFileButtonClick(Sender: TObject);
     procedure ExportClientsButtonClick(Sender: TObject);
     procedure Button1Click(Sender: TObject);
+    procedure WhichFailedToLoadButtonClick(Sender: TObject);
 
   private
 
@@ -195,7 +197,7 @@ uses
 
 const
 
-  kProgramVersionString = 'PocketGM build 9 32 bit Jan 9, 2026';
+  kProgramVersionString = 'PocketGM build 9 64 bit Jan 9, 2026';
   kClientDatabaseFolder = 'Client Database';
   kCOWRegistrationDatabaseFolder = 'COW Registration Database';
   kCertificateFileName = 'Certificate\cert.pem';
@@ -804,9 +806,10 @@ var
   thePrivateKeyFileName,
   theFullChainFileName: String;
   theSSLVersionString: String;
+  theErrorMessage: String;
 
 begin
-  fSSLVersion := sslvTLSv1;
+  fSSLVersion := sslvTLSv1_1;
 
   ProgramVersionLabel.Text := kProgramVersionString;
 
@@ -913,7 +916,7 @@ begin
   UseSSLCheckBox.IsChecked := gUsingSSL;
 
   // TIdSSLVersion = (sslvSSLv2, sslvSSLv23, sslvSSLv3, sslvTLSv1,sslvTLSv1_1,sslvTLSv1_2);
-  theSSLVersionString := theINIFile.ReadString('ProgramPreferences', kINISSLVersionTag, 'sslvTLSv1');
+  theSSLVersionString := theINIFile.ReadString('ProgramPreferences', kINISSLVersionTag, 'sslvTLSv1_1');
 
   if theSSLVersionString = 'sslvTLSv1' then fSSLVersion := sslvTLSv1;
   if theSSLVersionString = 'sslvSSLv2' then fSSLVersion := sslvSSLv2;
@@ -967,6 +970,8 @@ begin
   if not FileExists(thePrivateKeyFileName) then ShowMessage('Private key file is missing.' + #13 + thePrivateKeyFileName);
   if not FileExists(theFullChainFileName) then ShowMessage('Fullchain file is missing.' + #13 + theFullChainFileName);
 
+  try
+
   if gUsingSSL
     then
       begin
@@ -979,6 +984,11 @@ begin
         fIdServerIOHandlerSSLOpenSSL.SSLOptions.Method   := fSSLVersion;  // sslvTLSv1_2  Originally recommended by AI
         fIdServerIOHandlerSSLOpenSSL.SSLOptions.Mode     := sslmServer;
       end;
+
+  except
+
+    ShowMessage('Exception - Indy says: ' + WhichFailedToLoad);
+  end;
 
   fCacheBook := TCachedServerReplyBook.Create;
   fCacheFileName := TPath.Combine(ExtractFilePath(ParamStr(0)), 'Cache Database\' + fCacheFileName);
@@ -1295,7 +1305,15 @@ begin
 
     PortLabel.Text := FServer.DefaultPort.ToString;
 
-    FServer.Active := True;
+    try
+
+      FServer.Active := True;
+
+    except
+
+      ShowMessage('Exception - Indy says: ' + WhichFailedToLoad);
+
+    end;
   end;
 end;
 
@@ -1410,6 +1428,12 @@ begin
     then fCacheBook.UpdateEverything(theFEN, theReplyForTheClient);
 end;
 
+
+
+procedure TMainForm.WhichFailedToLoadButtonClick(Sender: TObject);
+begin
+  ShowMessage('From Indy: ' + WhichFailedToLoad);
+end;
 
 
 end.
