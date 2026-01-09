@@ -113,9 +113,9 @@ EditViewName=C:\dev\Mike-s-REST-server-1\PocketGMServer.dpr
 [View2]
 CustomEditViewType=TEditView
 Module=C:\dev\Mike-s-REST-server-1\Form.Main.pas
-CursorX=16
-CursorY=1074
-TopLine=1067
+CursorX=47
+CursorY=575
+TopLine=562
 LeftCol=1
 Elisions=
 Bookmarks=
@@ -191,8 +191,8 @@ StayOnTop=0
 
 [Breakpoints]
 Count=2
-Breakpoint0='C:\dev\Mike-s-REST-server-1\Form.Main.pas',859,'',0,1,'',1,0,0,'',1,'','','',0,''
-Breakpoint1='C:\dev\Mike-s-REST-server-1\Form.Main.pas',1071,'',0,1,'',1,0,0,'',1,'','','',0,''
+Breakpoint0='C:\dev\Mike-s-REST-server-1\Form.Main.pas',860,'',0,1,'',1,0,0,'',1,'','','',0,''
+Breakpoint1='C:\dev\Mike-s-REST-server-1\Form.Main.pas',1072,'',0,1,'',1,0,0,'',1,'','','',0,''
 
 [EmbarcaderoWin32Debugger_AddressBreakpoints]
 Count=0
@@ -316,7 +316,7 @@ SplitPos=111
 
 [PropInspDesignerSelection]
 ArrangeBy=Name
-SelectedItem=Caption,AfterDispatch
+SelectedItem=Name,AfterDispatch
 ExpandedItems=Border=0,BorderIcons=0,Constraints=0,Fill=0,FormFactor=0,"LiveBindings Designer=0",Anchors=0,Caret=0,LiveBindings=0,Margins=0,Padding=0,Position=0,RotationCenter=0,Scale=0,Size=0,StyledSettings=0,TextSettings=0,Touch=0,TouchTargetExpansion=0
 
 [frmDesignPreview]

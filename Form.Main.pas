@@ -693,7 +693,7 @@ begin
   StartServer;
 {$IFDEF MSWINDOWS}
   // LURL := Format('http://localhost:%s', [EditPort.Text]);
-  LURL := 'http://localhost:8443';
+  LURL := 'http://localhost:443';
   ShellExecute(0,
         nil,
         PChar(LURL), nil, nil, SW_SHOWNOACTIVATE);
@@ -920,7 +920,7 @@ begin
         fIdServerIOHandlerSSLOpenSSL := TIdServerIOHandlerSSLOpenSSL.Create(nil);
 
         FServer.IOHandler := fIdServerIOHandlerSSLOpenSSL; // IdServerIOHandlerSSLOpenSSL;
-        FServer.DefaultPort := 8443;
+        FServer.DefaultPort := 443;
       end
     else
       begin
@@ -1241,8 +1241,8 @@ begin
     if gUsingSSL
       then
         begin
-          FServer.Bindings.Add.Port := 8443;
-          FServer.DefaultPort := 8443;
+          FServer.Bindings.Add.Port := 443;
+          FServer.DefaultPort := 443;
         end
       else
         begin
