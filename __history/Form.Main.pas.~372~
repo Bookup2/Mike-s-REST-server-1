@@ -19,7 +19,7 @@ uses
   PocketGMBook,
   ClientDatabase,
   RegistrationDatabase, IdCTypes, IdSSLOpenSSLHeaders, IdBaseComponent,
-  IdComponent, IdServerIOHandler, IdSSL, IdSSLOpenSSL;
+  IdComponent, IdServerIOHandler, IdSSL, IdSSLOpenSSL, FMX.ExtCtrls;
 
 
 type
@@ -73,6 +73,7 @@ type
     IdServerIOHandlerSSLOpenSSLHOLD: TIdServerIOHandlerSSLOpenSSL;
     PortLabel: TLabel;
     UseSSLCheckBox: TCheckBox;
+    SSLVersionPopupBox: TPopupBox;
     procedure FormCreate(Sender: TObject);
     procedure ButtonStartClick(Sender: TObject);
     procedure ButtonStopClick(Sender: TObject);
@@ -86,6 +87,9 @@ type
     procedure Button1Click(Sender: TObject);
 
   private
+
+        // TIdSSLVersion = (sslvSSLv2, sslvSSLv23, sslvSSLv3, sslvTLSv1,sslvTLSv1_1,sslvTLSv1_2);
+    fSSLVersion: TIdSSLVersion;
 
     fStartUpAutomatically: Boolean;
     fNumberOfEngines: Integer;
@@ -191,14 +195,15 @@ uses
 
 const
 
-  kProgramVersionString = 'PocketGM build 8 32 bit Jan 8, 2026';
+  kProgramVersionString = 'PocketGM build 8 64 bit Jan 8, 2026';
   kClientDatabaseFolder = 'Client Database';
   kCOWRegistrationDatabaseFolder = 'COW Registration Database';
   kCertificateFileName = 'Certificate\cert.pem';
-  kPrivateKeyFileName = 'Certificate\privkey.pem';
-  kFullChainFileName = 'Certifcate\fullchain.pem';
+  kPrivateKeyFileName  = 'Certificate\privkey.pem';
+  kFullChainFileName   = 'Certificate\fullchain.pem';
   kINIFileName = 'ServerSettings.INI';
   kINIUsingSSLTag = 'UsingSSL';
+  kINISSLVersionTag = 'SSLVersion';
   kINIEngineFilenameTag = 'EngineEXEFile';
   kINICacheFileNameTag = 'CacheFileName';  // /Cache Database/PocketGMCacheBook.PGC
   kINIStartUpAutomatically = 'StartUpAutomatically';
@@ -693,7 +698,7 @@ begin
   StartServer;
 {$IFDEF MSWINDOWS}
   // LURL := Format('http://localhost:%s', [EditPort.Text]);
-  LURL := 'http://localhost:8443';
+  LURL := 'http://localhost:443';
   ShellExecute(0,
         nil,
         PChar(LURL), nil, nil, SW_SHOWNOACTIVATE);
@@ -798,8 +803,11 @@ var
   theCertificateFileName,
   thePrivateKeyFileName,
   theFullChainFileName: String;
+  theSSLVersionString: String;
 
 begin
+  fSSLVersion := sslvTLSv1;
+
   ProgramVersionLabel.Text := kProgramVersionString;
 
   fCacheErrors := 0;
@@ -854,49 +862,7 @@ begin
   EngineStatusStringGrid.AddObject(fColumnPV);
 
   EditLocalIP.Text := GetLocalIP;
-  FServer := TIdHTTPWebBrokerBridge.Create(Self);
 
-    // FIXEDIN build 8
-  if gUsingSSL
-    then
-      begin
-        fIdServerIOHandlerSSLOpenSSL := TIdServerIOHandlerSSLOpenSSL.Create(nil);
-
-        FServer.IOHandler := fIdServerIOHandlerSSLOpenSSL; // IdServerIOHandlerSSLOpenSSL;
-        FServer.DefaultPort := 8443;
-      end
-    else
-      begin
-        fIdServerIOHandlerSSLOpenSSL := nil;
-        FServer.DefaultPort := 80;
-      end;
-
-  UseSSLCheckBox.IsChecked := gUsingSSL;
-
-  PortLabel.Text := FServer.DefaultPort.ToString;
-
-
-  theCertificateFileName :=TPath.Combine(ExtractFilePath(ParamStr(0)), kCertificateFileName);
-  thePrivateKeyFileName :=TPath.Combine(ExtractFilePath(ParamStr(0)), kPrivateKeyFileName);
-  theFullChainFileName :=TPath.Combine(ExtractFilePath(ParamStr(0)), kFullChainFileName);
-
-  if not FileExists(theCertificateFileName) then ShowMessage('Certificate file is missing.' + #13 + theCertificateFileName);
-  if not FileExists(thePrivateKeyFileName) then ShowMessage('Privat key file is missing.' + #13 + thePrivateKeyFileName);
-                            theFullChainFileName
-
-  // add getpassword method
-
-  if gUsingSSL
-    then
-      begin
-        fIdServerIOHandlerSSLOpenSSL.OnGetPassword := IdServerIOHandlerSSLOpenSSL1GetPassword;
-
-        fIdServerIOHandlerSSLOpenSSL.SSLOptions.CertFile := theCertificateFileName;
-        fIdServerIOHandlerSSLOpenSSL.SSLOptions.KeyFile  := thePrivateKeyFileName;
-        fIdServerIOHandlerSSLOpenSSL.SSLOptions.RootCertFile := theFullChainFileName;
-        fIdServerIOHandlerSSLOpenSSL.SSLOptions.Method   := sslvTLSv1_2;
-        fIdServerIOHandlerSSLOpenSSL.SSLOptions.Mode     := sslmServer;
-      end;
 
   Application.OnIdle := ApplicationIdle;
 
@@ -942,9 +908,28 @@ begin
 
 
   fClientDatabaseFileName       := theINIFile.ReadString('ProgramPreferences', kINICientDatabaseFileNameTag, 'ClientDatabase.db');
-  gUsingSSL                                  := theINIFile.ReadBool('ProgramPreferences', kINIUsingSSLTag, False);
+  gUsingSSL                     := theINIFile.ReadBool  ('ProgramPreferences', kINIUsingSSLTag, False);
 
   UseSSLCheckBox.IsChecked := gUsingSSL;
+
+  // TIdSSLVersion = (sslvSSLv2, sslvSSLv23, sslvSSLv3, sslvTLSv1,sslvTLSv1_1,sslvTLSv1_2);
+  theSSLVersionString := theINIFile.ReadString('ProgramPreferences', kINISSLVersionTag, 'sslvTLSv1');
+
+  if theSSLVersionString = 'sslvTLSv1' then fSSLVersion := sslvTLSv1;
+  if theSSLVersionString = 'sslvSSLv2' then fSSLVersion := sslvSSLv2;
+  if theSSLVersionString = 'sslvSSLv23' then fSSLVersion := sslvSSLv23;
+  if theSSLVersionString = 'sslvSSLv3' then fSSLVersion := sslvSSLv3;
+  if theSSLVersionString = 'sslvTLSv1_1' then fSSLVersion := sslvTLSv1_1;
+  if theSSLVersionString = 'sslvTLSv1_2' then fSSLVersion := sslvTLSv1_2;
+
+  case fSSLVersion of
+    sslvSSLv2: SSLVersionPopupBox.ItemIndex := 0;
+    sslvSSLv23: SSLVersionPopupBox.ItemIndex := 1;
+    sslvSSLv3: SSLVersionPopupBox.ItemIndex := 2;
+    sslvTLSv1: SSLVersionPopupBox.ItemIndex := 3;
+    sslvTLSv1_1: SSLVersionPopupBox.ItemIndex := 4;
+    sslvTLSv1_2: SSLVersionPopupBox.ItemIndex := 5;
+  end;
 
   gCOWProWinRegistrationDatabaseFileName     := theINIFile.ReadString('ProgramPreferences', kINIRegistrationDatabaseFileNameTag, 'COWProWinRegistrationDatabase.db');
   gCOWProMacRegistrationDatabaseFileName     := theINIFile.ReadString('ProgramPreferences', kINIRegistrationDatabaseFileNameTag, 'COWProMacRegistrationDatabase.db');
@@ -952,6 +937,48 @@ begin
   gCOWExpressMacRegistrationDatabaseFileName := theINIFile.ReadString('ProgramPreferences', kINIRegistrationDatabaseFileNameTag, 'COWExpressMacRegistrationDatabase.db');
 
   theINIFile.Free;
+
+  FServer := TIdHTTPWebBrokerBridge.Create(Self);
+
+    // FIXEDIN build 8
+  if gUsingSSL
+    then
+      begin
+        fIdServerIOHandlerSSLOpenSSL := TIdServerIOHandlerSSLOpenSSL.Create(nil);
+
+        FServer.IOHandler := fIdServerIOHandlerSSLOpenSSL; // IdServerIOHandlerSSLOpenSSL;
+        FServer.DefaultPort := 443;
+      end
+    else
+      begin
+        fIdServerIOHandlerSSLOpenSSL := nil;
+        FServer.DefaultPort := 80;
+      end;
+
+  UseSSLCheckBox.IsChecked := gUsingSSL;
+
+  PortLabel.Text := FServer.DefaultPort.ToString;
+
+  theCertificateFileName :=TPath.Combine(ExtractFilePath(ParamStr(0)), kCertificateFileName);
+  thePrivateKeyFileName :=TPath.Combine(ExtractFilePath(ParamStr(0)), kPrivateKeyFileName);
+  theFullChainFileName :=TPath.Combine(ExtractFilePath(ParamStr(0)), kFullChainFileName);
+
+  if not FileExists(theCertificateFileName) then ShowMessage('Certificate file is missing.' + #13 + theCertificateFileName);
+  if not FileExists(thePrivateKeyFileName) then ShowMessage('Private key file is missing.' + #13 + thePrivateKeyFileName);
+  if not FileExists(theFullChainFileName) then ShowMessage('Fullchain file is missing.' + #13 + theFullChainFileName);
+
+  if gUsingSSL
+    then
+      begin
+        fIdServerIOHandlerSSLOpenSSL.OnGetPassword := IdServerIOHandlerSSLOpenSSL1GetPassword;
+
+        fIdServerIOHandlerSSLOpenSSL.SSLOptions.CertFile := theCertificateFileName;
+        fIdServerIOHandlerSSLOpenSSL.SSLOptions.KeyFile  := thePrivateKeyFileName;
+        fIdServerIOHandlerSSLOpenSSL.SSLOptions.RootCertFile := theFullChainFileName;
+          // TIdSSLVersion = (sslvSSLv2, sslvSSLv23, sslvSSLv3, sslvTLSv1,sslvTLSv1_1,sslvTLSv1_2);
+        fIdServerIOHandlerSSLOpenSSL.SSLOptions.Method   := fSSLVersion;  // sslvTLSv1_2  Originally recommended by AI
+        fIdServerIOHandlerSSLOpenSSL.SSLOptions.Mode     := sslmServer;
+      end;
 
   fCacheBook := TCachedServerReplyBook.Create;
   fCacheFileName := TPath.Combine(ExtractFilePath(ParamStr(0)), 'Cache Database\' + fCacheFileName);
@@ -1100,6 +1127,21 @@ begin
 
   theINIFile.WriteBool('ProgramPreferences', kINIUsingSSLTag, UseSSLCheckBox.IsChecked);
 
+  case SSLVersionPopupBox.ItemIndex of
+    0: theINIFile.WriteString('ProgramPreferences', kINISSLVersionTag, 'sslvSSLv2');
+    1: theINIFile.WriteString('ProgramPreferences', kINISSLVersionTag, 'sslvSSLv23');
+    2: theINIFile.WriteString('ProgramPreferences', kINISSLVersionTag, 'sslvSSLv3');
+    3: theINIFile.WriteString('ProgramPreferences', kINISSLVersionTag, 'sslvTLSv1');
+    4: theINIFile.WriteString('ProgramPreferences', kINISSLVersionTag, 'sslvTLSv1_1');
+    5: theINIFile.WriteString('ProgramPreferences', kINISSLVersionTag, 'sslvTLSv1_2');
+
+    else
+      begin
+        ShowMessage('Error with SSLVersionPopupBox.ItemIndex');
+        theINIFile.WriteString('ProgramPreferences', kINISSLVersionTag, 'sslvTLSv1');
+      end;
+  end;
+
   theINIFile.WriteInteger('ProgramPreferences', kININumberOfEngines, Trunc(NumberOfEnginesSpinBox.value));
 
   // fClientDatabaseFileName := theINIFile.ReadString('ProgramPreferences', kINICientDatabaseFileNameTag, 'ClientDatabase.db');
@@ -1114,6 +1156,8 @@ end;
 procedure TMainForm.IdServerIOHandlerSSLOpenSSL1GetPassword(var Password: string);
 begin
   Password := 'Sicilian';
+
+  RequestsMemo.Lines.Add('SSL Certificate password checked.');
 end;
 
 
@@ -1240,8 +1284,8 @@ begin
     if gUsingSSL
       then
         begin
-          FServer.Bindings.Add.Port := 8443;
-          FServer.DefaultPort := 8443;
+          FServer.Bindings.Add.Port := 443;
+          FServer.DefaultPort := 443;
         end
       else
         begin

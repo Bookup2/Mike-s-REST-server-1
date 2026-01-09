@@ -17,10 +17,10 @@ File_14=TSourceModule,'C:\dev\COW desktop master\EbookForm.pas',0,1,11319,10,113
 
 [Modules]
 Module0=C:\dev\Mike-s-REST-server-1\Form.Main.pas
-Module1=C:\dev\Mike-s-REST-server-1\Globals.pas
-Module2=C:\dev\Mike-s-REST-server-1\Form.COWRegistrations.pas
-Module3=C:\dev\Mike-s-REST-server-1\ClientDatabase.pas
-Module4=C:\dev\Mike-s-REST-server-1\PocketGMServer.dproj
+Module1=C:\dev\Mike-s-REST-server-1\PocketGMServer.dproj
+Module2=C:\dev\Mike-s-REST-server-1\Globals.pas
+Module3=C:\dev\Mike-s-REST-server-1\Form.COWRegistrations.pas
+Module4=C:\dev\Mike-s-REST-server-1\ClientDatabase.pas
 Module5=c:\program files (x86)\embarcadero\studio\37.0\source\Indy10\Protocols\IdSSLOpenSSLHeaders.pas
 Module6=C:\dev\Mike-s-REST-server-1\WebModuleUnit1.pas
 Module7=C:\dev\Mike-s-REST-server-1\GTypes.pas
@@ -30,6 +30,9 @@ EditWindowCount=1
 [C:\dev\Mike-s-REST-server-1\Form.Main.pas]
 ModuleType=TSourceModule
 
+[C:\dev\Mike-s-REST-server-1\PocketGMServer.dproj]
+ModuleType=TBaseProject
+
 [C:\dev\Mike-s-REST-server-1\Globals.pas]
 ModuleType=TSourceModule
 
@@ -38,9 +41,6 @@ ModuleType=TSourceModule
 
 [C:\dev\Mike-s-REST-server-1\ClientDatabase.pas]
 ModuleType=TSourceModule
-
-[C:\dev\Mike-s-REST-server-1\PocketGMServer.dproj]
-ModuleType=TBaseProject
 
 [c:\program files (x86)\embarcadero\studio\37.0\source\Indy10\Protocols\IdSSLOpenSSLHeaders.pas]
 ModuleType=TSourceModule
@@ -85,9 +85,9 @@ TopPanelSize=0
 LeftPanelSize=1896
 LeftPanelClients=PropertyInspector,DockSite3
 LeftPanelData=00000800010100000000420F00000000000001680700000000000001000000005C0E000009000000446F636B53697465330100000000201B00001100000050726F7065727479496E73706563746F72FFFFFFFF
-RightPanelSize=1625
+RightPanelSize=2000
 RightPanelClients=DockSite2,DockSite4
-RightPanelData=00000800010100000000420F00000000000001590600000000000001000000004412000009000000446F636B53697465320100000000201B000009000000446F636B5369746534FFFFFFFF
+RightPanelData=00000800010100000000420F00000000000001D00700000000000001000000004412000009000000446F636B53697465320100000000201B000009000000446F636B5369746534FFFFFFFF
 BottomPanelSize=1574
 BottomPanelClients=MessageView,DockSite1
 BottomPanelData=0000080001020100000009000000446F636B5369746531DE440000000000000226060000000000000100000000DE4400000F0000004D65737361676556696577466F726DFFFFFFFF
@@ -120,9 +120,9 @@ EditViewName=C:\dev\Mike-s-REST-server-1\PocketGMServer.dpr
 [View2]
 CustomEditViewType=TEditView
 Module=C:\dev\Mike-s-REST-server-1\Form.Main.pas
-CursorX=1
-CursorY=914
-TopLine=900
+CursorX=40
+CursorY=191
+TopLine=180
 LeftCol=1
 Elisions=
 Bookmarks=
@@ -261,11 +261,11 @@ Docked=1
 State=0
 Left=0
 Top=0
-Width=1625
+Width=2000
 Height=4273
 MaxLeft=-1
 MaxTop=-1
-ClientWidth=1625
+ClientWidth=2000
 ClientHeight=4273
 TBDockHeight=5901
 LRDockWidth=2349
@@ -299,11 +299,11 @@ Docked=1
 State=0
 Left=0
 Top=0
-Width=1625
+Width=2000
 Height=2103
 MaxLeft=-1
 MaxTop=-1
-ClientWidth=1625
+ClientWidth=2000
 ClientHeight=2103
 TBDockHeight=7151
 LRDockWidth=2000
@@ -326,16 +326,11 @@ ClientWidth=1896
 ClientHeight=3149
 PixelsPerInch=96
 MonitorNum=0
-TBDockHeight=9012
+TBDockHeight=8721
 LRDockWidth=1896
 Dockable=1
 StayOnTop=0
 SplitPos=111
-
-[PropInspDesignerSelection]
-ArrangeBy=Name
-SelectedItem=Name,AfterDispatch
-ExpandedItems=Border=0,BorderIcons=0,Constraints=0,Fill=0,FormFactor=0,"LiveBindings Designer=0",Anchors=0,Caret=0,LiveBindings=0,Margins=0,Padding=0,Position=0,RotationCenter=0,Scale=0,Size=0,StyledSettings=0,TextSettings=0,Touch=0,TouchTargetExpansion=0,SSLOptions=0
 
 [frmDesignPreview]
 PercentageSizes=1
@@ -345,12 +340,12 @@ Docked=1
 State=0
 Left=0
 Top=0
-Width=1625
-Height=6366
+Width=2000
+Height=8450
 MaxLeft=-1
 MaxTop=-1
-ClientWidth=1625
-ClientHeight=6366
+ClientWidth=2000
+ClientHeight=8450
 TBDockHeight=5959
 LRDockWidth=2510
 Dockable=1
@@ -486,11 +481,11 @@ State=0
 Left=0
 Top=0
 Width=2339
-Height=969
+Height=1202
 MaxLeft=-1
 MaxTop=-1
 ClientWidth=2339
-ClientHeight=969
+ClientHeight=1202
 TBDockHeight=2316
 LRDockWidth=2823
 Dockable=1
@@ -550,12 +545,12 @@ Docked=1
 State=0
 Left=0
 Top=0
-Width=1625
-Height=6366
+Width=2000
+Height=8450
 MaxLeft=-1
 MaxTop=-1
-ClientWidth=1625
-ClientHeight=6366
+ClientWidth=2000
+ClientHeight=8450
 TBDockHeight=4884
 LRDockWidth=7151
 Dockable=1
@@ -709,16 +704,16 @@ Docked=1
 State=0
 Left=0
 Top=28
-Width=1625
+Width=2000
 Height=4545
 MaxLeft=-1
 MaxTop=-1
-ClientWidth=1625
+ClientWidth=2000
 ClientHeight=4545
 PixelsPerInch=96
 MonitorNum=0
-TBDockHeight=9012
-LRDockWidth=1625
+TBDockHeight=8721
+LRDockWidth=2000
 Dockable=1
 StayOnTop=0
 TabPosition=1
@@ -743,7 +738,7 @@ ClientWidth=1896
 ClientHeight=3498
 PixelsPerInch=96
 MonitorNum=0
-TBDockHeight=9012
+TBDockHeight=8721
 LRDockWidth=1896
 Dockable=1
 StayOnTop=0
@@ -761,16 +756,16 @@ Docked=1
 State=0
 Left=0
 Top=533
-Width=1625
+Width=2000
 Height=2103
 MaxLeft=-1
 MaxTop=-1
-ClientWidth=1625
+ClientWidth=2000
 ClientHeight=2103
 PixelsPerInch=96
 MonitorNum=0
-TBDockHeight=9012
-LRDockWidth=1625
+TBDockHeight=8721
+LRDockWidth=2000
 Dockable=1
 StayOnTop=0
 TabPosition=1

@@ -19,7 +19,7 @@ uses
   PocketGMBook,
   ClientDatabase,
   RegistrationDatabase, IdCTypes, IdSSLOpenSSLHeaders, IdBaseComponent,
-  IdComponent, IdServerIOHandler, IdSSL, IdSSLOpenSSL;
+  IdComponent, IdServerIOHandler, IdSSL, IdSSLOpenSSL, FMX.ExtCtrls;
 
 
 type
@@ -73,6 +73,7 @@ type
     IdServerIOHandlerSSLOpenSSLHOLD: TIdServerIOHandlerSSLOpenSSL;
     PortLabel: TLabel;
     UseSSLCheckBox: TCheckBox;
+    SSLVersionPopupBox: TPopupBox;
     procedure FormCreate(Sender: TObject);
     procedure ButtonStartClick(Sender: TObject);
     procedure ButtonStopClick(Sender: TObject);
@@ -86,6 +87,9 @@ type
     procedure Button1Click(Sender: TObject);
 
   private
+
+        // TIdSSLVersion = (sslvSSLv2, sslvSSLv23, sslvSSLv3, sslvTLSv1,sslvTLSv1_1,sslvTLSv1_2);
+    fSSLVersion: TIdSSLVersion;
 
     fStartUpAutomatically: Boolean;
     fNumberOfEngines: Integer;
@@ -191,7 +195,7 @@ uses
 
 const
 
-  kProgramVersionString = 'PocketGM build 8 64 bit Jan 8, 2026';
+  kProgramVersionString = 'PocketGM build 9 32 bit Jan 9, 2026';
   kClientDatabaseFolder = 'Client Database';
   kCOWRegistrationDatabaseFolder = 'COW Registration Database';
   kCertificateFileName = 'Certificate\cert.pem';
@@ -199,6 +203,7 @@ const
   kFullChainFileName   = 'Certificate\fullchain.pem';
   kINIFileName = 'ServerSettings.INI';
   kINIUsingSSLTag = 'UsingSSL';
+  kINISSLVersionTag = 'SSLVersion';
   kINIEngineFilenameTag = 'EngineEXEFile';
   kINICacheFileNameTag = 'CacheFileName';  // /Cache Database/PocketGMCacheBook.PGC
   kINIStartUpAutomatically = 'StartUpAutomatically';
@@ -798,8 +803,11 @@ var
   theCertificateFileName,
   thePrivateKeyFileName,
   theFullChainFileName: String;
+  theSSLVersionString: String;
 
 begin
+  fSSLVersion := sslvTLSv1;
+
   ProgramVersionLabel.Text := kProgramVersionString;
 
   fCacheErrors := 0;
@@ -900,9 +908,28 @@ begin
 
 
   fClientDatabaseFileName       := theINIFile.ReadString('ProgramPreferences', kINICientDatabaseFileNameTag, 'ClientDatabase.db');
-  gUsingSSL                                  := theINIFile.ReadBool('ProgramPreferences', kINIUsingSSLTag, False);
+  gUsingSSL                     := theINIFile.ReadBool  ('ProgramPreferences', kINIUsingSSLTag, False);
 
   UseSSLCheckBox.IsChecked := gUsingSSL;
+
+  // TIdSSLVersion = (sslvSSLv2, sslvSSLv23, sslvSSLv3, sslvTLSv1,sslvTLSv1_1,sslvTLSv1_2);
+  theSSLVersionString := theINIFile.ReadString('ProgramPreferences', kINISSLVersionTag, 'sslvTLSv1');
+
+  if theSSLVersionString = 'sslvTLSv1' then fSSLVersion := sslvTLSv1;
+  if theSSLVersionString = 'sslvSSLv2' then fSSLVersion := sslvSSLv2;
+  if theSSLVersionString = 'sslvSSLv23' then fSSLVersion := sslvSSLv23;
+  if theSSLVersionString = 'sslvSSLv3' then fSSLVersion := sslvSSLv3;
+  if theSSLVersionString = 'sslvTLSv1_1' then fSSLVersion := sslvTLSv1_1;
+  if theSSLVersionString = 'sslvTLSv1_2' then fSSLVersion := sslvTLSv1_2;
+
+  case fSSLVersion of
+    sslvSSLv2: SSLVersionPopupBox.ItemIndex := 0;
+    sslvSSLv23: SSLVersionPopupBox.ItemIndex := 1;
+    sslvSSLv3: SSLVersionPopupBox.ItemIndex := 2;
+    sslvTLSv1: SSLVersionPopupBox.ItemIndex := 3;
+    sslvTLSv1_1: SSLVersionPopupBox.ItemIndex := 4;
+    sslvTLSv1_2: SSLVersionPopupBox.ItemIndex := 5;
+  end;
 
   gCOWProWinRegistrationDatabaseFileName     := theINIFile.ReadString('ProgramPreferences', kINIRegistrationDatabaseFileNameTag, 'COWProWinRegistrationDatabase.db');
   gCOWProMacRegistrationDatabaseFileName     := theINIFile.ReadString('ProgramPreferences', kINIRegistrationDatabaseFileNameTag, 'COWProMacRegistrationDatabase.db');
@@ -948,7 +975,8 @@ begin
         fIdServerIOHandlerSSLOpenSSL.SSLOptions.CertFile := theCertificateFileName;
         fIdServerIOHandlerSSLOpenSSL.SSLOptions.KeyFile  := thePrivateKeyFileName;
         fIdServerIOHandlerSSLOpenSSL.SSLOptions.RootCertFile := theFullChainFileName;
-        fIdServerIOHandlerSSLOpenSSL.SSLOptions.Method   := sslvTLSv1_2;
+          // TIdSSLVersion = (sslvSSLv2, sslvSSLv23, sslvSSLv3, sslvTLSv1,sslvTLSv1_1,sslvTLSv1_2);
+        fIdServerIOHandlerSSLOpenSSL.SSLOptions.Method   := fSSLVersion;  // sslvTLSv1_2  Originally recommended by AI
         fIdServerIOHandlerSSLOpenSSL.SSLOptions.Mode     := sslmServer;
       end;
 
@@ -1098,6 +1126,21 @@ begin
   theINIFile.WriteBool('ProgramPreferences', kINIStartUpAutomatically, fStartUpAutomatically);
 
   theINIFile.WriteBool('ProgramPreferences', kINIUsingSSLTag, UseSSLCheckBox.IsChecked);
+
+  case SSLVersionPopupBox.ItemIndex of
+    0: theINIFile.WriteString('ProgramPreferences', kINISSLVersionTag, 'sslvSSLv2');
+    1: theINIFile.WriteString('ProgramPreferences', kINISSLVersionTag, 'sslvSSLv23');
+    2: theINIFile.WriteString('ProgramPreferences', kINISSLVersionTag, 'sslvSSLv3');
+    3: theINIFile.WriteString('ProgramPreferences', kINISSLVersionTag, 'sslvTLSv1');
+    4: theINIFile.WriteString('ProgramPreferences', kINISSLVersionTag, 'sslvTLSv1_1');
+    5: theINIFile.WriteString('ProgramPreferences', kINISSLVersionTag, 'sslvTLSv1_2');
+
+    else
+      begin
+        ShowMessage('Error with SSLVersionPopupBox.ItemIndex');
+        theINIFile.WriteString('ProgramPreferences', kINISSLVersionTag, 'sslvTLSv1');
+      end;
+  end;
 
   theINIFile.WriteInteger('ProgramPreferences', kININumberOfEngines, Trunc(NumberOfEnginesSpinBox.value));
 

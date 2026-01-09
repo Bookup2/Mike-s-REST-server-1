@@ -33,16 +33,6 @@ object MainForm: TMainForm
     Text = 'Stop'
     OnClick = ButtonStopClick
   end
-  object EditPort: TEdit
-    Touch.InteractiveGestures = [LongTap, DoubleTap]
-    TabOrder = 3
-    Text = '80'
-    Position.X = 16.000000000000000000
-    Position.Y = 80.000000000000000000
-    Size.Width = 100.000000000000000000
-    Size.Height = 22.000000000000000000
-    Size.PlatformDefault = False
-  end
   object Label1: TLabel
     Position.X = 16.000000000000000000
     Position.Y = 56.000000000000000000
@@ -51,7 +41,7 @@ object MainForm: TMainForm
     Size.PlatformDefault = False
     TextSettings.Trimming = None
     Text = 'Port'
-    TabOrder = 5
+    TabOrder = 4
   end
   object ButtonOpenBrowser: TButton
     Position.X = 56.000000000000000000
@@ -59,17 +49,17 @@ object MainForm: TMainForm
     Size.Width = 113.000000000000000000
     Size.Height = 22.000000000000000000
     Size.PlatformDefault = False
-    TabOrder = 4
+    TabOrder = 3
     Text = 'Open Browser'
     OnClick = ButtonOpenBrowserClick
   end
   object EditLocalIP: TEdit
     Touch.InteractiveGestures = [LongTap, DoubleTap]
-    TabOrder = 7
+    TabOrder = 6
     ReadOnly = True
-    Position.X = 136.000000000000000000
+    Position.X = 344.000000000000000000
     Position.Y = 80.000000000000000000
-    Size.Width = 337.000000000000000000
+    Size.Width = 217.000000000000000000
     Size.Height = 22.000000000000000000
     Size.PlatformDefault = False
   end
@@ -84,7 +74,7 @@ object MainForm: TMainForm
     Size.Width = 1233.000000000000000000
     Size.Height = 280.000000000000000000
     Size.PlatformDefault = False
-    TabOrder = 8
+    TabOrder = 7
     Viewport.Width = 1229.000000000000000000
     Viewport.Height = 276.000000000000000000
   end
@@ -94,13 +84,13 @@ object MainForm: TMainForm
     Size.Width = 153.000000000000000000
     Size.Height = 22.000000000000000000
     Size.PlatformDefault = False
-    TabOrder = 10
+    TabOrder = 9
     Text = 'Start Engines'
     OnClick = StartEnginesButtonClick
   end
   object NumberOfEnginesSpinBox: TSpinBox
     Touch.InteractiveGestures = [LongTap, DoubleTap]
-    TabOrder = 11
+    TabOrder = 10
     Cursor = crIBeam
     Min = 1.000000000000000000
     Max = 10.000000000000000000
@@ -114,7 +104,7 @@ object MainForm: TMainForm
     Size.Width = 153.000000000000000000
     Size.Height = 22.000000000000000000
     Size.PlatformDefault = False
-    TabOrder = 9
+    TabOrder = 8
     Text = 'Stop Engines'
     OnClick = StopEnginesButtonClick
   end
@@ -126,7 +116,7 @@ object MainForm: TMainForm
     Size.PlatformDefault = False
     TextSettings.Trimming = None
     Text = 'EngineEXEFilenameLabel'
-    TabOrder = 13
+    TabOrder = 12
     object UseLogFileCheckBox: TCheckBox
       Position.X = 435.000000000000000000
       Position.Y = -251.000000000000000000
@@ -146,7 +136,7 @@ object MainForm: TMainForm
   end
   object NodeCountCutOffSpinBox: TSpinBox
     Touch.InteractiveGestures = [LongTap, DoubleTap]
-    TabOrder = 15
+    TabOrder = 14
     Cursor = crIBeam
     Min = 2.000000000000000000
     Max = 1000.000000000000000000
@@ -162,11 +152,11 @@ object MainForm: TMainForm
     Size.PlatformDefault = False
     TextSettings.Trimming = None
     Text = 'Cut off engine after this node count (millions)'
-    TabOrder = 16
+    TabOrder = 15
   end
   object SecondsCutOffSpinBox: TSpinBox
     Touch.InteractiveGestures = [LongTap, DoubleTap]
-    TabOrder = 18
+    TabOrder = 17
     Cursor = crIBeam
     Min = 10.000000000000000000
     Value = 20.000000000000000000
@@ -181,7 +171,7 @@ object MainForm: TMainForm
     Size.PlatformDefault = False
     TextSettings.Trimming = None
     Text = 'Cut off engine after this time (seconds)'
-    TabOrder = 20
+    TabOrder = 19
   end
   object EngineCutoffTimer: TTimer
     Enabled = False
@@ -193,7 +183,7 @@ object MainForm: TMainForm
   object LogFileButton: TButton
     Position.X = 592.000000000000000000
     Position.Y = 68.000000000000000000
-    TabOrder = 22
+    TabOrder = 21
     Text = 'Log File'
     OnClick = LogFileButtonClick
   end
@@ -205,7 +195,7 @@ object MainForm: TMainForm
     Size.Width = 1229.000000000000000000
     Size.Height = 106.000000000000000000
     Size.PlatformDefault = False
-    TabOrder = 23
+    TabOrder = 22
     RowCount = 10
     Options = [Editing, ColumnResize, ColumnMove, ColLines, RowLines, Tabs, AutoDisplacement]
     Viewport.Width = 1225.000000000000000000
@@ -219,7 +209,7 @@ object MainForm: TMainForm
     Size.PlatformDefault = False
     TextSettings.Trimming = None
     Text = '0 Engines'
-    TabOrder = 25
+    TabOrder = 24
   end
   object NumberOfTotalRequestsLabel: TLabel
     Position.X = 184.000000000000000000
@@ -230,11 +220,11 @@ object MainForm: TMainForm
     TextSettings.WordWrap = False
     TextSettings.Trimming = None
     Text = '0 Requests'
-    TabOrder = 26
+    TabOrder = 25
   end
   object NoRequestsSpinBox: TSpinBox
     Touch.InteractiveGestures = [LongTap, DoubleTap]
-    TabOrder = 17
+    TabOrder = 16
     Cursor = crIBeam
     Min = 5.000000000000000000
     Value = 15.000000000000000000
@@ -249,7 +239,7 @@ object MainForm: TMainForm
     Size.PlatformDefault = False
     TextSettings.Trimming = None
     Text = 'Cut off engine after no requests (seconds)'
-    TabOrder = 19
+    TabOrder = 18
   end
   object SaveDialog1: TSaveDialog
     Left = 552
@@ -261,7 +251,7 @@ object MainForm: TMainForm
     Size.Width = 368.000000000000000000
     Size.Height = 202.000000000000000000
     Size.PlatformDefault = False
-    TabOrder = 29
+    TabOrder = 28
     object Label8: TLabel
       StyledSettings = [Family, Style, FontColor]
       Position.X = 16.000000000000000000
@@ -404,7 +394,7 @@ object MainForm: TMainForm
     TextSettings.HorzAlign = Trailing
     TextSettings.Trimming = None
     Text = 'Server busy:'
-    TabOrder = 32
+    TabOrder = 31
   end
   object ServerBusyCountLabel: TLabel
     Position.X = 648.000000000000000000
@@ -414,7 +404,7 @@ object MainForm: TMainForm
     Size.PlatformDefault = False
     TextSettings.Trimming = None
     Text = 'ServerBusyCountLabel'
-    TabOrder = 33
+    TabOrder = 32
   end
   object ExportClientsButton: TButton
     Position.X = 184.000000000000000000
@@ -422,7 +412,7 @@ object MainForm: TMainForm
     Size.Width = 169.000000000000000000
     Size.Height = 22.000000000000000000
     Size.PlatformDefault = False
-    TabOrder = 36
+    TabOrder = 35
     Text = 'Export Clients'
     OnClick = ExportClientsButtonClick
   end
@@ -431,20 +421,20 @@ object MainForm: TMainForm
     Left = 744
     Top = 296
   end
-  object Label13: TLabel
+  object ProgramVersionLabel: TLabel
     Position.X = 376.000000000000000000
     Position.Y = 55.000000000000000000
-    Size.Width = 177.000000000000000000
+    Size.Width = 233.000000000000000000
     Size.Height = 17.000000000000000000
     Size.PlatformDefault = False
-    Text = 'Jan 2026 build 5'
-    TabOrder = 40
+    Text = 'Jan 2026 build 7 32bit'
+    TabOrder = 39
   end
   object StartedAutomaticallyLabel: TLabel
     Position.X = 308.000000000000000000
     Position.Y = 110.000000000000000000
     Text = 'StartedAutomaticallyLabel'
-    TabOrder = 41
+    TabOrder = 40
   end
   object Button1: TButton
     Position.X = 16.000000000000000000
@@ -452,11 +442,41 @@ object MainForm: TMainForm
     Size.Width = 284.000000000000000000
     Size.Height = 22.000000000000000000
     Size.PlatformDefault = False
-    TabOrder = 45
+    TabOrder = 44
     Text = 'COW Registrations Window'
     OnClick = Button1Click
   end
-  object IdServerIOHandlerSSLOpenSSL: TIdServerIOHandlerSSLOpenSSL
+  object PortLabel: TLabel
+    Position.X = 13.000000000000000000
+    Position.Y = 80.000000000000000000
+    Size.Width = 73.000000000000000000
+    Size.Height = 17.000000000000000000
+    Size.PlatformDefault = False
+    Text = 'PortLabel'
+    TabOrder = 49
+  end
+  object UseSSLCheckBox: TCheckBox
+    Position.X = 96.000000000000000000
+    Position.Y = 80.000000000000000000
+    TabOrder = 54
+    Text = 'Use SSL next time'
+  end
+  object SSLVersionPopupBox: TPopupBox
+    Items.Strings = (
+      'sslvSSLv2'
+      'sslvSSLv23'
+      'sslvSSLv3'
+      'sslvTLSv1'
+      'sslvTLSv1_1'
+      'sslvTLSv1_2')
+    Position.X = 240.000000000000000000
+    Position.Y = 80.000000000000000000
+    Size.Width = 80.000000000000000000
+    Size.Height = 22.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 59
+  end
+  object IdServerIOHandlerSSLOpenSSLHOLD: TIdServerIOHandlerSSLOpenSSL
     SSLOptions.Mode = sslmUnassigned
     SSLOptions.VerifyMode = []
     SSLOptions.VerifyDepth = 0

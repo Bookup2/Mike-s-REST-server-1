@@ -24,6 +24,8 @@ uses
   ChessEngineController,
   // ChessEngineControllerUCIForWindows,
 
+  RegistrationDatabase,
+
   DiagramTypes,
   gTypes;
 
@@ -40,16 +42,33 @@ type
   end;
   {$ENDIF MACOS}
 
+const
+  kMaximumChessEngines = 10;
 
     { Global variables }
 var
   // gCriticalSection: System.SyncObjs.TCriticalSection;
+
+  gUsingSSL: Boolean;
+
+  gAcceptingRegistrations: Boolean;
+  gIgnoredRegistrations: Integer;
 
   gProgramBuildNumber,
   gURLUpdateDownload,
   gPreferencesFileName,
   gProgramPreferencesINIFileName,
   gUpdateURL: String;           // FIXEDIN build 192
+
+  gCOWProWinRegistrationDatabaseFileName: String;
+  gCOWProWinRegistrationDatabase: TCOWRegistrationDatabase;
+  gCOWProMacRegistrationDatabaseFileName: String;
+  gCOWProMacRegistrationDatabase: TCOWRegistrationDatabase;
+
+  gCOWExpressWinRegistrationDatabaseFileName: String;
+  gCOWExpressWinRegistrationDatabase: TCOWRegistrationDatabase;
+  gCOWExpressMacRegistrationDatabaseFileName: String;
+  gCOWExpressMacRegistrationDatabase: TCOWRegistrationDatabase;
 
   {$IFDEF OSX}
   gPermissionToUseMicrophoneGrantedOnOSX: Boolean;     // FIXEDIN build 148
@@ -78,7 +97,8 @@ var
   // gChessEngineController: TChessEngineController;   // a singleton
   // gChessEngineControllerREST: TChessEngineController;   // a singleton    FIXEDIN build 197
 
-  gChessEngineControllers: Array[1..10] of TChessEngineController;
+  gNumberOfEnginesRunning: Integer;
+  gChessEngineControllers: Array[1..kMaximumChessEngines] of TChessEngineController;
 
   gAppIsClosing: Boolean;
 
@@ -766,6 +786,17 @@ begin
   gPermissionToUseMicrophoneGrantedOnOSX := False;  // FIXEDIN build 148
   {$ENDIF}
 
+  gUsingSSL := False;
+  gCOWProWinRegistrationDatabaseFileName := '';
+  gCOWProWinRegistrationDatabase := nil;
+  gCOWProMacRegistrationDatabaseFileName := '';
+  gCOWProMacRegistrationDatabase := nil;
+
+  gCOWExpressWinRegistrationDatabaseFileName := '';
+  gCOWExpressWinRegistrationDatabase := nil;
+  gCOWExpressMacRegistrationDatabaseFileName := '';
+  gCOWExpressMacRegistrationDatabase := nil;
+
   gLoadingLichessLastGameTaskStatus := kLoadingLichessLastGameTaskStatusIdle;   // FIXEDIN build 124
 
   gProgramSettingsPath := '';
@@ -790,6 +821,9 @@ begin
 
   // gChessEngineController := nil;
   // gChessEngineControllerREST := nil;    // FIXEDIN build 197
+
+  gAcceptingRegistrations := True;
+  gIgnoredRegistrations := 0;
 
   SetPreferencesToDefaults;
 end.
