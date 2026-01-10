@@ -1,40 +1,44 @@
 ﻿[Closed Files]
-File_0=TSourceModule,'c:\program files (x86)\embarcadero\studio\37.0\SOURCE\RTL\SYS\System.pas',0,1,22451,1,22468,0,0,,
-File_1=TSourceModule,'c:\program files (x86)\embarcadero\studio\37.0\source\Indy10\Protocols\IdSSLOpenSSL.pas',0,1,3135,40,3151,0,0,,
-File_2=TSourceModule,'c:\program files (x86)\embarcadero\studio\37.0\source\Indy10\Core\IdIOHandler.pas',0,1,1689,1,1703,0,0,,
-File_3=TSourceModule,'C:\dev\Mike-s-REST-server-1\ChessEngineControllerUCIForWindows.pas',0,1,614,33,635,0,0,,
-File_4=TSourceModule,'C:\dev\COW desktop master\ProductRegistrationWithEmailDlg.pas',0,1,214,1,219,0,0,,
-File_5=TSourceModule,'C:\dev\COW Mobile Master\COWMainForm.pas',0,1,1096,1,1109,0,0,,
-File_6=TSourceModule,'C:\dev\COW desktop master\MainWindow.pas',0,1,5320,1,5334,0,0,,
-File_7=TSourceModule,'C:\dev\COW desktop master\Form.RegistrationExpiredDlg.pas',0,1,1,22,10,0,0,,
-File_8=TSourceModule,'C:\dev\COW desktop master\AboutChessOpeningsWizardDlg.pas',0,1,1,1,12,0,0,,
-File_9=TSourceModule,'C:\dev\COW desktop master\Form.CheckingOnlineRegistrationDlg.pas',0,1,1,1,1,0,0,,
-File_10=TSourceModule,'C:\dev\Mike-s-REST-server-1\RegistrationDatabase.pas',0,1,60,1,67,0,0,,
-File_11=TSourceModule,'C:\dev\COW desktop master\Globals.pas',0,1,132,87,149,0,0,,
-File_12=TSourceModule,'C:\dev\COW desktop master\GTypes.pas',0,1,996,64,1013,0,0,,
-File_13=TSourceModule,'C:\dev\COW desktop master\Utils.pas',0,1,34,60,53,0,0,{{239,35}
-File_14=TSourceModule,'C:\dev\COW desktop master\EbookForm.pas',0,1,11319,10,11324,0,0,,
+File_0=TSourceModule,'c:\program files (x86)\embarcadero\studio\37.0\source\Indy10\Core\IdCustomTCPServer.pas',0,1,559,1,573,0,0,,
+File_1=TSourceModule,'c:\program files (x86)\embarcadero\studio\37.0\SOURCE\RTL\SYS\System.pas',0,1,22454,1,22468,0,0,,
+File_2=TSourceModule,'c:\program files (x86)\embarcadero\studio\37.0\source\Indy10\Protocols\IdSSLOpenSSL.pas',0,1,209,1,232,0,0,,
+File_3=TSourceModule,'c:\program files (x86)\embarcadero\studio\37.0\source\Indy10\Core\IdIOHandler.pas',0,1,1689,1,1703,0,0,,
+File_4=TSourceModule,'C:\dev\Mike-s-REST-server-1\ChessEngineControllerUCIForWindows.pas',0,1,614,33,635,0,0,,
+File_5=TSourceModule,'C:\dev\COW desktop master\ProductRegistrationWithEmailDlg.pas',0,1,214,1,219,0,0,,
+File_6=TSourceModule,'C:\dev\COW Mobile Master\COWMainForm.pas',0,1,1096,1,1109,0,0,,
+File_7=TSourceModule,'C:\dev\COW desktop master\MainWindow.pas',0,1,5320,1,5334,0,0,,
+File_8=TSourceModule,'C:\dev\COW desktop master\Form.RegistrationExpiredDlg.pas',0,1,1,22,10,0,0,,
+File_9=TSourceModule,'C:\dev\COW desktop master\AboutChessOpeningsWizardDlg.pas',0,1,1,1,12,0,0,,
+File_10=TSourceModule,'C:\dev\COW desktop master\Form.CheckingOnlineRegistrationDlg.pas',0,1,1,1,1,0,0,,
+File_11=TSourceModule,'C:\dev\Mike-s-REST-server-1\RegistrationDatabase.pas',0,1,60,1,67,0,0,,
+File_12=TSourceModule,'C:\dev\COW desktop master\Globals.pas',0,1,132,87,149,0,0,,
+File_13=TSourceModule,'C:\dev\COW desktop master\GTypes.pas',0,1,996,64,1013,0,0,,
+File_14=TSourceModule,'C:\dev\COW desktop master\Utils.pas',0,1,34,60,53,0,0,{{239,35}
 
 [Modules]
 Module0=C:\dev\Mike-s-REST-server-1\Form.Main.pas
-Module1=C:\dev\Mike-s-REST-server-1\PocketGMServer.dproj
+Module1=c:\program files (x86)\embarcadero\studio\37.0\source\Indy10\Protocols\IdHTTPWebBrokerBridge.pas
 Module2=C:\dev\Mike-s-REST-server-1\Globals.pas
-Module3=C:\dev\Mike-s-REST-server-1\Form.COWRegistrations.pas
-Module4=C:\dev\Mike-s-REST-server-1\ClientDatabase.pas
-Module5=c:\program files (x86)\embarcadero\studio\37.0\source\Indy10\Protocols\IdSSLOpenSSLHeaders.pas
-Module6=C:\dev\Mike-s-REST-server-1\WebModuleUnit1.pas
-Module7=C:\dev\Mike-s-REST-server-1\GTypes.pas
-Count=8
+Module3=C:\dev\Mike-s-REST-server-1\PocketGMServer.dproj
+Module4=C:\dev\Mike-s-REST-server-1\Form.COWRegistrations.pas
+Module5=C:\dev\Mike-s-REST-server-1\ClientDatabase.pas
+Module6=c:\program files (x86)\embarcadero\studio\37.0\source\Indy10\Protocols\IdSSLOpenSSLHeaders.pas
+Module7=C:\dev\Mike-s-REST-server-1\WebModuleUnit1.pas
+Module8=C:\dev\Mike-s-REST-server-1\GTypes.pas
+Count=9
 EditWindowCount=1
 
 [C:\dev\Mike-s-REST-server-1\Form.Main.pas]
 ModuleType=TSourceModule
 
-[C:\dev\Mike-s-REST-server-1\PocketGMServer.dproj]
-ModuleType=TBaseProject
+[c:\program files (x86)\embarcadero\studio\37.0\source\Indy10\Protocols\IdHTTPWebBrokerBridge.pas]
+ModuleType=TSourceModule
 
 [C:\dev\Mike-s-REST-server-1\Globals.pas]
 ModuleType=TSourceModule
+
+[C:\dev\Mike-s-REST-server-1\PocketGMServer.dproj]
+ModuleType=TBaseProject
 
 [C:\dev\Mike-s-REST-server-1\Form.COWRegistrations.pas]
 ModuleType=TSourceModule
@@ -52,7 +56,7 @@ ModuleType=TSourceModule
 ModuleType=TSourceModule
 
 [EditWindow0]
-ViewCount=8
+ViewCount=9
 CurrentEditView=C:\dev\Mike-s-REST-server-1\Form.Main.pas
 View0=0
 View1=1
@@ -62,6 +66,7 @@ View4=4
 View5=5
 View6=6
 View7=7
+View8=8
 PercentageSizes=1
 Create=1
 Visible=1
@@ -82,12 +87,12 @@ StayOnTop=0
 DockedToMainForm=1
 BorlandEditorCodeExplorer=BorlandEditorCodeExplorer@EditWindow0
 TopPanelSize=0
-LeftPanelSize=1896
+LeftPanelSize=1589
 LeftPanelClients=PropertyInspector,DockSite3
-LeftPanelData=00000800010100000000420F00000000000001680700000000000001000000005C0E000009000000446F636B53697465330100000000201B00001100000050726F7065727479496E73706563746F72FFFFFFFF
-RightPanelSize=2000
+LeftPanelData=00000800010100000000420F00000000000001350600000000000001000000005C0E000009000000446F636B53697465330100000000201B00001100000050726F7065727479496E73706563746F72FFFFFFFF
+RightPanelSize=1557
 RightPanelClients=DockSite2,DockSite4
-RightPanelData=00000800010100000000420F00000000000001D00700000000000001000000004412000009000000446F636B53697465320100000000201B000009000000446F636B5369746534FFFFFFFF
+RightPanelData=00000800010100000000420F00000000000001150600000000000001000000004412000009000000446F636B53697465320100000000201B000009000000446F636B5369746534FFFFFFFF
 BottomPanelSize=1574
 BottomPanelClients=MessageView,DockSite1
 BottomPanelData=0000080001020100000009000000446F636B5369746531DE440000000000000226060000000000000100000000DE4400000F0000004D65737361676556696577466F726DFFFFFFFF
@@ -120,15 +125,26 @@ EditViewName=C:\dev\Mike-s-REST-server-1\PocketGMServer.dpr
 [View2]
 CustomEditViewType=TEditView
 Module=C:\dev\Mike-s-REST-server-1\Form.Main.pas
-CursorX=40
-CursorY=191
-TopLine=180
+CursorX=1
+CursorY=1244
+TopLine=1223
 LeftCol=1
 Elisions=
 Bookmarks=
 EditViewName=C:\dev\Mike-s-REST-server-1\Form.Main.pas
 
 [View3]
+CustomEditViewType=TEditView
+Module=c:\program files (x86)\embarcadero\studio\37.0\source\Indy10\Protocols\IdHTTPWebBrokerBridge.pas
+CursorX=1
+CursorY=1
+TopLine=232
+LeftCol=1
+Elisions=
+Bookmarks=
+EditViewName=c:\program files (x86)\embarcadero\studio\37.0\source\Indy10\Protocols\IdHTTPWebBrokerBridge.pas
+
+[View4]
 CustomEditViewType=TEditView
 Module=C:\dev\Mike-s-REST-server-1\GTypes.pas
 CursorX=98
@@ -139,7 +155,7 @@ Elisions=
 Bookmarks=
 EditViewName=C:\dev\Mike-s-REST-server-1\GTypes.pas
 
-[View4]
+[View5]
 CustomEditViewType=TEditView
 Module=C:\dev\Mike-s-REST-server-1\Form.COWRegistrations.pas
 CursorX=74
@@ -150,7 +166,7 @@ Elisions=
 Bookmarks=
 EditViewName=C:\dev\Mike-s-REST-server-1\Form.COWRegistrations.pas
 
-[View5]
+[View6]
 CustomEditViewType=TEditView
 Module=C:\dev\Mike-s-REST-server-1\ClientDatabase.pas
 CursorX=34
@@ -161,7 +177,7 @@ Elisions=
 Bookmarks=
 EditViewName=C:\dev\Mike-s-REST-server-1\ClientDatabase.pas
 
-[View6]
+[View7]
 CustomEditViewType=TEditView
 Module=C:\dev\Mike-s-REST-server-1\WebModuleUnit1.pas
 CursorX=31
@@ -172,11 +188,11 @@ Elisions=
 Bookmarks=
 EditViewName=Borland.FormDesignerView
 
-[View7]
+[View8]
 CustomEditViewType=TEditView
 Module=C:\dev\Mike-s-REST-server-1\Globals.pas
-CursorX=22
-CursorY=789
+CursorX=1
+CursorY=790
 TopLine=774
 LeftCol=1
 Elisions=
@@ -208,9 +224,23 @@ Dockable=1
 StayOnTop=0
 
 [Breakpoints]
-Count=2
-Breakpoint0='C:\dev\Mike-s-REST-server-1\Form.Main.pas',1115,'',0,1,'',1,0,0,'',1,'','','',0,''
-Breakpoint1='C:\dev\Mike-s-REST-server-1\Form.Main.pas',914,'',0,1,'',1,0,0,'',1,'','','',0,''
+Count=16
+Breakpoint0='C:\dev\Mike-s-REST-server-1\Form.Main.pas',1338,'',0,1,'',1,0,0,'',1,'','','',0,''
+Breakpoint1='C:\dev\Mike-s-REST-server-1\Form.Main.pas',994,'',0,1,'',1,0,0,'',1,'','','',0,''
+Breakpoint2='C:\dev\Mike-s-REST-server-1\Form.Main.pas',1015,'',0,1,'',1,0,0,'',1,'','','',0,''
+Breakpoint3='C:\dev\Mike-s-REST-server-1\Form.Main.pas',1347,'',0,1,'',1,0,0,'',1,'','','',0,''
+Breakpoint4='C:\dev\Mike-s-REST-server-1\Form.Main.pas',311,'',0,1,'',1,0,0,'',1,'','','',0,''
+Breakpoint5='C:\dev\Mike-s-REST-server-1\Form.Main.pas',1223,'',0,1,'',1,0,0,'',1,'','','',0,''
+Breakpoint6='C:\dev\Mike-s-REST-server-1\Form.Main.pas',1230,'',0,1,'',1,0,0,'',1,'','','',0,''
+Breakpoint7='C:\dev\Mike-s-REST-server-1\Form.Main.pas',1266,'',0,1,'',1,0,0,'',1,'','','',0,''
+Breakpoint8='C:\dev\Mike-s-REST-server-1\Form.Main.pas',1273,'',0,1,'',1,0,0,'',1,'','','',0,''
+Breakpoint9='C:\dev\Mike-s-REST-server-1\Form.Main.pas',1280,'',0,1,'',1,0,0,'',1,'','','',0,''
+Breakpoint10='C:\dev\Mike-s-REST-server-1\Form.Main.pas',1287,'',0,1,'',1,0,0,'',1,'','','',0,''
+Breakpoint11='C:\dev\Mike-s-REST-server-1\Form.Main.pas',1294,'',0,1,'',1,0,0,'',1,'','','',0,''
+Breakpoint12='C:\dev\Mike-s-REST-server-1\Form.Main.pas',1301,'',0,1,'',1,0,0,'',1,'','','',0,''
+Breakpoint13='C:\dev\Mike-s-REST-server-1\Form.Main.pas',1237,'',0,1,'',1,0,0,'',1,'','','',0,''
+Breakpoint14='C:\dev\Mike-s-REST-server-1\Form.Main.pas',1244,'',0,1,'',1,0,0,'',1,'','','',0,''
+Breakpoint15='C:\dev\Mike-s-REST-server-1\Form.Main.pas',1253,'',0,1,'',1,0,0,'',1,'','','',0,''
 
 [EmbarcaderoWin32Debugger_AddressBreakpoints]
 Count=0
@@ -261,11 +291,11 @@ Docked=1
 State=0
 Left=0
 Top=0
-Width=2000
+Width=1557
 Height=4273
 MaxLeft=-1
 MaxTop=-1
-ClientWidth=2000
+ClientWidth=1557
 ClientHeight=4273
 TBDockHeight=5901
 LRDockWidth=2349
@@ -299,11 +329,11 @@ Docked=1
 State=0
 Left=0
 Top=0
-Width=2000
+Width=1557
 Height=2103
 MaxLeft=-1
 MaxTop=-1
-ClientWidth=2000
+ClientWidth=1557
 ClientHeight=2103
 TBDockHeight=7151
 LRDockWidth=2000
@@ -318,19 +348,24 @@ Docked=1
 State=0
 Left=0
 Top=425
-Width=1896
+Width=1589
 Height=3149
 MaxLeft=-1
 MaxTop=-1
-ClientWidth=1896
+ClientWidth=1589
 ClientHeight=3149
 PixelsPerInch=96
 MonitorNum=0
 TBDockHeight=8721
-LRDockWidth=1896
+LRDockWidth=1589
 Dockable=1
 StayOnTop=0
-SplitPos=111
+SplitPos=155
+
+[PropInspDesignerSelection]
+ArrangeBy=Name
+SelectedItem=Name,Action
+ExpandedItems=Border=0,BorderIcons=0,Constraints=0,Fill=0,FormFactor=0,"LiveBindings Designer=0",Anchors=0,Caret=0,LiveBindings=0,Margins=0,Padding=0,Position=0,RotationCenter=0,Scale=0,Size=0,StyledSettings=0,TextSettings=0,Touch=0,TouchTargetExpansion=0,SSLOptions=0
 
 [frmDesignPreview]
 PercentageSizes=1
@@ -340,12 +375,12 @@ Docked=1
 State=0
 Left=0
 Top=0
-Width=2000
-Height=8450
+Width=1557
+Height=6366
 MaxLeft=-1
 MaxTop=-1
-ClientWidth=2000
-ClientHeight=8450
+ClientWidth=1557
+ClientHeight=6366
 TBDockHeight=5959
 LRDockWidth=2510
 Dockable=1
@@ -357,7 +392,7 @@ Create=1
 Visible=0
 Docked=1
 State=0
-Left=-1600
+Left=-1613
 Top=243
 Width=276
 Height=359
@@ -481,11 +516,11 @@ State=0
 Left=0
 Top=0
 Width=2339
-Height=1202
+Height=969
 MaxLeft=-1
 MaxTop=-1
 ClientWidth=2339
-ClientHeight=1202
+ClientHeight=969
 TBDockHeight=2316
 LRDockWidth=2823
 Dockable=1
@@ -545,12 +580,12 @@ Docked=1
 State=0
 Left=0
 Top=0
-Width=2000
-Height=8450
+Width=1557
+Height=6366
 MaxLeft=-1
 MaxTop=-1
-ClientWidth=2000
-ClientHeight=8450
+ClientWidth=1557
+ClientHeight=6366
 TBDockHeight=4884
 LRDockWidth=7151
 Dockable=1
@@ -609,11 +644,11 @@ Docked=1
 State=0
 Left=0
 Top=0
-Width=1896
+Width=1589
 Height=3498
 MaxLeft=-1
 MaxTop=-1
-ClientWidth=1896
+ClientWidth=1589
 ClientHeight=3498
 TBDockHeight=3682
 LRDockWidth=1896
@@ -704,16 +739,16 @@ Docked=1
 State=0
 Left=0
 Top=28
-Width=2000
+Width=1557
 Height=4545
 MaxLeft=-1
 MaxTop=-1
-ClientWidth=2000
+ClientWidth=1557
 ClientHeight=4545
 PixelsPerInch=96
 MonitorNum=0
 TBDockHeight=8721
-LRDockWidth=2000
+LRDockWidth=1557
 Dockable=1
 StayOnTop=0
 TabPosition=1
@@ -730,16 +765,16 @@ Docked=1
 State=0
 Left=0
 Top=28
-Width=1896
+Width=1589
 Height=3498
 MaxLeft=-1
 MaxTop=-1
-ClientWidth=1896
+ClientWidth=1589
 ClientHeight=3498
 PixelsPerInch=96
 MonitorNum=0
 TBDockHeight=8721
-LRDockWidth=1896
+LRDockWidth=1589
 Dockable=1
 StayOnTop=0
 TabPosition=1
@@ -756,16 +791,16 @@ Docked=1
 State=0
 Left=0
 Top=533
-Width=2000
+Width=1557
 Height=2103
 MaxLeft=-1
 MaxTop=-1
-ClientWidth=2000
+ClientWidth=1557
 ClientHeight=2103
 PixelsPerInch=96
 MonitorNum=0
 TBDockHeight=8721
-LRDockWidth=2000
+LRDockWidth=1557
 Dockable=1
 StayOnTop=0
 TabPosition=1
