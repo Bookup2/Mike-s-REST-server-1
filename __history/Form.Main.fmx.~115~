@@ -424,7 +424,7 @@ object MainForm: TMainForm
   object ProgramVersionLabel: TLabel
     Position.X = 376.000000000000000000
     Position.Y = 55.000000000000000000
-    Size.Width = 233.000000000000000000
+    Size.Width = 321.000000000000000000
     Size.Height = 17.000000000000000000
     Size.PlatformDefault = False
     Text = 'Jan 2026 build 7 32bit'
@@ -461,14 +461,15 @@ object MainForm: TMainForm
     TabOrder = 54
     Text = 'Use SSL next time'
   end
-  object SSLVersionPopupBox: TPopupBox
+  object TaurusSSLVersionPopupBox: TPopupBox
     Items.Strings = (
-      'sslvSSLv2'
-      'sslvSSLv23'
-      'sslvSSLv3'
-      'sslvTLSv1'
-      'sslvTLSv1_1'
-      'sslvTLSv1_2')
+      'SSLv3'
+      'SSLv23'
+      'SSLv2'
+      'TLSv1_3'
+      'TLSv1_2'
+      'TLSv1_1'
+      'TLSv1')
     Position.X = 232.000000000000000000
     Position.Y = 80.000000000000000000
     Size.Width = 105.000000000000000000
@@ -496,8 +497,19 @@ object MainForm: TMainForm
   end
   object IdHTTPServer1: TIdHTTPServer
     Bindings = <>
-    OnBeforeBind = IdHTTPServer1BeforeBind
     Left = 738
     Top = 507
+  end
+  object TaurusTLSServerIOHandler: TTaurusTLSServerIOHandler
+    OnStatus = TaurusTLSServerIOHandlerStatus
+    Certificates = <>
+    SSLOptions.Mode = sslmUnassigned
+    SSLOptions.VerifyMode = []
+    SSLOptions.VerifyDepth = 100
+    OnSSLNegotiated = TaurusTLSServerIOHandlerSSLNegotiated
+    OnGetPassword = TaurusTLSServerIOHandlerGetPassword
+    OnVerifyError = TaurusTLSServerIOHandlerVerifyError
+    Left = 650
+    Top = 427
   end
 end

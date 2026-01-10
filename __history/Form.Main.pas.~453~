@@ -75,7 +75,7 @@ type
     Button1: TButton;
     PortLabel: TLabel;
     UseSSLCheckBox: TCheckBox;
-    SSLVersionPopupBox: TPopupBox;
+    TaurusSSLVersionPopupBox: TPopupBox;
     WhichFailedToLoadButton: TButton;
     IdLogFile1: TIdLogFile;
     IdHTTPServer1: TIdHTTPServer;
@@ -98,8 +98,6 @@ type
       var ABuffer: TIdBytes);
     procedure IdLogFile1Send(ASender: TIdConnectionIntercept;
       var ABuffer: TIdBytes);
-    procedure TaurusTLSServerIOHandlerGetPassword(ASender: TObject;
-      var VPassword: string; const AIsWrite: Boolean; var VOk: Boolean);
     procedure TaurusTLSServerIOHandlerStatus(ASender: TObject;
       const AStatus: TIdStatus; const AStatusText: string);
     procedure TaurusTLSServerIOHandlerVerifyError(ASender: TObject;
@@ -107,6 +105,8 @@ type
       ADescr: string; var VOk: Boolean);
     procedure TaurusTLSServerIOHandlerSSLNegotiated(
       ASender: TTaurusTLSIOHandlerSocket);
+    procedure TaurusTLSServerIOHandlerGetPassword(ASender: TObject;
+      var VPassword: string; const AIsWrite: Boolean; var VOk: Boolean);
 
   private
 
@@ -162,10 +162,12 @@ type
     procedure LookForEnginesToCutOffByTooLongSinceLastClientRequest;
     function NumberOfEnginesAnalyzing: Integer;
 
+    {
     procedure IdServerIOHandlerSSLOpenSSLGetPassword(var Password: string);
     procedure IdServerIOHandlerSSLOpenSSLGetPasswordEx(ASender: TObject; var VPassword: string; const AIsWrite: Boolean);
+    }
 
-    procedure IdServerIOHandlerSSLOpenSSLStatus(ASender: TObject;
+    procedure IdHTTPServerSSLOpenSSLStatus(ASender: TObject;
                                                 const AStatus: TIdStatus; const AStatusText: string);
 
     procedure IdHTTPServerException(AContext: TIdContext; AException: Exception);
@@ -246,7 +248,7 @@ const
   kFullChainFileName   = 'Certificate\fullchain.pem';
   kINIFileName = 'ServerSettings.INI';
   kINIUsingSSLTag = 'UsingSSL';
-  kINISSLVersionTag = 'SSLVersion';
+  // kINISSLVersionTag = 'SSLVersion';
   kINITaurusSSLVersionTag = 'TaurusSSLVersion';
   kINIEngineFilenameTag = 'EngineEXEFile';
   kINICacheFileNameTag = 'CacheFileName';  // /Cache Database/PocketGMCacheBook.PGC
@@ -317,7 +319,7 @@ end;
 
 
 
-procedure TMainForm.IdServerIOHandlerSSLOpenSSLStatus(ASender: TObject;
+procedure TMainForm.IdHTTPServerSSLOpenSSLStatus(ASender: TObject;
   const AStatus: TIdStatus; const AStatusText: string);
 begin
   RequestsMemo.Lines.Add('Indy status: ' + AStatusText);
@@ -875,7 +877,7 @@ begin
   }
 
   // fSSLVersion := sslvTLSv1_2;  Old Indy code
-  fSSLVersion := TLSv1_3;
+  fSSLVersion := SSLv3;
 
   ProgramVersionLabel.Text := kProgramVersionString;
 
@@ -1006,20 +1008,22 @@ begin
   }
 
     // New TaurusTLS code
-  if theSSLVersionString = 'sslvTLSv1' then fSSLVersion := sslvTLSv1;
-  if theSSLVersionString = 'sslvSSLv2' then fSSLVersion := sslvSSLv2;
-  if theSSLVersionString = 'sslvSSLv23' then fSSLVersion := sslvSSLv23;
-  if theSSLVersionString = 'sslvSSLv3' then fSSLVersion := sslvSSLv3;
-  if theSSLVersionString = 'sslvTLSv1_1' then fSSLVersion := sslvTLSv1_1;
-  if theSSLVersionString = 'sslvTLSv1_2' then fSSLVersion := sslvTLSv1_2;
+  if theSSLVersionString = 'SSLv2' then fSSLVersion := SSLv2;
+  if theSSLVersionString = 'SSLv23' then fSSLVersion := SSLv23;
+  if theSSLVersionString = 'SSLv3' then fSSLVersion := SSLv3;
+  if theSSLVersionString = 'TLSv1' then fSSLVersion := TLSv1;
+  if theSSLVersionString = 'TLSv1_1' then fSSLVersion := TLSv1_1;
+  if theSSLVersionString = 'TLSv1_2' then fSSLVersion := TLSv1_2;
+  if theSSLVersionString = 'TLSv1_3' then fSSLVersion := TLSv1_3;
 
   case fSSLVersion of
-    sslvSSLv2: SSLVersionPopupBox.ItemIndex := 0;
-    sslvSSLv23: SSLVersionPopupBox.ItemIndex := 1;
-    sslvSSLv3: SSLVersionPopupBox.ItemIndex := 2;
-    sslvTLSv1: SSLVersionPopupBox.ItemIndex := 3;
-    sslvTLSv1_1: SSLVersionPopupBox.ItemIndex := 4;
-    sslvTLSv1_2: SSLVersionPopupBox.ItemIndex := 5;
+    SSLv3: TaurusSSLVersionPopupBox.ItemIndex := 0;
+    SSLv23: TaurusSSLVersionPopupBox.ItemIndex := 1;
+    SSLv2: TaurusSSLVersionPopupBox.ItemIndex := 2;
+    TLSv1_3: TaurusSSLVersionPopupBox.ItemIndex := 3;
+    TLSv1_2: TaurusSSLVersionPopupBox.ItemIndex := 4;
+    TLSv1_1: TaurusSSLVersionPopupBox.ItemIndex := 5;
+    TLSv1: TaurusSSLVersionPopupBox.ItemIndex := 6;
   end;
 
   gCOWProWinRegistrationDatabaseFileName     := theINIFile.ReadString('ProgramPreferences', kINIRegistrationDatabaseFileNameTag, 'COWProWinRegistrationDatabase.db');
@@ -1069,6 +1073,10 @@ begin
     ShowMessage('Exception creating TIdServerIOHandlerSSLOpenSSL - Indy says: ' + WhichFailedToLoad);
   end;
   }
+
+  TaurusTLSServerIOHandler.OnGetPassword := sd
+  cert
+  key etc.
 
   FServer := TIdHTTPWebBrokerBridge.Create(Self);
   fServer.OnException := IdHTTPServerException;
@@ -1248,18 +1256,19 @@ begin
 
   theINIFile.WriteBool('ProgramPreferences', kINIUsingSSLTag, UseSSLCheckBox.IsChecked);
 
-  case SSLVersionPopupBox.ItemIndex of
-    0: theINIFile.WriteString('ProgramPreferences', kINISSLVersionTag, 'sslvSSLv2');
-    1: theINIFile.WriteString('ProgramPreferences', kINISSLVersionTag, 'sslvSSLv23');
-    2: theINIFile.WriteString('ProgramPreferences', kINISSLVersionTag, 'sslvSSLv3');
-    3: theINIFile.WriteString('ProgramPreferences', kINISSLVersionTag, 'sslvTLSv1');
-    4: theINIFile.WriteString('ProgramPreferences', kINISSLVersionTag, 'sslvTLSv1_1');
-    5: theINIFile.WriteString('ProgramPreferences', kINISSLVersionTag, 'sslvTLSv1_2');
+  case TaurusSSLVersionPopupBox.ItemIndex of
+    0: theINIFile.WriteString('ProgramPreferences', kINITaurusSSLVersionTag, 'SSLv3');
+    1: theINIFile.WriteString('ProgramPreferences', kINITaurusSSLVersionTag, 'SSLv23');
+    2: theINIFile.WriteString('ProgramPreferences', kINITaurusSSLVersionTag, 'SSLv2');
+    3: theINIFile.WriteString('ProgramPreferences', kINITaurusSSLVersionTag, 'TLSv1_3');
+    4: theINIFile.WriteString('ProgramPreferences', kINITaurusSSLVersionTag, 'TLSv1_2');
+    5: theINIFile.WriteString('ProgramPreferences', kINITaurusSSLVersionTag, 'TLSv1_1');
+    6: theINIFile.WriteString('ProgramPreferences', kINITaurusSSLVersionTag, 'TLSv1');
 
     else
       begin
-        ShowMessage('Error with SSLVersionPopupBox.ItemIndex');
-        theINIFile.WriteString('ProgramPreferences', kINISSLVersionTag, 'sslvTLSv1');
+        ShowMessage('Error with TaurusSSLVersionPopupBox.ItemIndex');
+        theINIFile.WriteString('ProgramPreferences', kINITaurusSSLVersionTag, 'SSLv3');
       end;
   end;
 
@@ -1390,7 +1399,7 @@ begin
 end;
 
 
-
+{
 procedure TMainForm.IdServerIOHandlerSSLOpenSSLGetPassword(var Password: string);
 begin
   Password := 'Sicilian';
@@ -1406,7 +1415,7 @@ begin
 
   RequestsMemo.Lines.Add('SSL Certificate password checked.');
 end;
-
+}
 
 
 procedure TMainForm.LogFileButtonClick(Sender: TObject);
@@ -1549,6 +1558,7 @@ begin
     except
 
       ShowMessage('Exception - Indy says: ' + WhichFailedToLoad);
+      ShowMessage('Is the libcrypto-3.dll in the right place?');
 
     end;
   end;
@@ -1672,7 +1682,7 @@ procedure TMainForm.TaurusTLSServerIOHandlerGetPassword(ASender: TObject;
 begin
   VPassword := 'Sicilian';
 
-  RequestsMemo.Lines.Add('TaurusTLS: password requested');
+  RequestsMemo.Lines.Add('TaurusTLS - SSL Certificate password checked.');
 end;
 
 

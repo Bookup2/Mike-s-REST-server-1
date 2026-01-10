@@ -246,7 +246,7 @@ const
   kFullChainFileName   = 'Certificate\fullchain.pem';
   kINIFileName = 'ServerSettings.INI';
   kINIUsingSSLTag = 'UsingSSL';
-  kINISSLVersionTag = 'SSLVersion';
+  // kINISSLVersionTag = 'SSLVersion';
   kINITaurusSSLVersionTag = 'TaurusSSLVersion';
   kINIEngineFilenameTag = 'EngineEXEFile';
   kINICacheFileNameTag = 'CacheFileName';  // /Cache Database/PocketGMCacheBook.PGC
@@ -875,7 +875,7 @@ begin
   }
 
   // fSSLVersion := sslvTLSv1_2;  Old Indy code
-  fSSLVersion := TLSv1_3;
+  fSSLVersion := SSLv3;
 
   ProgramVersionLabel.Text := kProgramVersionString;
 
@@ -1015,13 +1015,13 @@ begin
   if theSSLVersionString = 'TLSv1_3' then fSSLVersion := TLSv1_3;
 
   case fSSLVersion of
-    SSLv3: SSLVersionPopupBox.ItemIndex := 0;
-    SSLv23: SSLVersionPopupBox.ItemIndex := 1;
-    SSLv2: SSLVersionPopupBox.ItemIndex := 2;
-    TLSv1_3: SSLVersionPopupBox.ItemIndex := 3;
-    TLSv1_2: SSLVersionPopupBox.ItemIndex := 4;
-    TLSv1_1: SSLVersionPopupBox.ItemIndex := 5;
-    TLSv1: SSLVersionPopupBox.ItemIndex := 6;
+    SSLv3: TaurusSSLVersionPopupBox.ItemIndex := 0;
+    SSLv23: TaurusSSLVersionPopupBox.ItemIndex := 1;
+    SSLv2: TaurusSSLVersionPopupBox.ItemIndex := 2;
+    TLSv1_3: TaurusSSLVersionPopupBox.ItemIndex := 3;
+    TLSv1_2: TaurusSSLVersionPopupBox.ItemIndex := 4;
+    TLSv1_1: TaurusSSLVersionPopupBox.ItemIndex := 5;
+    TLSv1: TaurusSSLVersionPopupBox.ItemIndex := 6;
   end;
 
   gCOWProWinRegistrationDatabaseFileName     := theINIFile.ReadString('ProgramPreferences', kINIRegistrationDatabaseFileNameTag, 'COWProWinRegistrationDatabase.db');
@@ -1250,18 +1250,19 @@ begin
 
   theINIFile.WriteBool('ProgramPreferences', kINIUsingSSLTag, UseSSLCheckBox.IsChecked);
 
-  case SSLVersionPopupBox.ItemIndex of
-    0: theINIFile.WriteString('ProgramPreferences', kINISSLVersionTag, 'sslvSSLv2');
-    1: theINIFile.WriteString('ProgramPreferences', kINISSLVersionTag, 'sslvSSLv23');
-    2: theINIFile.WriteString('ProgramPreferences', kINISSLVersionTag, 'sslvSSLv3');
-    3: theINIFile.WriteString('ProgramPreferences', kINISSLVersionTag, 'sslvTLSv1');
-    4: theINIFile.WriteString('ProgramPreferences', kINISSLVersionTag, 'sslvTLSv1_1');
-    5: theINIFile.WriteString('ProgramPreferences', kINISSLVersionTag, 'sslvTLSv1_2');
+  case TaurusSSLVersionPopupBox.ItemIndex of
+    0: theINIFile.WriteString('ProgramPreferences', kINITaurusSSLVersionTag, 'SSLv3');
+    1: theINIFile.WriteString('ProgramPreferences', kINITaurusSSLVersionTag, 'SSLv23');
+    2: theINIFile.WriteString('ProgramPreferences', kINITaurusSSLVersionTag, 'SSLv2');
+    3: theINIFile.WriteString('ProgramPreferences', kINITaurusSSLVersionTag, 'TLSv1_3');
+    4: theINIFile.WriteString('ProgramPreferences', kINITaurusSSLVersionTag, 'TLSv1_2');
+    5: theINIFile.WriteString('ProgramPreferences', kINITaurusSSLVersionTag, 'TLSv1_1');
+    6: theINIFile.WriteString('ProgramPreferences', kINITaurusSSLVersionTag, 'TLSv1');
 
     else
       begin
-        ShowMessage('Error with SSLVersionPopupBox.ItemIndex');
-        theINIFile.WriteString('ProgramPreferences', kINISSLVersionTag, 'sslvTLSv1');
+        ShowMessage('Error with TaurusSSLVersionPopupBox.ItemIndex');
+        theINIFile.WriteString('ProgramPreferences', kINITaurusSSLVersionTag, 'SSLv3');
       end;
   end;
 
@@ -1551,6 +1552,7 @@ begin
     except
 
       ShowMessage('Exception - Indy says: ' + WhichFailedToLoad);
+      ShowMessage('Is the libcrypto-3.dll in the right place?');
 
     end;
   end;

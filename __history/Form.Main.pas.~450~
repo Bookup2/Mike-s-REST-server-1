@@ -162,10 +162,15 @@ type
     procedure LookForEnginesToCutOffByTooLongSinceLastClientRequest;
     function NumberOfEnginesAnalyzing: Integer;
 
+    {
     procedure IdServerIOHandlerSSLOpenSSLGetPassword(var Password: string);
     procedure IdServerIOHandlerSSLOpenSSLGetPasswordEx(ASender: TObject; var VPassword: string; const AIsWrite: Boolean);
+    }
 
-    procedure IdServerIOHandlerSSLOpenSSLStatus(ASender: TObject;
+    procedure TaurusTLSOnGetPassword(ASender: TObject; var VPassword: String;
+    const AIsWrite: Boolean; var VOk: Boolean)
+
+    procedure IdHTTPServerSSLOpenSSLStatus(ASender: TObject;
                                                 const AStatus: TIdStatus; const AStatusText: string);
 
     procedure IdHTTPServerException(AContext: TIdContext; AException: Exception);
@@ -317,7 +322,7 @@ end;
 
 
 
-procedure TMainForm.IdServerIOHandlerSSLOpenSSLStatus(ASender: TObject;
+procedure TMainForm.IdHTTPServerSSLOpenSSLStatus(ASender: TObject;
   const AStatus: TIdStatus; const AStatusText: string);
 begin
   RequestsMemo.Lines.Add('Indy status: ' + AStatusText);
@@ -875,7 +880,7 @@ begin
   }
 
   // fSSLVersion := sslvTLSv1_2;  Old Indy code
-  fSSLVersion := TLSv1_3;
+  fSSLVersion := SSLv3;
 
   ProgramVersionLabel.Text := kProgramVersionString;
 
@@ -1071,6 +1076,10 @@ begin
     ShowMessage('Exception creating TIdServerIOHandlerSSLOpenSSL - Indy says: ' + WhichFailedToLoad);
   end;
   }
+
+  TaurusTLSServerIOHandler.OnGetPassword := sd
+  cert
+  key etc.
 
   FServer := TIdHTTPWebBrokerBridge.Create(Self);
   fServer.OnException := IdHTTPServerException;
@@ -1393,7 +1402,7 @@ begin
 end;
 
 
-
+{
 procedure TMainForm.IdServerIOHandlerSSLOpenSSLGetPassword(var Password: string);
 begin
   Password := 'Sicilian';
@@ -1409,7 +1418,7 @@ begin
 
   RequestsMemo.Lines.Add('SSL Certificate password checked.');
 end;
-
+}
 
 
 procedure TMainForm.LogFileButtonClick(Sender: TObject);
@@ -1552,6 +1561,7 @@ begin
     except
 
       ShowMessage('Exception - Indy says: ' + WhichFailedToLoad);
+      ShowMessage('Is the libcrypto-3.dll in the right place?');
 
     end;
   end;
