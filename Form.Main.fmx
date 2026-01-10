@@ -424,7 +424,7 @@ object MainForm: TMainForm
   object ProgramVersionLabel: TLabel
     Position.X = 376.000000000000000000
     Position.Y = 55.000000000000000000
-    Size.Width = 233.000000000000000000
+    Size.Width = 321.000000000000000000
     Size.Height = 17.000000000000000000
     Size.PlatformDefault = False
     Text = 'Jan 2026 build 7 32bit'
@@ -474,7 +474,7 @@ object MainForm: TMainForm
     Size.Width = 105.000000000000000000
     Size.Height = 22.000000000000000000
     Size.PlatformDefault = False
-    TabOrder = 59
+    TabOrder = 58
   end
   object WhichFailedToLoadButton: TButton
     Position.X = 272.000000000000000000
@@ -482,16 +482,9 @@ object MainForm: TMainForm
     Size.Width = 129.000000000000000000
     Size.Height = 22.000000000000000000
     Size.PlatformDefault = False
-    TabOrder = 60
+    TabOrder = 59
     Text = 'WhichFailedToLoadButton'
     OnClick = WhichFailedToLoadButtonClick
-  end
-  object IdServerIOHandlerSSLOpenSSLHOLD: TIdServerIOHandlerSSLOpenSSL
-    SSLOptions.Mode = sslmUnassigned
-    SSLOptions.VerifyMode = []
-    SSLOptions.VerifyDepth = 0
-    Left = 690
-    Top = 411
   end
   object IdLogFile1: TIdLogFile
     OnConnect = IdLogFile1Connect
@@ -499,6 +492,11 @@ object MainForm: TMainForm
     OnReceive = IdLogFile1Receive
     OnSend = IdLogFile1Send
     Left = 890
+    Top = 507
+  end
+  object IdHTTPServer1: TIdHTTPServer
+    Bindings = <>
+    Left = 738
     Top = 507
   end
 end

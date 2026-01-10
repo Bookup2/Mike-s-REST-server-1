@@ -20,7 +20,8 @@ uses
   ClientDatabase,
   RegistrationDatabase, IdCTypes, IdSSLOpenSSLHeaders, IdBaseComponent,
   IdComponent, IdServerIOHandler, IdSSL, IdSSLOpenSSL, FMX.ExtCtrls,
-  IdIntercept, IdLogBase, IdLogFile;
+  IdIntercept, IdLogBase, IdLogFile, IdContext, IdCustomTCPServer,
+  IdCustomHTTPServer, IdHTTPServer, IdSocketHandle;
 
 
 type
@@ -71,12 +72,12 @@ type
     ProgramVersionLabel: TLabel;
     StartedAutomaticallyLabel: TLabel;
     Button1: TButton;
-    IdServerIOHandlerSSLOpenSSLHOLD: TIdServerIOHandlerSSLOpenSSL;
     PortLabel: TLabel;
     UseSSLCheckBox: TCheckBox;
     SSLVersionPopupBox: TPopupBox;
     WhichFailedToLoadButton: TButton;
     IdLogFile1: TIdLogFile;
+    IdHTTPServer1: TIdHTTPServer;
     procedure FormCreate(Sender: TObject);
     procedure ButtonStartClick(Sender: TObject);
     procedure ButtonStopClick(Sender: TObject);
@@ -150,10 +151,27 @@ type
     procedure LookForEnginesToCutOffByTooLongSinceLastClientRequest;
     function NumberOfEnginesAnalyzing: Integer;
 
-    procedure IdServerIOHandlerSSLOpenSSL1GetPassword(var Password: string);
+    procedure IdServerIOHandlerSSLOpenSSLGetPassword(var Password: string);
+    procedure IdServerIOHandlerSSLOpenSSLGetPasswordEx(ASender: TObject; var VPassword: string; const AIsWrite: Boolean);
 
     procedure IdServerIOHandlerSSLOpenSSLStatus(ASender: TObject;
                                                 const AStatus: TIdStatus; const AStatusText: string);
+
+    procedure IdHTTPServerException(AContext: TIdContext; AException: Exception);
+    procedure IdHTTPServerSessionStart(Sender: TIdHTTPSession);
+    procedure IdHTTPServerSessionEnd(Sender: TIdHTTPSession);
+    procedure IdHTTPServerListenException(AThread: TIdListenerThread; AException: Exception);
+    procedure IdHTTPServerInvalidSession(AContext: TIdContext;
+                                         ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo;
+                                         var VContinueProcessing: Boolean; const AInvalidSessionID: string);
+    procedure IdHTTPServerConnect(AContext: TIdContext);
+    procedure IdHTTPServerDisconnect(AContext: TIdContext);
+    procedure IdHTTPServerQuerySSLPort(APort: TIdPort; var VUseSSL: Boolean);
+    procedure IdHTTPServerBeforeBind(AHandle: TIdSocketHandle);
+    procedure IdHTTPServerAfterBind(Sender: TObject);
+    procedure IdHTTPServerCommandError(AContext: TIdContext;
+                                       ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo;
+                                       AException: Exception);
 
 
   public
@@ -209,7 +227,7 @@ uses
 
 const
 
-  kProgramVersionString = 'PocketGM build 9 32 bit 2:34PM Jan 9, 2026';
+  kProgramVersionString = 'PocketGM build 10 32 bit evening Jan 9, 2026';
   kClientDatabaseFolder = 'Client Database';
   kCOWRegistrationDatabaseFolder = 'COW Registration Database';
   kCertificateFileName = 'Certificate\cert.pem';
@@ -827,7 +845,6 @@ var
   thePrivateKeyFileName,
   theFullChainFileName: String;
   theSSLVersionString: String;
-  theErrorMessage: String;
 
 begin
   fSSLVersion := sslvTLSv1_2;
@@ -962,13 +979,7 @@ begin
 
   theINIFile.Free;
 
-  FServer := TIdHTTPWebBrokerBridge.Create(Self);
-
-  RequestsMemo.Lines.Add('Indy version: ' + FServer.Version);
-
   UseSSLCheckBox.IsChecked := gUsingSSL;
-
-  PortLabel.Text := FServer.DefaultPort.ToString;
 
   theCertificateFileName :=TPath.Combine(ExtractFilePath(ParamStr(0)), kCertificateFileName);
   thePrivateKeyFileName :=TPath.Combine(ExtractFilePath(ParamStr(0)), kPrivateKeyFileName);
@@ -985,7 +996,9 @@ begin
       begin
         fIdServerIOHandlerSSLOpenSSL := TIdServerIOHandlerSSLOpenSSL.Create(nil);
 
-        fIdServerIOHandlerSSLOpenSSL.OnGetPassword := IdServerIOHandlerSSLOpenSSL1GetPassword;
+        fIdServerIOHandlerSSLOpenSSL.OnGetPassword := IdServerIOHandlerSSLOpenSSLGetPassword;
+        fIdServerIOHandlerSSLOpenSSL.OnGetPasswordEx := IdServerIOHandlerSSLOpenSSLGetPasswordEx;
+
 
         fIdServerIOHandlerSSLOpenSSL.SSLOptions.CertFile := theCertificateFileName;
         fIdServerIOHandlerSSLOpenSSL.SSLOptions.KeyFile  := thePrivateKeyFileName;
@@ -1003,6 +1016,20 @@ begin
   end;
 
   FServer := TIdHTTPWebBrokerBridge.Create(Self);
+  fServer.OnException := IdHTTPServerException;
+  fServer.OnSessionStart := IdHTTPServerSessionStart;
+  fServer.OnSessionEnd := IdHTTPServerSessionEnd;
+  fServer.OnInvalidSession := IdHTTPServerInvalidSession;
+  fServer.OnListenException := IdHTTPServerListenException;
+  fServer.OnConnect := IdHTTPServerConnect;
+  fServer.OnDisconnect := IdHTTPServerDisconnect;
+  fServer.OnQuerySSLPort := IdHTTPServerQuerySSLPort;
+  fServer.OnAfterBind := IdHTTPServerAfterBind;
+  fServer.OnBeforeBind :=  IdHTTPServerBeforeBind;
+  fServer.OnStatus := IdServerIOHandlerSSLOpenSSLStatus;
+  fServer.OnCommandError := IdHTTPServerCommandError;
+
+  RequestsMemo.Lines.Add('Indy version: ' + FServer.Version);
 
   if gUsingSSL
     then
@@ -1014,6 +1041,8 @@ begin
       begin
         FServer.DefaultPort := 80;
       end;
+
+  PortLabel.Text := FServer.DefaultPort.ToString;
 
   fCacheBook := TCachedServerReplyBook.Create;
   fCacheFileName := TPath.Combine(ExtractFilePath(ParamStr(0)), 'Cache Database\' + fCacheFileName);
@@ -1187,6 +1216,93 @@ end;
 
 
 
+procedure TMainForm.IdHTTPServerInvalidSession(AContext: TIdContext;
+  ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo;
+  var VContinueProcessing: Boolean; const AInvalidSessionID: string);
+begin
+  RequestsMemo.Lines.Add('**** ServerInvalidSession - ' + AResponseInfo.ToString);
+end;
+
+
+
+procedure TMainForm.IdHTTPServerConnect(AContext: TIdContext);
+begin
+  RequestsMemo.Lines.Add('**** ServerConnect - ' + AContext.ToString);
+end;
+
+
+
+procedure TMainForm.IdHTTPServerBeforeBind(AHandle: TIdSocketHandle);
+begin
+  RequestsMemo.Lines.Add('**** ServerBeforeBind ');
+end;
+
+
+
+procedure TMainForm.IdHTTPServerAfterBind(Sender: TObject);
+begin
+  RequestsMemo.Lines.Add('**** ServerAfterBind ');
+end;
+
+
+
+procedure TMainForm.IdHTTPServerCommandError(AContext: TIdContext;
+  ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo;
+  AException: Exception);
+begin
+  RequestsMemo.Lines.Add('**** ServerCommandError - ' + AContext.ToString + AException.ToString);
+end;
+
+
+procedure TMainForm.IdHTTPServerQuerySSLPort(APort: TIdPort; var VUseSSL: Boolean);
+var
+  theSSLString: String;
+
+begin
+  if VUseSSL
+    then theSSLString := 'Use SSL'
+    else theSSLString := 'NOT Use SSL';
+
+  RequestsMemo.Lines.Add('**** ServerQuerySSLPort - ' + APort.ToString + theSSLString);
+end;
+
+
+
+procedure TMainForm.IdHTTPServerDisconnect(AContext: TIdContext);
+begin
+  RequestsMemo.Lines.Add('**** ServerDisconnect - ' + AContext.ToString);
+end;
+
+
+
+procedure TMainForm.IdHTTPServerException(AContext: TIdContext; AException: Exception);
+begin
+  RequestsMemo.Lines.Add('**** ServerException - ' + AException.ToString);
+end;
+
+
+
+procedure TMainForm.IdHTTPServerListenException(AThread: TIdListenerThread; AException: Exception);
+begin
+  RequestsMemo.Lines.Add('**** ServerListenException - ' + AException.ToString);
+end;
+
+
+
+procedure TMainForm.IdHTTPServerSessionStart(Sender: TIdHTTPSession);
+begin
+  RequestsMemo.Lines.Add('**** ServerSessionStart');
+end;
+
+
+
+procedure TMainForm.IdHTTPServerSessionEnd(Sender: TIdHTTPSession);
+begin
+  RequestsMemo.Lines.Add('**** ServerSessionEnd');
+end;
+
+
+
 procedure TMainForm.IdLogFile1Connect(ASender: TIdConnectionIntercept);
 begin
   RequestsMemo.Lines.Add('Indy log Connect.');
@@ -1217,9 +1333,18 @@ end;
 
 
 
-procedure TMainForm.IdServerIOHandlerSSLOpenSSL1GetPassword(var Password: string);
+procedure TMainForm.IdServerIOHandlerSSLOpenSSLGetPassword(var Password: string);
 begin
   Password := 'Sicilian';
+
+  RequestsMemo.Lines.Add('SSL Certificate password checked.');
+end;
+
+
+
+procedure TMainForm.IdServerIOHandlerSSLOpenSSLGetPasswordEx(ASender: TObject; var VPassword: string; const AIsWrite: Boolean);
+begin
+  VPassword := 'Sicilian';
 
   RequestsMemo.Lines.Add('SSL Certificate password checked.');
 end;

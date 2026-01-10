@@ -1,0 +1,65 @@
+
+I have no prior experience with web server apps. It's all new to me.
+
+I'm using Delphi 13 and the IdHTTPWebBrokerBridge to create a 32 bit FMX REST server called PocketGMServer.exe.
+It's hosted on an Amazon LightSail Windows 2022 instance. 
+
+Everthing works as expected with HTTP requests.
+
+When introducing the TIdServerIOHandlerSSLOpenSSL, the server no longer respond to requests and shows no error messages or exceptions.
+
+Indy reports version: 10.6.3.11.
+
+Process Server confirms that both of these DLLs are loaded by PocketGMServer.
+The libeay32.dll says it is file version 1.0.2.21.
+The ssleay32.dll also says it is file version 1.0.2.21.
+
+Resource Monitor shows that PocketGMServer.exe has Port 443 TCP with Firewall status as "Allowed, not restricted"
+
+The certificate, private key, and full chain files all exist.
+
+The cert has a password. (The OnGetPassword method is never called.)
+
+I've tried sslvTLSv1, sslvTLSv1_1, and sslvTLSv1_2.
+
+Feel free to tell me there are better ways to create a tiny server than with the components that come with Delphi 13. :)
+
+        fIdServerIOHandlerSSLOpenSSL := TIdServerIOHandlerSSLOpenSSL.Create(nil);
+
+        fIdServerIOHandlerSSLOpenSSL.OnGetPassword := IdServerIOHandlerSSLOpenSSL1GetPassword;
+
+        fIdServerIOHandlerSSLOpenSSL.SSLOptions.CertFile := theCertificateFileName;
+        fIdServerIOHandlerSSLOpenSSL.SSLOptions.KeyFile  := thePrivateKeyFileName;
+        fIdServerIOHandlerSSLOpenSSL.SSLOptions.RootCertFile := theFullChainFileName;
+          // TIdSSLVersion = (sslvSSLv2, sslvSSLv23, sslvSSLv3, sslvTLSv1,sslvTLSv1_1,sslvTLSv1_2);
+        fIdServerIOHandlerSSLOpenSSL.SSLOptions.Method      := sslvTLSv1_2;  
+        fIdServerIOHandlerSSLOpenSSL.SSLOptions.SSLVersions := [sslvTLSv1_2];
+        fIdServerIOHandlerSSLOpenSSL.SSLOptions.Mode        := sslmServer;
+
+  FServer := TIdHTTPWebBrokerBridge.Create(Self);
+
+  if gUsingSSL FServer.IOHandler := fIdServerIOHandlerSSLOpenSSL; 
+ 
+    FServer.Bindings.Clear;
+
+    if gUsingSSL
+      then
+        begin
+          FServer.Bindings.Add.Port := 443;
+          FServer.DefaultPort := 443;
+        end
+      else
+        begin
+          FServer.Bindings.Add.Port := 80;
+          FServer.DefaultPort := 80;
+        end;
+
+    try
+
+      FServer.Active := True;
+
+    except
+
+      ShowMessage('Exception - Indy says: ' + WhichFailedToLoad);
+
+    end;
