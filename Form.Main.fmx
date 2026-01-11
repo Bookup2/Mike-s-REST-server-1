@@ -191,7 +191,7 @@ object MainForm: TMainForm
     CanFocus = True
     ClipChildren = True
     Position.X = 13.000000000000000000
-    Position.Y = 223.000000000000000000
+    Position.Y = 253.000000000000000000
     Size.Width = 1229.000000000000000000
     Size.Height = 106.000000000000000000
     Size.PlatformDefault = False
@@ -487,6 +487,15 @@ object MainForm: TMainForm
     Text = 'WhichFailedToLoadButton'
     OnClick = WhichFailedToLoadButtonClick
   end
+  object Label13: TLabel
+    Position.X = 13.000000000000000000
+    Position.Y = 223.000000000000000000
+    Size.Width = 1097.000000000000000000
+    Size.Height = 17.000000000000000000
+    Size.PlatformDefault = False
+    Text = 'cert.pem key.pem chain.pem'
+    TabOrder = 66
+  end
   object IdLogFile1: TIdLogFile
     OnConnect = IdLogFile1Connect
     OnDisconnect = IdLogFile1Disconnect
@@ -507,7 +516,11 @@ object MainForm: TMainForm
     SSLOptions.VerifyMode = []
     SSLOptions.VerifyDepth = 100
     OnSSLNegotiated = TaurusTLSServerIOHandlerSSLNegotiated
+    OnStatusInfo = TaurusTLSServerIOHandlerStatusInfo
+    OnGetPassword = TaurusTLSServerIOHandlerGetPassword
+    OnSecurityLevel = TaurusTLSServerIOHandlerSecurityLevel
     OnVerifyError = TaurusTLSServerIOHandlerVerifyError
+    OnVerifyCallback = TaurusTLSServerIOHandlerVerifyCallback
     Left = 650
     Top = 427
   end
