@@ -75,8 +75,8 @@ object MainForm: TMainForm
     Size.Height = 280.000000000000000000
     Size.PlatformDefault = False
     TabOrder = 7
-    Viewport.Width = 1229.000000000000000000
-    Viewport.Height = 276.000000000000000000
+    Viewport.Width = 1233.000000000000000000
+    Viewport.Height = 280.000000000000000000
   end
   object StartEnginesButton: TButton
     Position.X = 16.000000000000000000
@@ -120,7 +120,7 @@ object MainForm: TMainForm
     object UseLogFileCheckBox: TCheckBox
       Position.X = 435.000000000000000000
       Position.Y = -251.000000000000000000
-      TabOrder = 4
+      TabOrder = 3
       Text = 'Use Log File'
     end
     object LogFileNameLabel: TLabel
@@ -131,7 +131,7 @@ object MainForm: TMainForm
       Size.PlatformDefault = False
       TextSettings.Trimming = None
       Text = 'LogFileNameLabel'
-      TabOrder = 5
+      TabOrder = 4
     end
   end
   object NodeCountCutOffSpinBox: TSpinBox
@@ -198,8 +198,8 @@ object MainForm: TMainForm
     TabOrder = 22
     RowCount = 10
     Options = [Editing, ColumnResize, ColumnMove, ColLines, RowLines, Tabs, AutoDisplacement]
-    Viewport.Width = 1225.000000000000000000
-    Viewport.Height = 102.000000000000000000
+    Viewport.Width = 1229.000000000000000000
+    Viewport.Height = 106.000000000000000000
   end
   object NumberOfEnginesRunningLabel: TLabel
     Position.X = 200.000000000000000000
@@ -270,7 +270,7 @@ object MainForm: TMainForm
         Size.Width = 201.000000000000000000
         Size.Height = 19.000000000000000000
         Size.PlatformDefault = False
-        TabOrder = 4
+        TabOrder = 3
         Text = 'Allow CacheUpdates'
       end
     end
@@ -512,7 +512,7 @@ object MainForm: TMainForm
   object TaurusTLSServerIOHandler: TTaurusTLSServerIOHandler
     OnStatus = TaurusTLSServerIOHandlerStatus
     Certificates = <>
-    SSLOptions.Mode = sslmUnassigned
+    SSLOptions.Mode = sslmServer
     SSLOptions.VerifyMode = []
     SSLOptions.VerifyDepth = 100
     OnSSLNegotiated = TaurusTLSServerIOHandlerSSLNegotiated

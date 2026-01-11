@@ -254,9 +254,9 @@ const
   kClientDatabaseFolder = 'Client Database';
   kCOWRegistrationDatabaseFolder = 'COW Registration Database';
    // 'Certificate\pocketgmserver.com-cert.pem';
-  kPublicKeyFileName  = 'pocketgmserver.pfx'; // 'Certificate\pocketgmserver.com-cert.pem';
-  kPrivateKeyFileName = ''; // 'Certificate\pocketgmserver.com-key.pem';
-  kRootCertFileName   = ''; // 'Certificate\pocketgmserver.com-chain.pem';
+  kPublicKeyFileName  = 'Certificate\pocketgmserverwithpassword.com.pfx'; // 'Certificate\pocketgmserver.com-cert.pem';
+  kPrivateKeyFileName = 'Certificate\pocketgmserverwithpassword.com.pfx'; // 'Certificate\pocketgmserver.com-key.pem';
+  kRootCertFileName   = 'Certificate\pocketgmserverwithpassword.com.pfx'; // 'Certificate\pocketgmserver.com-chain.pem';
   kINIFileName = 'ServerSettings.INI';
   kINIUsingSSLTag = 'UsingSSL';
   // kINISSLVersionTag = 'SSLVersion';
@@ -862,6 +862,7 @@ var
   thePrivateKeyFileName,
   theRootCertFileName: String;
   theSSLVersionString: String;
+  theSSLLibraryLoaded: Boolean;
 
 begin
   {
@@ -878,6 +879,8 @@ begin
   libcrypto-3.dll
   libssl-3.dll
   }
+
+  theSSLLibraryLoaded := TaurusTLs.LoadOpenSSLLibrary;
 
   // fSSLVersion := sslvTLSv1_2;  Old Indy code
   fSSLVersion := SSLv3;
@@ -1097,6 +1100,8 @@ begin
   if not thePrivateKeyFileName.IsEmpty then TaurusTLSServerIOHandler.DefaultCert.PrivateKey := thePrivateKeyFileName;
   if not thePublicKeyFileName.IsEmpty  then TaurusTLSServerIOHandler.DefaultCert.PublicKey := thePublicKeyFileName;
   if not theRootCertFileName.IsEmpty   then TaurusTLSServerIOHandler.DefaultCert.RootKey := theRootCertFileName;
+
+  TaurusTLSServerIOHandler.SSLOptions.Mode := sslmServer;
 
   FServer := TIdHTTPWebBrokerBridge.Create(Self);
   fServer.OnException := IdHTTPServerException;
@@ -1707,7 +1712,11 @@ end;
 procedure TMainForm.TaurusTLSServerIOHandlerGetPassword(ASender: TObject;
   var VPassword: string; const AIsWrite: Boolean; var VOk: Boolean);
 begin
-  RequestsMemo.Lines.Add('TaurusTLS GetPassword called (no password though) ');
+  VPassword := 'Sicilian';
+
+  VOk := True;
+
+  RequestsMemo.Lines.Add('TaurusTLS GetPassword called.');
 end;
 
 
