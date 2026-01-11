@@ -242,9 +242,9 @@ const
   kProgramVersionString = 'PocketGM build 10 32 bit evening Jan 9, 2026';
   kClientDatabaseFolder = 'Client Database';
   kCOWRegistrationDatabaseFolder = 'COW Registration Database';
-  kCertificateFileName = 'Certificate\cert.pem';
-  kPrivateKeyFileName  = 'Certificate\privkey.pem';
-  kFullChainFileName   = 'Certificate\fullchain.pem';
+  kCertificateFileName = 'Certificate\pocketgmserver.com-chain.pem';
+  kPrivateKeyFileName  = 'Certificate\pocketgmserver.com-key.pem';
+  kRootCertFileName   = 'Certificate\pocketgmserver.com-chain-only.pem';
   kINIFileName = 'ServerSettings.INI';
   kINIUsingSSLTag = 'UsingSSL';
   // kINISSLVersionTag = 'SSLVersion';
@@ -848,7 +848,7 @@ var
   theFolder: String;
   theCertificateFileName,
   thePrivateKeyFileName,
-  theFullChainFileName: String;
+  theRootCertFileName: String;
   theSSLVersionString: String;
 
 begin
@@ -1028,11 +1028,11 @@ begin
 
   theCertificateFileName :=TPath.Combine(ExtractFilePath(ParamStr(0)), kCertificateFileName);
   thePrivateKeyFileName :=TPath.Combine(ExtractFilePath(ParamStr(0)), kPrivateKeyFileName);
-  theFullChainFileName :=TPath.Combine(ExtractFilePath(ParamStr(0)), kFullChainFileName);
+  theRootCertFileName :=TPath.Combine(ExtractFilePath(ParamStr(0)), kRootCertFileName);
 
   if not FileExists(theCertificateFileName) then ShowMessage('Certificate file is missing.' + #13 + theCertificateFileName);
   if not FileExists(thePrivateKeyFileName) then ShowMessage('Private key file is missing.' + #13 + thePrivateKeyFileName);
-  if not FileExists(theFullChainFileName) then ShowMessage('Fullchain file is missing.' + #13 + theFullChainFileName);
+  if not FileExists(theRootCertFileName) then ShowMessage('RootCert file is missing.' + #13 + theRootCertFileName);
 
    // Indy based code below.  Replacing it with TaurusTLS.
   {
@@ -1067,7 +1067,7 @@ begin
 
   TaurusTLSServerIOHandler.DefaultCert.PrivateKey := thePrivateKeyFileName;
   TaurusTLSServerIOHandler.DefaultCert.PublicKey := theCertificateFileName;
-  TaurusTLSServerIOHandler.DefaultCert.RootKey := theFullChainFileName;
+  TaurusTLSServerIOHandler.DefaultCert.RootKey := theRootCertFileName;
 
   FServer := TIdHTTPWebBrokerBridge.Create(Self);
   fServer.OnException := IdHTTPServerException;
