@@ -240,9 +240,10 @@ const
   kProgramVersionString = 'PocketGM build 10 32 bit evening Jan 9, 2026';
   kClientDatabaseFolder = 'Client Database';
   kCOWRegistrationDatabaseFolder = 'COW Registration Database';
-  kCertificateFileName = 'Certificate\pocketgmserver.com-cert.pem';
+   // 'Certificate\pocketgmserver.com-cert.pem';
+  kCertificateFileName = 'Certificate\pocketgmserver.com-chain.pem';
   kPrivateKeyFileName  = 'Certificate\pocketgmserver.com-key.pem';
-  kRootCertFileName   = 'Certificate\pocketgmserver.com-chain.pem';
+  kRootCertFileName   = 'Certificate\pocketgmserver.com-chain-only.pem';
   kINIFileName = 'ServerSettings.INI';
   kINIUsingSSLTag = 'UsingSSL';
   // kINISSLVersionTag = 'SSLVersion';
