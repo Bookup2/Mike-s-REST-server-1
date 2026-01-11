@@ -22,7 +22,7 @@ uses
   IdComponent, IdServerIOHandler, IdSSL, IdSSLOpenSSL, FMX.ExtCtrls,
   IdIntercept, IdLogBase, IdLogFile, IdContext, IdCustomTCPServer,
   IdCustomHTTPServer, IdHTTPServer, IdSocketHandle, TaurusTLSHeaders_types,
-  TaurusTLS_X509, TaurusTLS;
+  TaurusTLS_X509, TaurusTLS, IdLogDebug;
 
 
 type
@@ -106,6 +106,19 @@ type
       ADescr: string; var VOk: Boolean);
     procedure TaurusTLSServerIOHandlerSSLNegotiated(
       ASender: TTaurusTLSIOHandlerSocket);
+    procedure TaurusTLSServerIOHandlerGetPassword(ASender: TObject;
+      var VPassword: string; const AIsWrite: Boolean; var VOk: Boolean);
+    procedure TaurusTLSServerIOHandlerSecurityLevel(ASender: TObject;
+      const AsslSocket: PSSL; ACtx: PSSL_CTX; op, bits: TIdC_INT;
+      const ACipherNid: TIdC_INT; const ACipher: string;
+      var VAccepted: Boolean);
+    procedure TaurusTLSServerIOHandlerVerifyCallback(ASender: TObject;
+      const APreverify_ok: TIdC_INT; ACertificate: TTaurusTLSX509;
+      const ADepth: Integer; const AError: TIdC_LONG; const AMsg,
+      ADescr: string; var VContinue: Boolean);
+    procedure TaurusTLSServerIOHandlerStatusInfo(ASender: TObject;
+      const AsslSocket: PSSL; const AWhere, Aret: TIdC_INT; const AType,
+      AMsg: string);
 
   private
 
@@ -165,7 +178,6 @@ type
     procedure IdServerIOHandlerSSLOpenSSLGetPassword(var Password: string);
     procedure IdServerIOHandlerSSLOpenSSLGetPasswordEx(ASender: TObject; var VPassword: string; const AIsWrite: Boolean);
     }
-
     procedure IdHTTPServerException(AContext: TIdContext; AException: Exception);
     procedure IdHTTPServerSessionStart(Sender: TIdHTTPSession);
     procedure IdHTTPServerSessionEnd(Sender: TIdHTTPSession);
@@ -1083,8 +1095,11 @@ begin
   fServer.OnStatus := IdHTTPServerStatus;
   fServer.OnCommandError := IdHTTPServerCommandError;
 
-  RequestsMemo.Lines.Add('Indy version: ' + FServer.Version);
+  FServer.IOHandler := TaurusTLSServerIOHandler;    // FIXEDIN build 11
 
+  FServer.DefaultPort := 443;
+
+  {
   if gUsingSSL
     then
       begin
@@ -1098,6 +1113,9 @@ begin
       begin
         FServer.DefaultPort := 80;
       end;
+  }
+
+  RequestsMemo.Lines.Add('Indy version: ' + FServer.Version);
 
   PortLabel.Text := FServer.DefaultPort.ToString;
 
@@ -1538,9 +1556,18 @@ begin
 
     except
 
-      ShowMessage('Exception - Indy says: ' + WhichFailedToLoad);
-      ShowMessage('Is the libcrypto-3.dll in the right place?');
+      on E: EZeroDivide do
+        Writeln('Error: Division by zero is not allowed.');
+      on E: EOverflow do
+        Writeln('Error: Numeric overflow occurred.');
+      on E: Exception do
+        begin
+          ShowMessage('An unexpected Indy Exception: ', E.Message);
 
+          ShowMessage('Indy WhichFailedToLoad says: ' + WhichFailedToLoad);
+        end;
+
+      ShowMessage('Is the libcrypto-3.dll in the right place?');
     end;
   end;
 end;
@@ -1658,6 +1685,23 @@ end;
 
 
 
+procedure TMainForm.TaurusTLSServerIOHandlerGetPassword(ASender: TObject;
+  var VPassword: string; const AIsWrite: Boolean; var VOk: Boolean);
+begin
+  RequestsMemo.Lines.Add('TaurusTLS GetPassword called (no password though) ');
+end;
+
+
+
+procedure TMainForm.TaurusTLSServerIOHandlerSecurityLevel(ASender: TObject;
+  const AsslSocket: PSSL; ACtx: PSSL_CTX; op, bits: TIdC_INT;
+  const ACipherNid: TIdC_INT; const ACipher: string; var VAccepted: Boolean);
+begin
+  RequestsMemo.Lines.Add('TaurusTLS SecurityLevel called. ');
+end;
+
+
+
 procedure TMainForm.TaurusTLSServerIOHandlerSSLNegotiated(ASender: TTaurusTLSIOHandlerSocket);
 begin
   RequestsMemo.Lines.Add('TaurusTLS SSL Negotiated: ');
@@ -1669,6 +1713,25 @@ procedure TMainForm.TaurusTLSServerIOHandlerStatus(ASender: TObject;
   const AStatus: TIdStatus; const AStatusText: string);
 begin
   RequestsMemo.Lines.Add('TaurusTLS status: ' + AStatusText);
+end;
+
+
+
+procedure TMainForm.TaurusTLSServerIOHandlerStatusInfo(ASender: TObject;
+  const AsslSocket: PSSL; const AWhere, Aret: TIdC_INT; const AType,
+  AMsg: string);
+begin
+  RequestsMemo.Lines.Add('TaurusTLS StatusInfo: ' + AMsg);
+end;
+
+
+
+procedure TMainForm.TaurusTLSServerIOHandlerVerifyCallback(ASender: TObject;
+  const APreverify_ok: TIdC_INT; ACertificate: TTaurusTLSX509;
+  const ADepth: Integer; const AError: TIdC_LONG; const AMsg, ADescr: string;
+  var VContinue: Boolean);
+begin
+  RequestsMemo.Lines.Add('TaurusTLS VerifyCallback called ');
 end;
 
 

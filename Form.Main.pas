@@ -254,9 +254,9 @@ const
   kClientDatabaseFolder = 'Client Database';
   kCOWRegistrationDatabaseFolder = 'COW Registration Database';
    // 'Certificate\pocketgmserver.com-cert.pem';
-  kPublicKeyFileName = 'Certificate\pocketgmserver.com-cert.pem';
-  kPrivateKeyFileName  = 'Certificate\pocketgmserver.com-key.pem';
-  kRootCertFileName   = 'Certificate\pocketgmserver.com-chain.pem';
+  kPublicKeyFileName  = 'pocketgmserver.pfx'; // 'Certificate\pocketgmserver.com-cert.pem';
+  kPrivateKeyFileName = ''; // 'Certificate\pocketgmserver.com-key.pem';
+  kRootCertFileName   = ''; // 'Certificate\pocketgmserver.com-chain.pem';
   kINIFileName = 'ServerSettings.INI';
   kINIUsingSSLTag = 'UsingSSL';
   // kINISSLVersionTag = 'SSLVersion';
@@ -1038,13 +1038,30 @@ begin
 
   UseSSLCheckBox.IsChecked := gUsingSSL;
 
-  thePublicKeyFileName :=TPath.Combine(ExtractFilePath(ParamStr(0)), kPublicKeyFileName);
-  thePrivateKeyFileName :=TPath.Combine(ExtractFilePath(ParamStr(0)), kPrivateKeyFileName);
-  theRootCertFileName :=TPath.Combine(ExtractFilePath(ParamStr(0)), kRootCertFileName);
+  thePublicKeyFileName := '';
+  thePrivateKeyFileName := '';
+  theRootCertFileName := '';
 
-  if not FileExists(thePublicKeyFileName) then ShowMessage('Public key file is missing.' + #13 + thePublicKeyFileName);
-  if not FileExists(thePrivateKeyFileName) then ShowMessage('Private key file is missing.' + #13 + thePrivateKeyFileName);
-  if not FileExists(theRootCertFileName) then ShowMessage('RootCert file is missing.' + #13 + theRootCertFileName);
+  if (kPublicKeyFileName > '')
+    then
+      begin
+        thePublicKeyFileName :=TPath.Combine(ExtractFilePath(ParamStr(0)), kPublicKeyFileName);
+        if not FileExists(thePublicKeyFileName) then ShowMessage('Public key file is missing.' + #13 + thePublicKeyFileName);
+      end;
+
+  if (kPrivateKeyFileName > '')
+    then
+      begin
+        thePrivateKeyFileName :=TPath.Combine(ExtractFilePath(ParamStr(0)), kPrivateKeyFileName);
+        if not FileExists(thePrivateKeyFileName) then ShowMessage('Private key file is missing.' + #13 + thePrivateKeyFileName);
+      end;
+
+  if (theRootCertFileName > '')
+    then
+      begin
+        theRootCertFileName :=TPath.Combine(ExtractFilePath(ParamStr(0)), kRootCertFileName);
+        if not FileExists(theRootCertFileName) then ShowMessage('RootCert file is missing.' + #13 + theRootCertFileName);
+      end;
 
    // Indy based code below.  Replacing it with TaurusTLS.
   {
@@ -1077,9 +1094,9 @@ begin
   end;
   }
 
-  TaurusTLSServerIOHandler.DefaultCert.PrivateKey := thePrivateKeyFileName;
-  TaurusTLSServerIOHandler.DefaultCert.PublicKey := thePublicKeyFileName;
-  TaurusTLSServerIOHandler.DefaultCert.RootKey := theRootCertFileName;
+  if not thePrivateKeyFileName.IsEmpty then TaurusTLSServerIOHandler.DefaultCert.PrivateKey := thePrivateKeyFileName;
+  if not thePublicKeyFileName.IsEmpty  then TaurusTLSServerIOHandler.DefaultCert.PublicKey := thePublicKeyFileName;
+  if not theRootCertFileName.IsEmpty   then TaurusTLSServerIOHandler.DefaultCert.RootKey := theRootCertFileName;
 
   FServer := TIdHTTPWebBrokerBridge.Create(Self);
   fServer.OnException := IdHTTPServerException;
@@ -1556,9 +1573,20 @@ begin
 
     except
 
-      ShowMessage('Exception - Indy says: ' + WhichFailedToLoad);
-      ShowMessage('Is the libcrypto-3.dll in the right place?');
+    {
+      on E: EZeroDivide do
+        Writeln('Error: Division by zero is not allowed.');
+      on E: EOverflow do
+        Writeln('Error: Numeric overflow occurred.');
+    }
+      on E: Exception do
+        begin
+          ShowMessage('An unexpected Indy Exception: ' + E.Message);
 
+          ShowMessage('Indy WhichFailedToLoad says: ' + WhichFailedToLoad);
+        end;
+
+      // ShowMessage('Is the libcrypto-3.dll in the right place?');
     end;
   end;
 end;
