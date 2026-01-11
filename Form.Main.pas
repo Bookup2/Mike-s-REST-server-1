@@ -241,9 +241,9 @@ const
   kClientDatabaseFolder = 'Client Database';
   kCOWRegistrationDatabaseFolder = 'COW Registration Database';
    // 'Certificate\pocketgmserver.com-cert.pem';
-  kCertificateFileName = 'Certificate\pocketgmserver.com-chain.pem';
+  kPublicKeyFileName = 'Certificate\pocketgmserver.com-cert.pem';
   kPrivateKeyFileName  = 'Certificate\pocketgmserver.com-key.pem';
-  kRootCertFileName   = 'Certificate\pocketgmserver.com-chain-only.pem';
+  kRootCertFileName   = 'Certificate\pocketgmserver.com-chain.pem';
   kINIFileName = 'ServerSettings.INI';
   kINIUsingSSLTag = 'UsingSSL';
   // kINISSLVersionTag = 'SSLVersion';
@@ -845,7 +845,7 @@ var
   theEXEFileName: String;
   K: Integer;
   theFolder: String;
-  theCertificateFileName,
+  thePublicKeyFileName,
   thePrivateKeyFileName,
   theRootCertFileName: String;
   theSSLVersionString: String;
@@ -1025,11 +1025,11 @@ begin
 
   UseSSLCheckBox.IsChecked := gUsingSSL;
 
-  theCertificateFileName :=TPath.Combine(ExtractFilePath(ParamStr(0)), kCertificateFileName);
+  thePublicKeyFileName :=TPath.Combine(ExtractFilePath(ParamStr(0)), kPublicKeyFileName);
   thePrivateKeyFileName :=TPath.Combine(ExtractFilePath(ParamStr(0)), kPrivateKeyFileName);
   theRootCertFileName :=TPath.Combine(ExtractFilePath(ParamStr(0)), kRootCertFileName);
 
-  if not FileExists(theCertificateFileName) then ShowMessage('Certificate file is missing.' + #13 + theCertificateFileName);
+  if not FileExists(thePublicKeyFileName) then ShowMessage('Public key file is missing.' + #13 + thePublicKeyFileName);
   if not FileExists(thePrivateKeyFileName) then ShowMessage('Private key file is missing.' + #13 + thePrivateKeyFileName);
   if not FileExists(theRootCertFileName) then ShowMessage('RootCert file is missing.' + #13 + theRootCertFileName);
 
@@ -1065,7 +1065,7 @@ begin
   }
 
   TaurusTLSServerIOHandler.DefaultCert.PrivateKey := thePrivateKeyFileName;
-  TaurusTLSServerIOHandler.DefaultCert.PublicKey := theCertificateFileName;
+  TaurusTLSServerIOHandler.DefaultCert.PublicKey := thePublicKeyFileName;
   TaurusTLSServerIOHandler.DefaultCert.RootKey := theRootCertFileName;
 
   FServer := TIdHTTPWebBrokerBridge.Create(Self);

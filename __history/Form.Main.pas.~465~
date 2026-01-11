@@ -105,8 +105,6 @@ type
       ADescr: string; var VOk: Boolean);
     procedure TaurusTLSServerIOHandlerSSLNegotiated(
       ASender: TTaurusTLSIOHandlerSocket);
-    procedure TaurusTLSServerIOHandlerGetPassword(ASender: TObject;
-      var VPassword: string; const AIsWrite: Boolean; var VOk: Boolean);
 
   private
 
@@ -179,6 +177,8 @@ type
     procedure IdHTTPServerQuerySSLPort(APort: TIdPort; var VUseSSL: Boolean);
     procedure IdHTTPServerBeforeBind(AHandle: TIdSocketHandle);
     procedure IdHTTPServerAfterBind(Sender: TObject);
+    procedure IdHTTPServerStatus(ASender: TObject;
+  const AStatus: TIdStatus; const AStatusText: string);
     procedure IdHTTPServerCommandError(AContext: TIdContext;
                                        ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo;
                                        AException: Exception);
@@ -240,9 +240,10 @@ const
   kProgramVersionString = 'PocketGM build 10 32 bit evening Jan 9, 2026';
   kClientDatabaseFolder = 'Client Database';
   kCOWRegistrationDatabaseFolder = 'COW Registration Database';
-  kCertificateFileName = 'Certificate\cert.pem';
-  kPrivateKeyFileName  = 'Certificate\privkey.pem';
-  kFullChainFileName   = 'Certificate\fullchain.pem';
+   // 'Certificate\pocketgmserver.com-cert.pem';
+  kPublicKeyFileName = 'Certificate\pocketgmserver.com-cert.pem';
+  kPrivateKeyFileName  = 'Certificate\pocketgmserver.com-key.pem';
+  kRootCertFileName   = 'Certificate\pocketgmserver.com-chain.pem';
   kINIFileName = 'ServerSettings.INI';
   kINIUsingSSLTag = 'UsingSSL';
   // kINISSLVersionTag = 'SSLVersion';
@@ -844,9 +845,9 @@ var
   theEXEFileName: String;
   K: Integer;
   theFolder: String;
-  theCertificateFileName,
+  thePublicKeyFileName,
   thePrivateKeyFileName,
-  theFullChainFileName: String;
+  theRootCertFileName: String;
   theSSLVersionString: String;
 
 begin
@@ -1024,13 +1025,13 @@ begin
 
   UseSSLCheckBox.IsChecked := gUsingSSL;
 
-  theCertificateFileName :=TPath.Combine(ExtractFilePath(ParamStr(0)), kCertificateFileName);
+  thePublicKeyFileName :=TPath.Combine(ExtractFilePath(ParamStr(0)), kPublicKeyFileName);
   thePrivateKeyFileName :=TPath.Combine(ExtractFilePath(ParamStr(0)), kPrivateKeyFileName);
-  theFullChainFileName :=TPath.Combine(ExtractFilePath(ParamStr(0)), kFullChainFileName);
+  theRootCertFileName :=TPath.Combine(ExtractFilePath(ParamStr(0)), kRootCertFileName);
 
   if not FileExists(theCertificateFileName) then ShowMessage('Certificate file is missing.' + #13 + theCertificateFileName);
   if not FileExists(thePrivateKeyFileName) then ShowMessage('Private key file is missing.' + #13 + thePrivateKeyFileName);
-  if not FileExists(theFullChainFileName) then ShowMessage('Fullchain file is missing.' + #13 + theFullChainFileName);
+  if not FileExists(theRootCertFileName) then ShowMessage('RootCert file is missing.' + #13 + theRootCertFileName);
 
    // Indy based code below.  Replacing it with TaurusTLS.
   {
@@ -1063,9 +1064,15 @@ begin
   end;
   }
 
-  TaurusTLSServerIOHandler.OnGetPassword := sd
-  cert
-  key etc.
+  TaurusTLSServerIOHandler.DefaultCert.PrivateKey := thePrivateKeyFileName;
+  TaurusTLSServerIOHandler.DefaultCert.PublicKey := theCertificateFileName;
+  TaurusTLSServerIOHandler.DefaultCert.RootKey := theRootCertFileName;
+
+  TaurusTLSServerIOHandler.DefaultCert.
+
+  TaurusTLSServerIOHandler.Certificates.Items[1].
+
+  TaurusTLSServerIOHandler.DefaultCert.
 
   FServer := TIdHTTPWebBrokerBridge.Create(Self);
   fServer.OnException := IdHTTPServerException;
@@ -1078,7 +1085,7 @@ begin
   fServer.OnQuerySSLPort := IdHTTPServerQuerySSLPort;
   fServer.OnAfterBind := IdHTTPServerAfterBind;
   fServer.OnBeforeBind :=  IdHTTPServerBeforeBind;
-  fServer.OnStatus := IdServerIOHandlerSSLOpenSSLStatus;
+  fServer.OnStatus := IdHTTPServerStatus;
   fServer.OnCommandError := IdHTTPServerCommandError;
 
   RequestsMemo.Lines.Add('Indy version: ' + FServer.Version);
@@ -1352,6 +1359,14 @@ end;
 
 
 
+procedure TMainForm.IdHTTPServerStatus(ASender: TObject;
+  const AStatus: TIdStatus; const AStatusText: string);
+begin
+  RequestsMemo.Lines.Add('ServerStatus - ' + AStatusText);
+end;
+
+
+
 procedure TMainForm.IdHTTPServerSessionEnd(Sender: TIdHTTPSession);
 begin
   RequestsMemo.Lines.Add('**** ServerSessionEnd');
@@ -1387,24 +1402,6 @@ begin
   RequestsMemo.Lines.Add('Indy log Send.');
 end;
 
-
-{
-procedure TMainForm.IdServerIOHandlerSSLOpenSSLGetPassword(var Password: string);
-begin
-  Password := 'Sicilian';
-
-  RequestsMemo.Lines.Add('SSL Certificate password checked.');
-end;
-
-
-
-procedure TMainForm.IdServerIOHandlerSSLOpenSSLGetPasswordEx(ASender: TObject; var VPassword: string; const AIsWrite: Boolean);
-begin
-  VPassword := 'Sicilian';
-
-  RequestsMemo.Lines.Add('SSL Certificate password checked.');
-end;
-}
 
 
 procedure TMainForm.LogFileButtonClick(Sender: TObject);
@@ -1662,16 +1659,6 @@ begin
 
   if AllowCacheUpdatesCheckBox.isChecked
     then fCacheBook.UpdateEverything(theFEN, theReplyForTheClient);
-end;
-
-
-
-procedure TMainForm.TaurusTLSServerIOHandlerGetPassword(ASender: TObject;
-  var VPassword: string; const AIsWrite: Boolean; var VOk: Boolean);
-begin
-  VPassword := 'Sicilian';
-
-  RequestsMemo.Lines.Add('TaurusTLS - SSL Certificate password checked.');
 end;
 
 
