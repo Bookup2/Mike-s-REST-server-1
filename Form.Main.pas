@@ -237,7 +237,7 @@ uses
 
 const
 
-  kProgramVersionString = 'PocketGM build 10 32 bit evening Jan 9, 2026';
+  kProgramVersionString = 'PocketGM build 11 32 bit evening Jan 10, 2026';
   kClientDatabaseFolder = 'Client Database';
   kCOWRegistrationDatabaseFolder = 'COW Registration Database';
    // 'Certificate\pocketgmserver.com-cert.pem';
@@ -1066,7 +1066,7 @@ begin
 
   TaurusTLSServerIOHandler.DefaultCert.PrivateKey := thePrivateKeyFileName;
   TaurusTLSServerIOHandler.DefaultCert.PublicKey := thePublicKeyFileName;
-  TaurusTLSServerIOHandler.DefaultCert.RootKey := theRootCertFileName;
+  // TaurusTLSServerIOHandler.DefaultCert.RootKey := theRootCertFileName;
 
   FServer := TIdHTTPWebBrokerBridge.Create(Self);
   fServer.OnException := IdHTTPServerException;
