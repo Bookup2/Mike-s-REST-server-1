@@ -507,7 +507,6 @@ object MainForm: TMainForm
     SSLOptions.VerifyMode = []
     SSLOptions.VerifyDepth = 100
     OnSSLNegotiated = TaurusTLSServerIOHandlerSSLNegotiated
-    OnGetPassword = TaurusTLSServerIOHandlerGetPassword
     OnVerifyError = TaurusTLSServerIOHandlerVerifyError
     Left = 650
     Top = 427

@@ -98,8 +98,6 @@ type
       var ABuffer: TIdBytes);
     procedure IdLogFile1Send(ASender: TIdConnectionIntercept;
       var ABuffer: TIdBytes);
-    procedure TaurusTLSServerIOHandlerGetPassword(ASender: TObject;
-      var VPassword: string; const AIsWrite: Boolean; var VOk: Boolean);
     procedure TaurusTLSServerIOHandlerStatus(ASender: TObject;
       const AStatus: TIdStatus; const AStatusText: string);
     procedure TaurusTLSServerIOHandlerVerifyError(ASender: TObject;
@@ -107,6 +105,8 @@ type
       ADescr: string; var VOk: Boolean);
     procedure TaurusTLSServerIOHandlerSSLNegotiated(
       ASender: TTaurusTLSIOHandlerSocket);
+    procedure TaurusTLSServerIOHandlerGetPassword(ASender: TObject;
+      var VPassword: string; const AIsWrite: Boolean; var VOk: Boolean);
 
   private
 
@@ -167,12 +167,6 @@ type
     procedure IdServerIOHandlerSSLOpenSSLGetPasswordEx(ASender: TObject; var VPassword: string; const AIsWrite: Boolean);
     }
 
-    procedure TaurusTLSOnGetPassword(ASender: TObject; var VPassword: String;
-    const AIsWrite: Boolean; var VOk: Boolean);
-
-    procedure IdHTTPServerSSLOpenSSLStatus(ASender: TObject;
-                                                const AStatus: TIdStatus; const AStatusText: string);
-
     procedure IdHTTPServerException(AContext: TIdContext; AException: Exception);
     procedure IdHTTPServerSessionStart(Sender: TIdHTTPSession);
     procedure IdHTTPServerSessionEnd(Sender: TIdHTTPSession);
@@ -185,6 +179,8 @@ type
     procedure IdHTTPServerQuerySSLPort(APort: TIdPort; var VUseSSL: Boolean);
     procedure IdHTTPServerBeforeBind(AHandle: TIdSocketHandle);
     procedure IdHTTPServerAfterBind(Sender: TObject);
+    procedure IdHTTPServerStatus(ASender: TObject;
+  const AStatus: TIdStatus; const AStatusText: string);
     procedure IdHTTPServerCommandError(AContext: TIdContext;
                                        ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo;
                                        AException: Exception);
@@ -246,9 +242,9 @@ const
   kProgramVersionString = 'PocketGM build 10 32 bit evening Jan 9, 2026';
   kClientDatabaseFolder = 'Client Database';
   kCOWRegistrationDatabaseFolder = 'COW Registration Database';
-  kCertificateFileName = 'Certificate\cert.pem';
-  kPrivateKeyFileName  = 'Certificate\privkey.pem';
-  kFullChainFileName   = 'Certificate\fullchain.pem';
+  kCertificateFileName = 'Certificate\pocketgmserver.com-chain.pem';
+  kPrivateKeyFileName  = 'Certificate\pocketgmserver.com-key.pem';
+  kRootCertFileName   = 'Certificate\pocketgmserver.com-chain-only.pem';
   kINIFileName = 'ServerSettings.INI';
   kINIUsingSSLTag = 'UsingSSL';
   // kINISSLVersionTag = 'SSLVersion';
@@ -318,14 +314,6 @@ begin
     Inc(i);
   end;
   WSACleanup;
-end;
-
-
-
-procedure TMainForm.IdHTTPServerSSLOpenSSLStatus(ASender: TObject;
-  const AStatus: TIdStatus; const AStatusText: string);
-begin
-  RequestsMemo.Lines.Add('Indy status: ' + AStatusText);
 end;
 
 
@@ -860,7 +848,7 @@ var
   theFolder: String;
   theCertificateFileName,
   thePrivateKeyFileName,
-  theFullChainFileName: String;
+  theRootCertFileName: String;
   theSSLVersionString: String;
 
 begin
@@ -1040,11 +1028,11 @@ begin
 
   theCertificateFileName :=TPath.Combine(ExtractFilePath(ParamStr(0)), kCertificateFileName);
   thePrivateKeyFileName :=TPath.Combine(ExtractFilePath(ParamStr(0)), kPrivateKeyFileName);
-  theFullChainFileName :=TPath.Combine(ExtractFilePath(ParamStr(0)), kFullChainFileName);
+  theRootCertFileName :=TPath.Combine(ExtractFilePath(ParamStr(0)), kRootCertFileName);
 
   if not FileExists(theCertificateFileName) then ShowMessage('Certificate file is missing.' + #13 + theCertificateFileName);
   if not FileExists(thePrivateKeyFileName) then ShowMessage('Private key file is missing.' + #13 + thePrivateKeyFileName);
-  if not FileExists(theFullChainFileName) then ShowMessage('Fullchain file is missing.' + #13 + theFullChainFileName);
+  if not FileExists(theRootCertFileName) then ShowMessage('RootCert file is missing.' + #13 + theRootCertFileName);
 
    // Indy based code below.  Replacing it with TaurusTLS.
   {
@@ -1077,9 +1065,9 @@ begin
   end;
   }
 
-  TaurusTLSServerIOHandler.OnGetPassword := sd
-  cert
-  key etc.
+  TaurusTLSServerIOHandler.DefaultCert.PrivateKey := thePrivateKeyFileName;
+  TaurusTLSServerIOHandler.DefaultCert.PublicKey := theCertificateFileName;
+  TaurusTLSServerIOHandler.DefaultCert.RootKey := theRootCertFileName;
 
   FServer := TIdHTTPWebBrokerBridge.Create(Self);
   fServer.OnException := IdHTTPServerException;
@@ -1092,7 +1080,7 @@ begin
   fServer.OnQuerySSLPort := IdHTTPServerQuerySSLPort;
   fServer.OnAfterBind := IdHTTPServerAfterBind;
   fServer.OnBeforeBind :=  IdHTTPServerBeforeBind;
-  fServer.OnStatus := IdServerIOHandlerSSLOpenSSLStatus;
+  fServer.OnStatus := IdHTTPServerStatus;
   fServer.OnCommandError := IdHTTPServerCommandError;
 
   RequestsMemo.Lines.Add('Indy version: ' + FServer.Version);
@@ -1362,6 +1350,14 @@ end;
 procedure TMainForm.IdHTTPServerSessionStart(Sender: TIdHTTPSession);
 begin
   RequestsMemo.Lines.Add('**** ServerSessionStart');
+end;
+
+
+
+procedure TMainForm.IdHTTPServerStatus(ASender: TObject;
+  const AStatus: TIdStatus; const AStatusText: string);
+begin
+  RequestsMemo.Lines.Add('ServerStatus - ' + AStatusText);
 end;
 
 
@@ -1680,22 +1676,12 @@ end;
 
 
 
-procedure TMainForm.TaurusTLSOnGetPassword(ASender: TObject;
-  var VPassword: String; const AIsWrite: Boolean; var VOk: Boolean);
-begin
-  VPassword := 'Sicilian';
-
-  RequestsMemo.Lines.Add('TaurusTLS - SSL Certificate password checked.');
-end;
-
-
-
 procedure TMainForm.TaurusTLSServerIOHandlerGetPassword(ASender: TObject;
   var VPassword: string; const AIsWrite: Boolean; var VOk: Boolean);
 begin
   VPassword := 'Sicilian';
 
-  RequestsMemo.Lines.Add('TaurusTLS: password requested');
+  RequestsMemo.Lines.Add('TaurusTLS - SSL Certificate password checked.');
 end;
 
 

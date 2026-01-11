@@ -105,8 +105,6 @@ type
       ADescr: string; var VOk: Boolean);
     procedure TaurusTLSServerIOHandlerSSLNegotiated(
       ASender: TTaurusTLSIOHandlerSocket);
-    procedure TaurusTLSServerIOHandlerGetPassword(ASender: TObject;
-      var VPassword: string; const AIsWrite: Boolean; var VOk: Boolean);
 
   private
 
@@ -242,9 +240,9 @@ const
   kProgramVersionString = 'PocketGM build 10 32 bit evening Jan 9, 2026';
   kClientDatabaseFolder = 'Client Database';
   kCOWRegistrationDatabaseFolder = 'COW Registration Database';
-  kCertificateFileName = 'Certificate\pocketgmserver.com-chain.pem';
+  kCertificateFileName = 'Certificate\pocketgmserver.com-cert.pem';
   kPrivateKeyFileName  = 'Certificate\pocketgmserver.com-key.pem';
-  kRootCertFileName   = 'Certificate\pocketgmserver.com-chain-only.pem';
+  kRootCertFileName   = 'Certificate\pocketgmserver.com-chain.pem';
   kINIFileName = 'ServerSettings.INI';
   kINIUsingSSLTag = 'UsingSSL';
   // kINISSLVersionTag = 'SSLVersion';
@@ -1398,24 +1396,6 @@ begin
 end;
 
 
-{
-procedure TMainForm.IdServerIOHandlerSSLOpenSSLGetPassword(var Password: string);
-begin
-  Password := 'Sicilian';
-
-  RequestsMemo.Lines.Add('SSL Certificate password checked.');
-end;
-
-
-
-procedure TMainForm.IdServerIOHandlerSSLOpenSSLGetPasswordEx(ASender: TObject; var VPassword: string; const AIsWrite: Boolean);
-begin
-  VPassword := 'Sicilian';
-
-  RequestsMemo.Lines.Add('SSL Certificate password checked.');
-end;
-}
-
 
 procedure TMainForm.LogFileButtonClick(Sender: TObject);
 begin
@@ -1672,16 +1652,6 @@ begin
 
   if AllowCacheUpdatesCheckBox.isChecked
     then fCacheBook.UpdateEverything(theFEN, theReplyForTheClient);
-end;
-
-
-
-procedure TMainForm.TaurusTLSServerIOHandlerGetPassword(ASender: TObject;
-  var VPassword: string; const AIsWrite: Boolean; var VOk: Boolean);
-begin
-  VPassword := 'Sicilian';
-
-  RequestsMemo.Lines.Add('TaurusTLS - SSL Certificate password checked.');
 end;
 
 
