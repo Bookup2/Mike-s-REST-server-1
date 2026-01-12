@@ -80,7 +80,8 @@ type
     IdLogFile1: TIdLogFile;
     IdHTTPServer1: TIdHTTPServer;
     TaurusTLSServerIOHandler: TTaurusTLSServerIOHandler;
-    Label13: TLabel;
+    CertificateFileNameLabel: TLabel;
+    CertificateOpenDialog: TOpenDialog;
     procedure FormCreate(Sender: TObject);
     procedure ButtonStartClick(Sender: TObject);
     procedure ButtonStopClick(Sender: TObject);
@@ -121,6 +122,10 @@ type
       AMsg: string);
 
   private
+
+    fTaurusTLSPrivateKeyFilename,
+    fTaurusTLSPublicKeyFilename,
+    fTaurusTLSRootKeyFilename: String;
 
         // TIdSSLVersion = (sslvSSLv2, sslvSSLv23, sslvSSLv3, sslvTLSv1,sslvTLSv1_1,sslvTLSv1_2);
     fSSLVersion: TTaurusTLSSSLVersion; // TIdSSLVersion;
@@ -259,6 +264,9 @@ const
   kRootCertFileName   = 'Certificate\pocketgmserverwithpassword.com.pfx'; // 'Certificate\pocketgmserver.com-chain.pem';
   kINIFileName = 'ServerSettings.INI';
   kINIUsingSSLTag = 'UsingSSL';
+  kINITaurusTLSPrivateKeyFilenameTag = 'TaurusTLSPrivateKeyFilename';
+  kINITaurusTLSPublicKeyFilenameTag = 'TaurusTLSPublicKeyFilename';
+  kINITaurusTLSRootKeyFilenameTag = 'TaurusTLSRootKeyFilename';
   // kINISSLVersionTag = 'SSLVersion';
   kINITaurusSSLVersionTag = 'TaurusSSLVersion';
   kINIEngineFilenameTag = 'EngineEXEFile';
@@ -858,11 +866,12 @@ var
   theEXEFileName: String;
   K: Integer;
   theFolder: String;
-  thePublicKeyFileName,
-  thePrivateKeyFileName,
-  theRootCertFileName: String;
+  // thePublicKeyFileName,
+  // thePrivateKeyFileName,
+  // theRootCertFileName: String;
   theSSLVersionString: String;
   theSSLLibraryLoaded: Boolean;
+  theCertificateFolder: String;
 
 begin
   {
@@ -983,6 +992,9 @@ begin
 
   NumberOfEnginesSpinBox.value := fNumberOfEngines;
 
+  fTaurusTLSPrivateKeyFilename := theINIFile.ReadString('ProgramPreferences', kINITaurusTLSPrivateKeyFilenameTag, '');
+  fTaurusTLSPublicKeyFilename  := theINIFile.ReadString('ProgramPreferences', kINITaurusTLSPublicKeyFilenameTag, '');
+  fTaurusTLSRootKeyFilename    := theINIFile.ReadString('ProgramPreferences', kINITaurusTLSRootKeyFilenameTag, '');
 
   fClientDatabaseFileName       := theINIFile.ReadString('ProgramPreferences', kINICientDatabaseFileNameTag, 'ClientDatabase.db');
   gUsingSSL                     := theINIFile.ReadBool  ('ProgramPreferences', kINIUsingSSLTag, False);
@@ -1041,29 +1053,55 @@ begin
 
   UseSSLCheckBox.IsChecked := gUsingSSL;
 
-  thePublicKeyFileName := '';
-  thePrivateKeyFileName := '';
-  theRootCertFileName := '';
+  CertificateOpenDialog.InitialDir := ExtractFilePath(ParamStr(0));
 
-  if (kPublicKeyFileName > '')
+  theCertificateFolder := TPath.Combine(ExtractFilePath(ParamStr(0)), 'Certificate');
+
+  if DirectoryExists(theCertificateFolder) then CertificateOpenDialog.InitialDir := theCertificateFolder;
+
+
+  CertificateOpenDialog.Title := 'Public key file';
+  if fTaurusTLSPublicKeyFilename.IsEmpty
     then
       begin
-        thePublicKeyFileName :=TPath.Combine(ExtractFilePath(ParamStr(0)), kPublicKeyFileName);
-        if not FileExists(thePublicKeyFileName) then ShowMessage('Public key file is missing.' + #13 + thePublicKeyFileName);
+        if CertificateOpenDialog.Execute
+          then fTaurusTLSPublicKeyFilename := CertificateOpenDialog.FileName;
       end;
 
-  if (kPrivateKeyFileName > '')
+  CertificateOpenDialog.Title := 'Private key file';
+  if fTaurusTLSPrivateKeyFilename.IsEmpty
     then
       begin
-        thePrivateKeyFileName :=TPath.Combine(ExtractFilePath(ParamStr(0)), kPrivateKeyFileName);
-        if not FileExists(thePrivateKeyFileName) then ShowMessage('Private key file is missing.' + #13 + thePrivateKeyFileName);
+        if CertificateOpenDialog.Execute
+          then fTaurusTLSPrivateKeyFilename := CertificateOpenDialog.FileName;
       end;
 
-  if (theRootCertFileName > '')
+  CertificateOpenDialog.Title := 'Root key file';
+  if fTaurusTLSRootKeyFilename.IsEmpty
     then
       begin
-        theRootCertFileName :=TPath.Combine(ExtractFilePath(ParamStr(0)), kRootCertFileName);
-        if not FileExists(theRootCertFileName) then ShowMessage('RootCert file is missing.' + #13 + theRootCertFileName);
+        if CertificateOpenDialog.Execute
+          then fTaurusTLSRootKeyFilename := CertificateOpenDialog.FileName;
+      end;
+
+  CertificateFileNameLabel.Text := fTaurusTLSPublicKeyFilename;
+
+  if (fTaurusTLSPublicKeyFilename > '')
+    then
+      begin
+        if not FileExists(fTaurusTLSPublicKeyFilename) then ShowMessage('Public key file is missing.' + #13 + fTaurusTLSPublicKeyFilename);
+      end;
+
+  if (fTaurusTLSPrivateKeyFilename > '')
+    then
+      begin
+        if not FileExists(fTaurusTLSPrivateKeyFilename) then ShowMessage('Private key file is missing.' + #13 + fTaurusTLSPrivateKeyFilename);
+      end;
+
+  if (fTaurusTLSRootKeyFilename > '')
+    then
+      begin
+        if not FileExists(fTaurusTLSRootKeyFilename) then ShowMessage('Root key file is missing.' + #13 + fTaurusTLSRootKeyFilename);
       end;
 
    // Indy based code below.  Replacing it with TaurusTLS.
@@ -1097,9 +1135,9 @@ begin
   end;
   }
 
-  if not thePrivateKeyFileName.IsEmpty then TaurusTLSServerIOHandler.DefaultCert.PrivateKey := thePrivateKeyFileName;
-  if not thePublicKeyFileName.IsEmpty  then TaurusTLSServerIOHandler.DefaultCert.PublicKey := thePublicKeyFileName;
-  if not theRootCertFileName.IsEmpty   then TaurusTLSServerIOHandler.DefaultCert.RootKey := theRootCertFileName;
+  if not fTaurusTLSPrivateKeyFilename.IsEmpty then TaurusTLSServerIOHandler.DefaultCert.PrivateKey := fTaurusTLSPrivateKeyFilename;
+  if not fTaurusTLSPublicKeyFilename.IsEmpty  then TaurusTLSServerIOHandler.DefaultCert.PublicKey := fTaurusTLSPublicKeyFilename;
+  if not fTaurusTLSRootKeyFilename.IsEmpty   then TaurusTLSServerIOHandler.DefaultCert.RootKey := fTaurusTLSRootKeyFilename;
 
   TaurusTLSServerIOHandler.SSLOptions.Mode := sslmServer;
 
@@ -1287,6 +1325,10 @@ begin
   theINIFile.WriteBool('ProgramPreferences', kINIStartUpAutomatically, fStartUpAutomatically);
 
   theINIFile.WriteBool('ProgramPreferences', kINIUsingSSLTag, UseSSLCheckBox.IsChecked);
+
+  theINIFile.WriteString('ProgramPreferences', kINITaurusTLSPrivateKeyFilenameTag, fTaurusTLSPrivateKeyFilename);
+  theINIFile.WriteString('ProgramPreferences', kINITaurusTLSPublicKeyFilenameTag, fTaurusTLSPublicKeyFilename);
+  theINIFile.WriteString('ProgramPreferences', kINITaurusTLSRootKeyFilenameTag, fTaurusTLSRootKeyFilename);
 
   case TaurusSSLVersionPopupBox.ItemIndex of
     0: theINIFile.WriteString('ProgramPreferences', kINITaurusSSLVersionTag, 'SSLv3');
@@ -1729,12 +1771,19 @@ var
   theValue: String;
 
 begin
+  if not VAccepted
+    then
+      begin
+        RequestsMemo.Lines.Add('TaurusTLS SecurityLevel called with VAccepted FALSE *****');
+        RequestsMemo.Lines.Add('TaurusTLS SecurityLevel - app changed VAccepted to True.');
+      end;
+
+
   if VAccepted
     then theValue := '*FALSE*'
     else theValue := 'true';
 
-  RequestsMemo.Lines.Add('TaurusTLS SecurityLevel called with VAccepted ' + theValue);
-  RequestsMemo.Lines.Add('TaurusTLS SecurityLevel - changed VAccepted to True.');
+  // RequestsMemo.Lines.Add('TaurusTLS SecurityLevel called with VAccepted ' + theValue);
 
   VAccepted := True;
 end;
@@ -1752,6 +1801,7 @@ procedure TMainForm.TaurusTLSServerIOHandlerStatus(ASender: TObject;
   const AStatus: TIdStatus; const AStatusText: string);
 begin
   RequestsMemo.Lines.Add('TaurusTLS status: ' + AStatusText);
+  if (Pos('fatal', AStatusText) > 0)  then RequestsMemo.Lines.Add('**********************');
 end;
 
 

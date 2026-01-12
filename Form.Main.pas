@@ -123,6 +123,7 @@ type
 
   private
 
+    fPrivateAndPublicKeyfilesReadFromINIFile: Boolean;
     fTaurusTLSPrivateKeyFilename,
     fTaurusTLSPublicKeyFilename,
     fTaurusTLSRootKeyFilename: String;
@@ -996,6 +997,29 @@ begin
   fTaurusTLSPublicKeyFilename  := theINIFile.ReadString('ProgramPreferences', kINITaurusTLSPublicKeyFilenameTag, '');
   fTaurusTLSRootKeyFilename    := theINIFile.ReadString('ProgramPreferences', kINITaurusTLSRootKeyFilenameTag, '');
 
+  if not fTaurusTLSPrivateKeyFilename.IsEmpty and not FileExists(fTaurusTLSPrivateKeyFilename)
+    then
+      begin
+        ShowMessage('Private key file from INI is missing. ' + fTaurusTLSPrivateKeyFilename);
+        fTaurusTLSPrivateKeyFilename := '';
+      end;
+
+  if not fTaurusTLSPublicKeyFilename.IsEmpty and not FileExists(fTaurusTLSPublicKeyFilename)
+    then
+      begin
+        ShowMessage('Public key file from INI is missing. ' + fTaurusTLSPublicKeyFilename);
+        fTaurusTLSPublicKeyFilename := '';
+      end;
+
+  if not fTaurusTLSRootKeyFilename.IsEmpty and not FileExists(fTaurusTLSRootKeyFilename)
+    then
+      begin
+        ShowMessage('Root key file from INI is missing. ' + fTaurusTLSRootKeyFilename);
+        fTaurusTLSRootKeyFilename := '';
+      end;
+
+  fPrivateAndPublicKeyfilesReadFromINIFile := not fTaurusTLSPublicKeyFilename.IsEmpty and not fTaurusTLSPublicKeyFilename.IsEmpty;
+
   fClientDatabaseFileName       := theINIFile.ReadString('ProgramPreferences', kINICientDatabaseFileNameTag, 'ClientDatabase.db');
   gUsingSSL                     := theINIFile.ReadBool  ('ProgramPreferences', kINIUsingSSLTag, False);
 
@@ -1077,7 +1101,7 @@ begin
       end;
 
   CertificateOpenDialog.Title := 'Root key file';
-  if fTaurusTLSRootKeyFilename.IsEmpty
+  if fTaurusTLSRootKeyFilename.IsEmpty and not fPrivateAndPublicKeyfilesReadFromINIFile
     then
       begin
         if CertificateOpenDialog.Execute
@@ -1771,12 +1795,19 @@ var
   theValue: String;
 
 begin
+  if not VAccepted
+    then
+      begin
+        RequestsMemo.Lines.Add('TaurusTLS SecurityLevel called with VAccepted FALSE *****');
+        RequestsMemo.Lines.Add('TaurusTLS SecurityLevel - app changed VAccepted to True.');
+      end;
+
+
   if VAccepted
     then theValue := '*FALSE*'
     else theValue := 'true';
 
-  RequestsMemo.Lines.Add('TaurusTLS SecurityLevel called with VAccepted ' + theValue);
-  RequestsMemo.Lines.Add('TaurusTLS SecurityLevel - changed VAccepted to True.');
+  // RequestsMemo.Lines.Add('TaurusTLS SecurityLevel called with VAccepted ' + theValue);
 
   VAccepted := True;
 end;
@@ -1794,6 +1825,7 @@ procedure TMainForm.TaurusTLSServerIOHandlerStatus(ASender: TObject;
   const AStatus: TIdStatus; const AStatusText: string);
 begin
   RequestsMemo.Lines.Add('TaurusTLS status: ' + AStatusText);
+  if (Pos('fatal', AStatusText) > 0)  then RequestsMemo.Lines.Add('**********************');
 end;
 
 
