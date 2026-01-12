@@ -15,9 +15,9 @@ File_12=TSourceModule,'C:\dev\COW desktop master\Form.CheckingOnlineRegistration
 File_13=TSourceModule,'C:\dev\Mike-s-REST-server-1\RegistrationDatabase.pas',0,1,60,1,67,0,0,,
 
 [Modules]
-Module0=C:\Users\Mike\Documents\Embarcadero\Studio\37.0\CatalogRepository\TaurusTLS\1.0.2.39\Source\TaurusTLS.pas
-Module1=C:\dev\Mike-s-REST-server-1\Form.Main.pas
-Module2=C:\Users\Mike\Documents\Embarcadero\Studio\37.0\CatalogRepository\TaurusTLS\1.0.2.39\Source\TaurusTLS_Files.pas
+Module0=C:\dev\Mike-s-REST-server-1\Form.Main.pas
+Module1=C:\Users\Mike\Documents\Embarcadero\Studio\37.0\CatalogRepository\TaurusTLS\1.0.2.39\Source\TaurusTLS_Files.pas
+Module2=C:\Users\Mike\Documents\Embarcadero\Studio\37.0\CatalogRepository\TaurusTLS\1.0.2.39\Source\TaurusTLS.pas
 Module3=C:\Users\Mike\Documents\Embarcadero\Studio\37.0\CatalogRepository\TaurusTLS\1.0.2.39\Source\TaurusTLSHeaders_pkcs12.pas
 Module4=C:\Users\Mike\Documents\Embarcadero\Studio\37.0\CatalogRepository\TaurusTLS\1.0.2.39\Source\TaurusTLS_X509.pas
 Module5=c:\program files (x86)\embarcadero\studio\37.0\source\Indy10\Protocols\IdSSLOpenSSLHeaders.pas
@@ -29,13 +29,13 @@ Module10=C:\dev\Mike-s-REST-server-1\GTypes.pas
 Count=11
 EditWindowCount=1
 
-[C:\Users\Mike\Documents\Embarcadero\Studio\37.0\CatalogRepository\TaurusTLS\1.0.2.39\Source\TaurusTLS.pas]
-ModuleType=TSourceModule
-
 [C:\dev\Mike-s-REST-server-1\Form.Main.pas]
 ModuleType=TSourceModule
 
 [C:\Users\Mike\Documents\Embarcadero\Studio\37.0\CatalogRepository\TaurusTLS\1.0.2.39\Source\TaurusTLS_Files.pas]
+ModuleType=TSourceModule
+
+[C:\Users\Mike\Documents\Embarcadero\Studio\37.0\CatalogRepository\TaurusTLS\1.0.2.39\Source\TaurusTLS.pas]
 ModuleType=TSourceModule
 
 [C:\Users\Mike\Documents\Embarcadero\Studio\37.0\CatalogRepository\TaurusTLS\1.0.2.39\Source\TaurusTLSHeaders_pkcs12.pas]
@@ -64,7 +64,7 @@ ModuleType=TSourceModule
 
 [EditWindow0]
 ViewCount=11
-CurrentEditView=C:\Users\Mike\Documents\Embarcadero\Studio\37.0\CatalogRepository\TaurusTLS\1.0.2.39\Source\TaurusTLS.pas
+CurrentEditView=C:\dev\Mike-s-REST-server-1\Form.Main.pas
 View0=0
 View1=1
 View2=2
@@ -123,9 +123,9 @@ EditViewName=c:\program files (x86)\embarcadero\studio\37.0\source\Indy10\Protoc
 [View1]
 CustomEditViewType=TEditView
 Module=C:\dev\Mike-s-REST-server-1\Form.Main.pas
-CursorX=1
-CursorY=1715
-TopLine=1696
+CursorX=74
+CursorY=257
+TopLine=243
 LeftCol=1
 Elisions=
 Bookmarks=
@@ -135,8 +135,8 @@ EditViewName=C:\dev\Mike-s-REST-server-1\Form.Main.pas
 CustomEditViewType=TEditView
 Module=C:\Users\Mike\Documents\Embarcadero\Studio\37.0\CatalogRepository\TaurusTLS\1.0.2.39\Source\TaurusTLS.pas
 CursorX=1
-CursorY=2596
-TopLine=2582
+CursorY=4352
+TopLine=4332
 LeftCol=1
 Elisions=
 Bookmarks=
@@ -145,9 +145,9 @@ EditViewName=C:\Users\Mike\Documents\Embarcadero\Studio\37.0\CatalogRepository\T
 [View3]
 CustomEditViewType=TEditView
 Module=C:\Users\Mike\Documents\Embarcadero\Studio\37.0\CatalogRepository\TaurusTLS\1.0.2.39\Source\TaurusTLS_Files.pas
-CursorX=66
-CursorY=12
-TopLine=1
+CursorX=1
+CursorY=363
+TopLine=346
 LeftCol=1
 Elisions=
 Bookmarks=
@@ -256,24 +256,24 @@ StayOnTop=0
 
 [Breakpoints]
 Count=18
-Breakpoint0='C:\dev\Mike-s-REST-server-1\Form.Main.pas',1070,'',0,1,'',1,0,0,'',1,'','','',0,''
-Breakpoint1='C:\dev\Mike-s-REST-server-1\Form.Main.pas',1316,'',0,1,'',1,0,0,'',1,'','','',0,''
-Breakpoint2='C:\dev\Mike-s-REST-server-1\Form.Main.pas',1359,'',0,1,'',1,0,0,'',1,'','','',0,''
-Breakpoint3='C:\dev\Mike-s-REST-server-1\Form.Main.pas',1366,'',0,1,'',1,0,0,'',1,'','','',0,''
-Breakpoint4='C:\dev\Mike-s-REST-server-1\Form.Main.pas',1373,'',0,1,'',1,0,0,'',1,'','','',0,''
-Breakpoint5='C:\dev\Mike-s-REST-server-1\Form.Main.pas',1380,'',0,1,'',1,0,0,'',1,'','','',0,''
-Breakpoint6='C:\dev\Mike-s-REST-server-1\Form.Main.pas',1387,'',0,1,'',1,0,0,'',1,'','','',0,''
-Breakpoint7='C:\dev\Mike-s-REST-server-1\Form.Main.pas',1402,'',0,1,'',1,0,0,'',1,'','','',0,''
-Breakpoint8='C:\dev\Mike-s-REST-server-1\Form.Main.pas',1346,'',0,1,'',1,0,0,'',1,'','','',0,''
-Breakpoint9='C:\dev\Mike-s-REST-server-1\Form.Main.pas',1101,'',0,1,'',1,0,0,'',1,'','','',0,''
+Breakpoint0='C:\dev\Mike-s-REST-server-1\Form.Main.pas',1073,'',0,1,'',1,0,0,'',1,'','','',0,''
+Breakpoint1='C:\dev\Mike-s-REST-server-1\Form.Main.pas',1319,'',0,1,'',1,0,0,'',1,'','','',0,''
+Breakpoint2='C:\dev\Mike-s-REST-server-1\Form.Main.pas',1362,'',0,1,'',1,0,0,'',1,'','','',0,''
+Breakpoint3='C:\dev\Mike-s-REST-server-1\Form.Main.pas',1369,'',0,1,'',1,0,0,'',1,'','','',0,''
+Breakpoint4='C:\dev\Mike-s-REST-server-1\Form.Main.pas',1376,'',0,1,'',1,0,0,'',1,'','','',0,''
+Breakpoint5='C:\dev\Mike-s-REST-server-1\Form.Main.pas',1383,'',0,1,'',1,0,0,'',1,'','','',0,''
+Breakpoint6='C:\dev\Mike-s-REST-server-1\Form.Main.pas',1390,'',0,1,'',1,0,0,'',1,'','','',0,''
+Breakpoint7='C:\dev\Mike-s-REST-server-1\Form.Main.pas',1405,'',0,1,'',1,0,0,'',1,'','','',0,''
+Breakpoint8='C:\dev\Mike-s-REST-server-1\Form.Main.pas',1349,'',0,1,'',1,0,0,'',1,'','','',0,''
+Breakpoint9='C:\dev\Mike-s-REST-server-1\Form.Main.pas',1104,'',0,1,'',1,0,0,'',1,'','','',0,''
 Breakpoint10='C:\Users\Mike\Documents\Embarcadero\Studio\37.0\CatalogRepository\TaurusTLS\1.0.2.39\Source\TaurusTLS.pas',4366,'',0,1,'',1,0,0,'',1,'','','',0,''
 Breakpoint11='C:\Users\Mike\Documents\Embarcadero\Studio\37.0\CatalogRepository\TaurusTLS\1.0.2.39\Source\TaurusTLS.pas',4346,'',0,1,'',1,0,0,'',1,'','','',0,''
 Breakpoint12='C:\Users\Mike\Documents\Embarcadero\Studio\37.0\CatalogRepository\TaurusTLS\1.0.2.39\Source\TaurusTLS.pas',4359,'',0,1,'',1,0,0,'',1,'','','',0,''
 Breakpoint13='C:\Users\Mike\Documents\Embarcadero\Studio\37.0\CatalogRepository\TaurusTLS\1.0.2.39\Source\TaurusTLS.pas',4352,'',0,1,'',1,0,0,'',1,'','','',0,''
-Breakpoint14='C:\dev\Mike-s-REST-server-1\Form.Main.pas',1710,'',0,1,'',1,0,0,'',1,'','','',0,''
-Breakpoint15='C:\dev\Mike-s-REST-server-1\Form.Main.pas',1714,'',0,1,'',1,0,0,'',1,'','','',0,''
-Breakpoint16='C:\Users\Mike\Documents\Embarcadero\Studio\37.0\CatalogRepository\TaurusTLS\1.0.2.39\Source\TaurusTLS_Files.pas',361,'',0,1,'',1,0,0,'',1,'','','',0,''
-Breakpoint17='C:\Users\Mike\Documents\Embarcadero\Studio\37.0\CatalogRepository\TaurusTLS\1.0.2.39\Source\TaurusTLS_Files.pas',363,'',0,1,'',1,0,0,'',1,'','','',0,''
+Breakpoint14='C:\Users\Mike\Documents\Embarcadero\Studio\37.0\CatalogRepository\TaurusTLS\1.0.2.39\Source\TaurusTLS_Files.pas',361,'',0,1,'',1,0,0,'',1,'','','',0,''
+Breakpoint15='C:\Users\Mike\Documents\Embarcadero\Studio\37.0\CatalogRepository\TaurusTLS\1.0.2.39\Source\TaurusTLS_Files.pas',363,'',0,1,'',1,0,0,'',1,'','','',0,''
+Breakpoint16='C:\dev\Mike-s-REST-server-1\Form.Main.pas',886,'',0,1,'',1,0,0,'',1,'','','',0,''
+Breakpoint17='C:\dev\Mike-s-REST-server-1\Form.Main.pas',1105,'',0,1,'',1,0,0,'',1,'','','',0,''
 
 [EmbarcaderoWin32Debugger_AddressBreakpoints]
 Count=0
@@ -394,11 +394,6 @@ LRDockWidth=1896
 Dockable=1
 StayOnTop=0
 SplitPos=152
-
-[PropInspDesignerSelection]
-ArrangeBy=Name
-SelectedItem=Name,OnGetPassword
-ExpandedItems=Border=0,BorderIcons=0,Constraints=0,Fill=0,FormFactor=0,"LiveBindings Designer=0",Anchors=0,Caret=0,LiveBindings=0,Margins=0,Padding=0,Position=0,RotationCenter=0,Scale=0,Size=0,StyledSettings=0,TextSettings=0,Touch=0,TouchTargetExpansion=0,SSLOptions=1,DefaultCert=0,SSLOptions.VerifyMode=0,Bindings=0
 
 [frmDesignPreview]
 PercentageSizes=1
