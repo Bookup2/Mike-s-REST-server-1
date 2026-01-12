@@ -80,7 +80,7 @@ type
     IdLogFile1: TIdLogFile;
     IdHTTPServer1: TIdHTTPServer;
     TaurusTLSServerIOHandler: TTaurusTLSServerIOHandler;
-    Label13: TLabel;
+    CertificateFileNameLabel: TLabel;
     CertificateOpenDialog: TOpenDialog;
     procedure FormCreate(Sender: TObject);
     procedure ButtonStartClick(Sender: TObject);
@@ -123,6 +123,7 @@ type
 
   private
 
+    fPrivateAndPublicKeyfilesReadFromINIFile: Boolean;
     fTaurusTLSPrivateKeyFilename,
     fTaurusTLSPublicKeyFilename,
     fTaurusTLSRootKeyFilename: String;
@@ -996,6 +997,29 @@ begin
   fTaurusTLSPublicKeyFilename  := theINIFile.ReadString('ProgramPreferences', kINITaurusTLSPublicKeyFilenameTag, '');
   fTaurusTLSRootKeyFilename    := theINIFile.ReadString('ProgramPreferences', kINITaurusTLSRootKeyFilenameTag, '');
 
+  if not fTaurusTLSPrivateKeyFilename.IsEmpty and not FileExists(fTaurusTLSPrivateKeyFilename)
+    then
+      begin
+        ShowMessage('Private key file from INI is missing. ' + fTaurusTLSPrivateKeyFilename);
+        fTaurusTLSPrivateKeyFilename := '';
+      end;
+
+  if not fTaurusTLSPublicKeyFilename.IsEmpty and not FileExists(fTaurusTLSPublicKeyFilename)
+    then
+      begin
+        ShowMessage('Public key file from INI is missing. ' + fTaurusTLSPublicKeyFilename);
+        fTaurusTLSPublicKeyFilename := '';
+      end;
+
+  if not fTaurusTLSRootKeyFilename.IsEmpty and not FileExists(fTaurusTLSRootKeyFilename)
+    then
+      begin
+        ShowMessage('Root key file from INI is missing. ' + fTaurusTLSRootKeyFilename);
+        fTaurusTLSRootKeyFilename := '';
+      end;
+
+  fPrivateAndPublicKeyfilesReadFromINIFile := not fTaurusTLSPublicKeyFilename.IsEmpty and not fTaurusTLSPublicKeyFilename.IsEmpty;
+
   fClientDatabaseFileName       := theINIFile.ReadString('ProgramPreferences', kINICientDatabaseFileNameTag, 'ClientDatabase.db');
   gUsingSSL                     := theINIFile.ReadBool  ('ProgramPreferences', kINIUsingSSLTag, False);
 
@@ -1077,12 +1101,14 @@ begin
       end;
 
   CertificateOpenDialog.Title := 'Root key file';
-  if fTaurusTLSRootKeyFilename.IsEmpty
+  if fTaurusTLSRootKeyFilename.IsEmpty and not fPrivateAndPublicKeyfilesReadFromINIFile
     then
       begin
         if CertificateOpenDialog.Execute
           then fTaurusTLSRootKeyFilename := CertificateOpenDialog.FileName;
       end;
+
+  CertificateFileNameLabel.Text := fTaurusTLSPublicKeyFilename;
 
   if (fTaurusTLSPublicKeyFilename > '')
     then
@@ -1769,12 +1795,19 @@ var
   theValue: String;
 
 begin
+  if not VAccepted
+    then
+      begin
+        RequestsMemo.Lines.Add('TaurusTLS SecurityLevel called with VAccepted FALSE *****');
+        RequestsMemo.Lines.Add('TaurusTLS SecurityLevel - app changed VAccepted to True.');
+      end;
+
+
   if VAccepted
     then theValue := '*FALSE*'
     else theValue := 'true';
 
-  RequestsMemo.Lines.Add('TaurusTLS SecurityLevel called with VAccepted ' + theValue);
-  RequestsMemo.Lines.Add('TaurusTLS SecurityLevel - changed VAccepted to True.');
+  // RequestsMemo.Lines.Add('TaurusTLS SecurityLevel called with VAccepted ' + theValue);
 
   VAccepted := True;
 end;
@@ -1792,6 +1825,7 @@ procedure TMainForm.TaurusTLSServerIOHandlerStatus(ASender: TObject;
   const AStatus: TIdStatus; const AStatusText: string);
 begin
   RequestsMemo.Lines.Add('TaurusTLS status: ' + AStatusText);
+  if (Pos('fatal', AStatusText) > 0)  then RequestsMemo.Lines.Add('**********************');
 end;
 
 
@@ -1800,6 +1834,9 @@ procedure TMainForm.TaurusTLSServerIOHandlerStatusInfo(ASender: TObject;
   const AsslSocket: PSSL; const AWhere, Aret: TIdC_INT; const AType,
   AMsg: string);
 begin
+  if (Pos('fatal', AMsg) > 0)
+    then RequestsMemo.Lines.Add('******************** fatal *************');
+
   RequestsMemo.Lines.Add('TaurusTLS StatusInfo: ' + AMsg);
 end;
 
@@ -1819,7 +1856,9 @@ procedure TMainForm.TaurusTLSServerIOHandlerVerifyError(ASender: TObject;
   ACertificate: TTaurusTLSX509; const AError: TIdC_LONG; const AMsg,
   ADescr: string; var VOk: Boolean);
 begin
-  RequestsMemo.Lines.Add('TaurusTLS VerifyError: ' + AError.ToString);
+  RequestsMemo.Lines.Add('TaurusTLS VerifyError: ' + AError.ToString +
+
+   ' VOk set to True ***********');
 end;
 
 

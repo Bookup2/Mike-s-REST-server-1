@@ -1392,21 +1392,21 @@ end;
 
 procedure TMainForm.IdHTTPServerConnect(AContext: TIdContext);
 begin
-  RequestsMemo.Lines.Add('**** ServerConnect - ' + AContext.ToString);
+  RequestsMemo.Lines.Add('ServerConnect - ' + AContext.ToString);
 end;
 
 
 
 procedure TMainForm.IdHTTPServerBeforeBind(AHandle: TIdSocketHandle);
 begin
-  RequestsMemo.Lines.Add('**** ServerBeforeBind ');
+  RequestsMemo.Lines.Add('ServerBeforeBind ');
 end;
 
 
 
 procedure TMainForm.IdHTTPServerAfterBind(Sender: TObject);
 begin
-  RequestsMemo.Lines.Add('**** ServerAfterBind ');
+  RequestsMemo.Lines.Add('ServerAfterBind ');
 end;
 
 
@@ -1419,14 +1419,15 @@ begin
 end;
 
 
+
 procedure TMainForm.IdHTTPServerQuerySSLPort(APort: TIdPort; var VUseSSL: Boolean);
 var
   theSSLString: String;
 
 begin
   if VUseSSL
-    then theSSLString := 'Use SSL'
-    else theSSLString := 'NOT Use SSL';
+    then theSSLString := ' VUseSSL=True'
+    else theSSLString := ' VUseSSL=FALSE';
 
   RequestsMemo.Lines.Add('**** ServerQuerySSLPort - ' + APort.ToString + theSSLString);
 end;
@@ -1435,7 +1436,7 @@ end;
 
 procedure TMainForm.IdHTTPServerDisconnect(AContext: TIdContext);
 begin
-  RequestsMemo.Lines.Add('**** ServerDisconnect - ' + AContext.ToString);
+  RequestsMemo.Lines.Add('ServerDisconnect - ' + AContext.ToString);
 end;
 
 
@@ -1456,7 +1457,7 @@ end;
 
 procedure TMainForm.IdHTTPServerSessionStart(Sender: TIdHTTPSession);
 begin
-  RequestsMemo.Lines.Add('**** ServerSessionStart');
+  RequestsMemo.Lines.Add('ServerSessionStart');
 end;
 
 
@@ -1834,6 +1835,9 @@ procedure TMainForm.TaurusTLSServerIOHandlerStatusInfo(ASender: TObject;
   const AsslSocket: PSSL; const AWhere, Aret: TIdC_INT; const AType,
   AMsg: string);
 begin
+  if (Pos('fatal', AMsg) > 0)
+    then RequestsMemo.Lines.Add('******************** fatal *************');
+
   RequestsMemo.Lines.Add('TaurusTLS StatusInfo: ' + AMsg);
 end;
 
@@ -1853,7 +1857,9 @@ procedure TMainForm.TaurusTLSServerIOHandlerVerifyError(ASender: TObject;
   ACertificate: TTaurusTLSX509; const AError: TIdC_LONG; const AMsg,
   ADescr: string; var VOk: Boolean);
 begin
-  RequestsMemo.Lines.Add('TaurusTLS VerifyError: ' + AError.ToString);
+  RequestsMemo.Lines.Add('TaurusTLS VerifyError: ' + AError.ToString +
+
+   ' VOk set to True ***********');
 end;
 
 
