@@ -487,14 +487,18 @@ object MainForm: TMainForm
     Text = 'WhichFailedToLoadButton'
     OnClick = WhichFailedToLoadButtonClick
   end
-  object Label13: TLabel
-    Position.X = 16.000000000000000000
-    Position.Y = 224.000000000000000000
+  object CertificateFileNameLabel: TLabel
+    Position.X = 13.000000000000000000
+    Position.Y = 223.000000000000000000
     Size.Width = 1097.000000000000000000
     Size.Height = 17.000000000000000000
     Size.PlatformDefault = False
-    Text = 'kPublicKeyFileName'
-    TabOrder = 67
+    Text = 'cert.pem key.pem chain.pem'
+    TabOrder = 66
+  end
+  object CertificateOpenDialog: TOpenDialog
+    Left = 413
+    Top = 301
   end
   object IdLogFile1: TIdLogFile
     OnConnect = IdLogFile1Connect
@@ -512,11 +516,15 @@ object MainForm: TMainForm
   object TaurusTLSServerIOHandler: TTaurusTLSServerIOHandler
     OnStatus = TaurusTLSServerIOHandlerStatus
     Certificates = <>
-    SSLOptions.Mode = sslmUnassigned
+    SSLOptions.Mode = sslmServer
     SSLOptions.VerifyMode = []
     SSLOptions.VerifyDepth = 100
     OnSSLNegotiated = TaurusTLSServerIOHandlerSSLNegotiated
+    OnStatusInfo = TaurusTLSServerIOHandlerStatusInfo
+    OnGetPassword = TaurusTLSServerIOHandlerGetPassword
+    OnSecurityLevel = TaurusTLSServerIOHandlerSecurityLevel
     OnVerifyError = TaurusTLSServerIOHandlerVerifyError
+    OnVerifyCallback = TaurusTLSServerIOHandlerVerifyCallback
     Left = 650
     Top = 427
   end

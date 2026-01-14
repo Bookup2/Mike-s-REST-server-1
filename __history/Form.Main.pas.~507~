@@ -1392,21 +1392,21 @@ end;
 
 procedure TMainForm.IdHTTPServerConnect(AContext: TIdContext);
 begin
-  RequestsMemo.Lines.Add('**** ServerConnect - ' + AContext.ToString);
+  RequestsMemo.Lines.Add('ServerConnect - ' + AContext.ToString);
 end;
 
 
 
 procedure TMainForm.IdHTTPServerBeforeBind(AHandle: TIdSocketHandle);
 begin
-  RequestsMemo.Lines.Add('**** ServerBeforeBind ');
+  RequestsMemo.Lines.Add('ServerBeforeBind ');
 end;
 
 
 
 procedure TMainForm.IdHTTPServerAfterBind(Sender: TObject);
 begin
-  RequestsMemo.Lines.Add('**** ServerAfterBind ');
+  RequestsMemo.Lines.Add('ServerAfterBind ');
 end;
 
 
@@ -1419,14 +1419,15 @@ begin
 end;
 
 
+
 procedure TMainForm.IdHTTPServerQuerySSLPort(APort: TIdPort; var VUseSSL: Boolean);
 var
   theSSLString: String;
 
 begin
   if VUseSSL
-    then theSSLString := 'Use SSL'
-    else theSSLString := 'NOT Use SSL';
+    then theSSLString := ' VUseSSL=True'
+    else theSSLString := ' VUseSSL=FALSE';
 
   RequestsMemo.Lines.Add('**** ServerQuerySSLPort - ' + APort.ToString + theSSLString);
 end;
@@ -1435,7 +1436,7 @@ end;
 
 procedure TMainForm.IdHTTPServerDisconnect(AContext: TIdContext);
 begin
-  RequestsMemo.Lines.Add('**** ServerDisconnect - ' + AContext.ToString);
+  RequestsMemo.Lines.Add('ServerDisconnect - ' + AContext.ToString);
 end;
 
 
@@ -1456,7 +1457,7 @@ end;
 
 procedure TMainForm.IdHTTPServerSessionStart(Sender: TIdHTTPSession);
 begin
-  RequestsMemo.Lines.Add('**** ServerSessionStart');
+  RequestsMemo.Lines.Add('ServerSessionStart');
 end;
 
 

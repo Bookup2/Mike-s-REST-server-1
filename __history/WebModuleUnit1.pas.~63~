@@ -33,6 +33,7 @@ uses
   // System.UITypes,
 
   RegistrationDatabase,
+  Globals,
 
   Form.Main;
 
@@ -43,12 +44,18 @@ uses
 procedure TWebModule1.WebModule1DefaultHandlerAction(Sender: TObject;
   Request: TWebRequest; Response: TWebResponse; var Handled: Boolean);
 begin
+
   Response.Content :=
     '<html>' +
     '<head><title>PocketGM Server</title></head>' +
     '<body>' +
     'Welcome to the Bookup Chess Engine Server for PocketGM.<br><br>' +
-    MainForm.ServerStatusForBrowser +
+    'The time is now ' + DateTimeToStr(Now) + '.<br>' +
+    MainForm.ServerStatusForBrowser + ' <br><br><hr>' +
+    gCOWProWinRegistrationDatabase.NumberOfRegistrations.ToString + ' PW<br>' +
+    gCOWProMacRegistrationDatabase.NumberOfRegistrations.ToString + ' PM<br>' +
+    gCOWExpressWinRegistrationDatabase.NumberOfRegistrations.ToString + ' EW<br>' +
+    gCOWExpressMacRegistrationDatabase.NumberOfRegistrations.ToString + ' EM<br>' +
     '</body>' +
     '</html>';
 end;
@@ -129,12 +136,22 @@ var
   theCOWType: TCOWType;
 
 begin
-  // localhost:80/checkcowproregistration?testemail@bookup.com&productkey&186.0.0.1
+  // localhost:80/checkcowregistration?emailaddress=testemail@bookup.com&productkey=COWPRO-XXXX&IPAddress=186.0.0.1&FirstName=Mike&LastName=Leahy&COWType=PW
+  // localhost:80/checkcowregistration?testemail@bookup.com&COWPRO-XXXX&186.0.0.1&Mike&Leahy&PW
+
+  if not gAcceptingRegistrations
+    then
+      begin
+        Inc(gIgnoredRegistrations);
+        Exit;
+      end;
 
   if (Request.MethodType <> mtGet)
     then Exit;
 
   theLine := Request.Content;
+
+  MainForm.addtolog(3, '****** incoming registration: ' + theLine);
 
   theFields := TStringList.Create;
 
@@ -176,16 +193,27 @@ begin
             theCOWTypeString := theFields.Strings[5];
           end;
 
-          if (theCOWTypeString = asdf) then
+          if (theCOWTypeString = 'PW') then theCOWType := kCOWProWin;
+          if (theCOWTypeString = 'PM') then theCOWType := kCOWProMac;
+          if (theCOWTypeString = 'EW') then theCOWType := kCOWExpressWin;
+          if (theCOWTypeString = 'EM') then theCOWType := kCOWExpressMac;
 
+         //  TCOWType = (kCOWProWin, kCOWProMac, kCOWExpressWin, kCOWExpressMac);
 
-            MainForm.ProcessRegistrationRequest(theCOWType,
-                                                theEmailAddress,
-                                                theProductKey,
-                                                theIPAddress,
-                                                theFirstName,
-                                                theLastName,
-                                                theReplyForTheClient);
+          if (theCOWTypeString <> 'PW') and
+             (theCOWTypeString <> 'PM') and
+             (theCOWTypeString <> 'EW') and
+             (theCOWTypeString <> 'EM')
+            then theReplyForTheClient := 'ERROR: COW type is incorrect.'
+            else
+              begin
+                MainForm.ProcessRegistrationRequest(theCOWType,
+                                                    theEmailAddress,
+                                                    theProductKey,
+                                                    theIPAddress,
+                                                    theFirstName,
+                                                    theLastName,
+                                                    theReplyForTheClient);
 
                                                 {
                                                theCOWType: TCOWType;
@@ -196,7 +224,8 @@ begin
                                                theLastName: String;
                                                var theReplyForTheClient: String);
                                                }
-          end;
+              end;
+    end);
 
   Response.ContentType := 'application/json;charset=utf-8';
   Response.Content := theReplyForTheClient;

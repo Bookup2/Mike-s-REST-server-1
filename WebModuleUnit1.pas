@@ -151,6 +151,8 @@ begin
 
   theLine := Request.Content;
 
+  MainForm.addtolog(3, '****** incoming registration: ' + theLine);
+
   theFields := TStringList.Create;
 
   Request.ExtractQueryFields(theFields);
@@ -159,7 +161,13 @@ begin
 
   theReplyForTheClient := 'ERROR: General Error';
 
-  if (theCount <> 6) then theReplyForTheClient := 'ERROR: Expected 6 fields and got ' + theCount.ToString;
+  if (theCount <> 6)
+    then
+      begin
+        theReplyForTheClient := 'ERROR: Expected 6 fields and got ' + theCount.ToString;
+        MainForm.addtolog(3, theReplyForTheClient);
+      end;
+
 
   TThread.Synchronize(TThread.Current,
     procedure

@@ -123,6 +123,10 @@ type
 
   private
 
+    fMaximumDisplayedLogMessages: Integer;
+    fLogPriority: Integer;
+
+    fPrivateAndPublicKeyfilesReadFromINIFile: Boolean;
     fTaurusTLSPrivateKeyFilename,
     fTaurusTLSPublicKeyFilename,
     fTaurusTLSRootKeyFilename: String;
@@ -166,6 +170,8 @@ type
 
     fNumberOfRequestsServed: Cardinal;
     fNumberOfServerBusy: Cardinal;
+
+    procedure AddToLog(thePriority: Integer; theMessage: String);
 
     procedure StoreAnalysisInCache(theEngineNumber: Integer);
 
@@ -440,6 +446,17 @@ begin
                                            theExpirationDate);
 
   theReplyForTheClient := kRESTRegistrationServerValidExpiring + ' ' + Trunc(theExpirationDate - Now).ToString;
+end;
+
+
+
+procedure TMainForm.AddToLog(thePriority: Integer; theMessage: String);
+begin
+  if (thePriority < fLogPriority) then Exit;
+
+  if (RequestsMemo.Lines.Count > fMaximumDisplayedLogMessages) then RequestsMemo.Text := '';
+
+  RequestsMemo
 end;
 
 
@@ -889,6 +906,9 @@ begin
   libssl-3.dll
   }
 
+  fLogPriority := 3;
+  fMaximumDisplayedLogMessages := 100;
+
   theSSLLibraryLoaded := TaurusTLs.LoadOpenSSLLibrary;
 
   // fSSLVersion := sslvTLSv1_2;  Old Indy code
@@ -996,6 +1016,29 @@ begin
   fTaurusTLSPublicKeyFilename  := theINIFile.ReadString('ProgramPreferences', kINITaurusTLSPublicKeyFilenameTag, '');
   fTaurusTLSRootKeyFilename    := theINIFile.ReadString('ProgramPreferences', kINITaurusTLSRootKeyFilenameTag, '');
 
+  if not fTaurusTLSPrivateKeyFilename.IsEmpty and not FileExists(fTaurusTLSPrivateKeyFilename)
+    then
+      begin
+        ShowMessage('Private key file from INI is missing. ' + fTaurusTLSPrivateKeyFilename);
+        fTaurusTLSPrivateKeyFilename := '';
+      end;
+
+  if not fTaurusTLSPublicKeyFilename.IsEmpty and not FileExists(fTaurusTLSPublicKeyFilename)
+    then
+      begin
+        ShowMessage('Public key file from INI is missing. ' + fTaurusTLSPublicKeyFilename);
+        fTaurusTLSPublicKeyFilename := '';
+      end;
+
+  if not fTaurusTLSRootKeyFilename.IsEmpty and not FileExists(fTaurusTLSRootKeyFilename)
+    then
+      begin
+        ShowMessage('Root key file from INI is missing. ' + fTaurusTLSRootKeyFilename);
+        fTaurusTLSRootKeyFilename := '';
+      end;
+
+  fPrivateAndPublicKeyfilesReadFromINIFile := not fTaurusTLSPublicKeyFilename.IsEmpty and not fTaurusTLSPublicKeyFilename.IsEmpty;
+
   fClientDatabaseFileName       := theINIFile.ReadString('ProgramPreferences', kINICientDatabaseFileNameTag, 'ClientDatabase.db');
   gUsingSSL                     := theINIFile.ReadBool  ('ProgramPreferences', kINIUsingSSLTag, False);
 
@@ -1077,7 +1120,7 @@ begin
       end;
 
   CertificateOpenDialog.Title := 'Root key file';
-  if fTaurusTLSRootKeyFilename.IsEmpty
+  if fTaurusTLSRootKeyFilename.IsEmpty and not fPrivateAndPublicKeyfilesReadFromINIFile
     then
       begin
         if CertificateOpenDialog.Execute
@@ -1368,21 +1411,21 @@ end;
 
 procedure TMainForm.IdHTTPServerConnect(AContext: TIdContext);
 begin
-  RequestsMemo.Lines.Add('**** ServerConnect - ' + AContext.ToString);
+  RequestsMemo.Lines.Add('ServerConnect - ' + AContext.ToString);
 end;
 
 
 
 procedure TMainForm.IdHTTPServerBeforeBind(AHandle: TIdSocketHandle);
 begin
-  RequestsMemo.Lines.Add('**** ServerBeforeBind ');
+  RequestsMemo.Lines.Add('ServerBeforeBind ');
 end;
 
 
 
 procedure TMainForm.IdHTTPServerAfterBind(Sender: TObject);
 begin
-  RequestsMemo.Lines.Add('**** ServerAfterBind ');
+  RequestsMemo.Lines.Add('ServerAfterBind ');
 end;
 
 
@@ -1395,14 +1438,15 @@ begin
 end;
 
 
+
 procedure TMainForm.IdHTTPServerQuerySSLPort(APort: TIdPort; var VUseSSL: Boolean);
 var
   theSSLString: String;
 
 begin
   if VUseSSL
-    then theSSLString := 'Use SSL'
-    else theSSLString := 'NOT Use SSL';
+    then theSSLString := ' VUseSSL=True'
+    else theSSLString := ' VUseSSL=FALSE';
 
   RequestsMemo.Lines.Add('**** ServerQuerySSLPort - ' + APort.ToString + theSSLString);
 end;
@@ -1411,7 +1455,7 @@ end;
 
 procedure TMainForm.IdHTTPServerDisconnect(AContext: TIdContext);
 begin
-  RequestsMemo.Lines.Add('**** ServerDisconnect - ' + AContext.ToString);
+  RequestsMemo.Lines.Add('ServerDisconnect - ' + AContext.ToString);
 end;
 
 
@@ -1432,7 +1476,7 @@ end;
 
 procedure TMainForm.IdHTTPServerSessionStart(Sender: TIdHTTPSession);
 begin
-  RequestsMemo.Lines.Add('**** ServerSessionStart');
+  RequestsMemo.Lines.Add('ServerSessionStart');
 end;
 
 
@@ -1774,7 +1818,7 @@ begin
   if not VAccepted
     then
       begin
-        RequestsMemo.Lines.Add('TaurusTLS SecurityLevel called with VAccepted FALSE');
+        RequestsMemo.Lines.Add('TaurusTLS SecurityLevel called with VAccepted FALSE *****');
         RequestsMemo.Lines.Add('TaurusTLS SecurityLevel - app changed VAccepted to True.');
       end;
 
@@ -1810,6 +1854,9 @@ procedure TMainForm.TaurusTLSServerIOHandlerStatusInfo(ASender: TObject;
   const AsslSocket: PSSL; const AWhere, Aret: TIdC_INT; const AType,
   AMsg: string);
 begin
+  if (Pos('fatal', AMsg) > 0)
+    then RequestsMemo.Lines.Add('******************** fatal *************');
+
   RequestsMemo.Lines.Add('TaurusTLS StatusInfo: ' + AMsg);
 end;
 
@@ -1829,7 +1876,9 @@ procedure TMainForm.TaurusTLSServerIOHandlerVerifyError(ASender: TObject;
   ACertificate: TTaurusTLSX509; const AError: TIdC_LONG; const AMsg,
   ADescr: string; var VOk: Boolean);
 begin
-  RequestsMemo.Lines.Add('TaurusTLS VerifyError: ' + AError.ToString);
+  RequestsMemo.Lines.Add('TaurusTLS VerifyError: ' + AError.ToString +
+
+   ' VOk set to True ***********');
 end;
 
 
