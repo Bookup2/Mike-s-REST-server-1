@@ -428,6 +428,8 @@ begin
         if (theStoredRegistrationStatus = kRegistrationStatusExpiring)
           then
             begin
+              AddToLog(3,'***** Registration expiring for ' + theEmailAddress + theStoredExpirationDate.ToString);
+
               if (theStoredExpirationDate < Now)
                 then theReplyForTheClient := kRESTRegistrationServerNotValidExpired
                 else theReplyForTheClient := kRESTRegistrationServerValidExpiring + ' ' + Trunc(theStoredExpirationDate - Now).ToString;

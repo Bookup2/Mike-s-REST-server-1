@@ -82,6 +82,8 @@ type
     TaurusTLSServerIOHandler: TTaurusTLSServerIOHandler;
     CertificateFileNameLabel: TLabel;
     CertificateOpenDialog: TOpenDialog;
+    LogPrioritySpinBox: TSpinBox;
+    Label13: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure ButtonStartClick(Sender: TObject);
     procedure ButtonStopClick(Sender: TObject);
@@ -123,6 +125,7 @@ type
 
   private
 
+    fMaximumDisplayedLogMessages: Integer;
     fLogPriority: Integer;
 
     fPrivateAndPublicKeyfilesReadFromINIFile: Boolean;
@@ -170,8 +173,6 @@ type
     fNumberOfRequestsServed: Cardinal;
     fNumberOfServerBusy: Cardinal;
 
-    procedure AddToLog(thePriority: Integer; theMessage: String);
-
     procedure StoreAnalysisInCache(theEngineNumber: Integer);
 
     procedure StartEngines;  // FIXEDIN build 3
@@ -211,6 +212,8 @@ type
 
     // fRegistrationDatabaseFileName: String;
     // fRegistrationDatabase: TRegistrationDatabase;
+
+    procedure AddToLog(thePriority: Integer; theMessage: String);
 
     function ServerStatusForBrowser: String;
 
@@ -260,7 +263,7 @@ uses
 
 const
 
-  kProgramVersionString = 'PocketGM build 11 32 bit evening Jan 10, 2026';
+  kProgramVersionString = 'PocketGM build 12 32 bit - Jan 13, 2026';
   kClientDatabaseFolder = 'Client Database';
   kCOWRegistrationDatabaseFolder = 'COW Registration Database';
    // 'Certificate\pocketgmserver.com-cert.pem';
@@ -425,6 +428,8 @@ begin
         if (theStoredRegistrationStatus = kRegistrationStatusExpiring)
           then
             begin
+              sdflog
+
               if (theStoredExpirationDate < Now)
                 then theReplyForTheClient := kRESTRegistrationServerNotValidExpired
                 else theReplyForTheClient := kRESTRegistrationServerValidExpiring + ' ' + Trunc(theStoredExpirationDate - Now).ToString;
@@ -442,9 +447,12 @@ begin
                                            theLastName,
                                            theProductKey,
                                            kRegistrationStatusExpiring,
-                                           theExpirationDate);
+
+                                         theExpirationDate);
 
   theReplyForTheClient := kRESTRegistrationServerValidExpiring + ' ' + Trunc(theExpirationDate - Now).ToString;
+
+  AddToLog(3, theReplyForTheClient);
 end;
 
 
@@ -453,7 +461,9 @@ procedure TMainForm.AddToLog(thePriority: Integer; theMessage: String);
 begin
   if (thePriority < fLogPriority) then Exit;
 
-  RequestsMemo
+  if (RequestsMemo.Lines.Count > fMaximumDisplayedLogMessages) then RequestsMemo.Text := '';
+
+  RequestsMemo.Lines.Add(theMessage);
 end;
 
 
@@ -482,7 +492,7 @@ begin
 
   if (RequestsMemo.Lines.Count > 50) then RequestsMemo.Text := '';
 
-  // RequestsMemo.Lines.Add(theClientID  + ' ' + theFEN);
+  // AddToLog(3,theClientID  + ' ' + theFEN);
 
   if (fCacheBook <> nil)
     then
@@ -621,7 +631,7 @@ begin
       begin
         theReplyForTheClient := kRESTEngineServerBusy; // 'ServerBusy';
 
-        RequestsMemo.Lines.Add('*** Server busy ***');
+        AddToLog(3,'*** Server busy ***');
 
         Inc(fNumberOfServerBusy);
 
@@ -692,7 +702,7 @@ begin
   if (gNumberOfEnginesRunning > 0)
     then
       begin
-        RequestsMemo.Lines.Add('*** Engines are already running - command ignored ***');
+        AddToLog(3,'*** Engines are already running - command ignored ***');
 
         Exit;
       end;
@@ -742,7 +752,7 @@ begin
   // gChessEngineControllers[1].SetLogFileName('Engine1LogFile.txt');
 
     // FIXEDIN build 3
-  RequestsMemo.Lines.Add(FormatDateTime('yyyy-mm-dd hh:nn:ss', Now) + '  ' + gNumberOfEnginesRunning.ToString + ' engines started.');
+  AddToLog(3,FormatDateTime('yyyy-mm-dd hh:nn:ss', Now) + '  ' + gNumberOfEnginesRunning.ToString + ' engines started.');
 
   StartEnginesButton.Enabled := False;
   StopEnginesButton.Enabled := True;
@@ -805,7 +815,7 @@ procedure TMainForm.EngineCutoffTimerTimer(Sender: TObject);
 var
   K: Integer;
 begin
-  // RequestsMemo.Lines.Add('--- Looking for engines to cut off ---');
+  // AddToLog(3,'--- Looking for engines to cut off ---');
 
   for K := 1 to gNumberOfEnginesRunning do
     begin
@@ -904,8 +914,12 @@ begin
   }
 
   fLogPriority := 3;
+  LogPrioritySpinBox.Value := fLogPriority;
+  fMaximumDisplayedLogMessages := 100;
 
   theSSLLibraryLoaded := TaurusTLs.LoadOpenSSLLibrary;
+
+  if not theSSLLibraryLoaded then ShowMessage('TaurusTLs.LoadOpenSSLLibrary failed.');
 
   // fSSLVersion := sslvTLSv1_2;  Old Indy code
   fSSLVersion := SSLv3;
@@ -1214,8 +1228,8 @@ begin
       end;
   }
 
-  RequestsMemo.Lines.Add('Indy version: ' + FServer.Version);
-  RequestsMemo.Lines.Add('Taurus IO handler version: ' + TaurusTLSServerIOHandler.Version);
+  AddToLog(3,'Indy version: ' + FServer.Version);
+  AddToLog(3,'Taurus IO handler version: ' + TaurusTLSServerIOHandler.Version);
 
   PortLabel.Text := FServer.DefaultPort.ToString;
 
@@ -1400,28 +1414,28 @@ procedure TMainForm.IdHTTPServerInvalidSession(AContext: TIdContext;
   ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo;
   var VContinueProcessing: Boolean; const AInvalidSessionID: string);
 begin
-  RequestsMemo.Lines.Add('**** ServerInvalidSession - ' + AResponseInfo.ToString);
+  AddToLog(3,'**** ServerInvalidSession - ' + AResponseInfo.ToString);
 end;
 
 
 
 procedure TMainForm.IdHTTPServerConnect(AContext: TIdContext);
 begin
-  RequestsMemo.Lines.Add('ServerConnect - ' + AContext.ToString);
+  AddToLog(3,'ServerConnect - ' + AContext.ToString);
 end;
 
 
 
 procedure TMainForm.IdHTTPServerBeforeBind(AHandle: TIdSocketHandle);
 begin
-  RequestsMemo.Lines.Add('ServerBeforeBind ');
+  AddToLog(3,'ServerBeforeBind ');
 end;
 
 
 
 procedure TMainForm.IdHTTPServerAfterBind(Sender: TObject);
 begin
-  RequestsMemo.Lines.Add('ServerAfterBind ');
+  AddToLog(3,'ServerAfterBind ');
 end;
 
 
@@ -1430,7 +1444,7 @@ procedure TMainForm.IdHTTPServerCommandError(AContext: TIdContext;
   ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo;
   AException: Exception);
 begin
-  RequestsMemo.Lines.Add('**** ServerCommandError - ' + AContext.ToString + AException.ToString);
+  AddToLog(3,'**** ServerCommandError - ' + AContext.ToString + AException.ToString);
 end;
 
 
@@ -1444,35 +1458,35 @@ begin
     then theSSLString := ' VUseSSL=True'
     else theSSLString := ' VUseSSL=FALSE';
 
-  RequestsMemo.Lines.Add('**** ServerQuerySSLPort - ' + APort.ToString + theSSLString);
+  AddToLog(3,'**** ServerQuerySSLPort - ' + APort.ToString + theSSLString);
 end;
 
 
 
 procedure TMainForm.IdHTTPServerDisconnect(AContext: TIdContext);
 begin
-  RequestsMemo.Lines.Add('ServerDisconnect - ' + AContext.ToString);
+  AddToLog(3,'ServerDisconnect - ' + AContext.ToString);
 end;
 
 
 
 procedure TMainForm.IdHTTPServerException(AContext: TIdContext; AException: Exception);
 begin
-  RequestsMemo.Lines.Add('**** ServerException - ' + AException.ToString);
+  AddToLog(3,'**** ServerException - ' + AException.ToString);
 end;
 
 
 
 procedure TMainForm.IdHTTPServerListenException(AThread: TIdListenerThread; AException: Exception);
 begin
-  RequestsMemo.Lines.Add('**** ServerListenException - ' + AException.ToString);
+  AddToLog(3,'**** ServerListenException - ' + AException.ToString);
 end;
 
 
 
 procedure TMainForm.IdHTTPServerSessionStart(Sender: TIdHTTPSession);
 begin
-  RequestsMemo.Lines.Add('ServerSessionStart');
+  AddToLog(3,'ServerSessionStart');
 end;
 
 
@@ -1480,28 +1494,28 @@ end;
 procedure TMainForm.IdHTTPServerStatus(ASender: TObject;
   const AStatus: TIdStatus; const AStatusText: string);
 begin
-  RequestsMemo.Lines.Add('ServerStatus - ' + AStatusText);
+  AddToLog(3,'ServerStatus - ' + AStatusText);
 end;
 
 
 
 procedure TMainForm.IdHTTPServerSessionEnd(Sender: TIdHTTPSession);
 begin
-  RequestsMemo.Lines.Add('**** ServerSessionEnd');
+  AddToLog(3,'**** ServerSessionEnd');
 end;
 
 
 
 procedure TMainForm.IdLogFile1Connect(ASender: TIdConnectionIntercept);
 begin
-  RequestsMemo.Lines.Add('Indy log Connect.');
+  AddToLog(3,'Indy log Connect.');
 end;
 
 
 
 procedure TMainForm.IdLogFile1Disconnect(ASender: TIdConnectionIntercept);
 begin
-  RequestsMemo.Lines.Add('Indy log Disconnect.');
+  AddToLog(3,'Indy log Disconnect.');
 end;
 
 
@@ -1509,7 +1523,7 @@ end;
 procedure TMainForm.IdLogFile1Receive(ASender: TIdConnectionIntercept;
   var ABuffer: TIdBytes);
 begin
-  RequestsMemo.Lines.Add('Indy log Received bytes');
+  AddToLog(3,'Indy log Received bytes');
 end;
 
 
@@ -1517,7 +1531,7 @@ end;
 procedure TMainForm.IdLogFile1Send(ASender: TIdConnectionIntercept;
   var ABuffer: TIdBytes);
 begin
-  RequestsMemo.Lines.Add('Indy log Send.');
+  AddToLog(3,'Indy log Send.');
 end;
 
 
@@ -1551,7 +1565,7 @@ begin
               // This sets the FEN to blank.
             gChessEngineControllers[K].StopAnalyzing;
 
-            RequestsMemo.Lines.Add('Engine ' + K.ToString + ' Cut off for too long since a request (' + gChessEngineControllers[K].GetTimeSinceLastRequest.ToString + ')');
+            AddToLog(1,'Engine ' + K.ToString + ' Cut off for too long since a request (' + gChessEngineControllers[K].GetTimeSinceLastRequest.ToString + ')');
 
             EngineStatusStringGrid.Cells[1, K] := 'No requests';
           end;
@@ -1572,7 +1586,7 @@ begin
     // Skip this if we're not running short of engines.
   if (NumberOfEnginesAnalyzing < (gNumberOfEnginesRunning - 1)) then Exit;
 
-  // RequestsMemo.Lines.Add('--- Looking for engines to cut off for time analyzing or node limit ---');
+  // AddToLog(3,'--- Looking for engines to cut off for time analyzing or node limit ---');
 
   for K := 1 to gNumberOfEnginesRunning do
     begin
@@ -1587,7 +1601,7 @@ begin
                     // This sets the FEN to blank.
                   gChessEngineControllers[K].StopAnalyzing;
 
-                  RequestsMemo.Lines.Add('Engine ' + K.ToString + ' Cut off for node count');
+                  AddToLog(1,'Engine ' + K.ToString + ' Cut off for node count');
                 end
               else
                 begin
@@ -1603,7 +1617,7 @@ begin
                           // This sets the FEN to blank.
                         gChessEngineControllers[K].StopAnalyzing;
 
-                        RequestsMemo.Lines.Add('Engine ' + K.ToString + ' Cut off for seconds (' + AddCommasTo(gChessEngineControllers[K].GetTimeSpentAnalyzing.ToString) + ')');
+                        AddToLog(1,'Engine ' + K.ToString + ' Cut off for seconds (' + AddCommasTo(gChessEngineControllers[K].GetTimeSpentAnalyzing.ToString) + ')');
 
                         EngineStatusStringGrid.Cells[1, K] := 'Cut off';
                       end;
@@ -1698,7 +1712,7 @@ begin
       gChessEngineControllers[K].Free;
     end;
 
-  RequestsMemo.Lines.Add(gNumberOfEnginesRunning.ToString + ' engines freed.');
+  AddToLog(3,gNumberOfEnginesRunning.ToString + ' engines freed.');
 
   gNumberOfEnginesRunning := 0;
 
@@ -1756,7 +1770,7 @@ begin
   if (theTimeSpentAnalyzing < (SecondsCutOffSpinBox.Value * 1000))
     then
       begin
-        RequestsMemo.Lines.Add('Cache rejected analysis - not enough time');
+        AddToLog(3,'Cache rejected analysis - not enough time');
         Inc(fCacheRejections);
         CacheRejectionsLabel.Text := fCacheRejections.ToString;
 
@@ -1767,7 +1781,7 @@ begin
   .Value * 1000000))
     then
       begin
-        RequestsMemo.Lines.Add('Cache rejected analysis - not enough nodes');
+        AddToLog(3,'Cache rejected analysis - not enough nodes');
         Inc(fCacheRejections);
         CacheRejectionsLabel.Text := fCacheRejections.ToString;
 
@@ -1799,7 +1813,7 @@ begin
 
   VOk := True;
 
-  RequestsMemo.Lines.Add('TaurusTLS GetPassword called.');
+  AddToLog(3,'TaurusTLS GetPassword called.');
 end;
 
 
@@ -1814,8 +1828,8 @@ begin
   if not VAccepted
     then
       begin
-        RequestsMemo.Lines.Add('TaurusTLS SecurityLevel called with VAccepted FALSE *****');
-        RequestsMemo.Lines.Add('TaurusTLS SecurityLevel - app changed VAccepted to True.');
+        AddToLog(1,'TaurusTLS SecurityLevel called with VAccepted FALSE *****');
+        AddToLog(1,'TaurusTLS SecurityLevel - app changed VAccepted to True.');
       end;
 
 
@@ -1823,7 +1837,7 @@ begin
     then theValue := '*FALSE*'
     else theValue := 'true';
 
-  // RequestsMemo.Lines.Add('TaurusTLS SecurityLevel called with VAccepted ' + theValue);
+  // AddToLog(3,'TaurusTLS SecurityLevel called with VAccepted ' + theValue);
 
   VAccepted := True;
 end;
@@ -1832,7 +1846,7 @@ end;
 
 procedure TMainForm.TaurusTLSServerIOHandlerSSLNegotiated(ASender: TTaurusTLSIOHandlerSocket);
 begin
-  RequestsMemo.Lines.Add('TaurusTLS SSL Negotiated: ');
+  AddToLog(1,'TaurusTLS SSL Negotiated: ');
 end;
 
 
@@ -1840,8 +1854,8 @@ end;
 procedure TMainForm.TaurusTLSServerIOHandlerStatus(ASender: TObject;
   const AStatus: TIdStatus; const AStatusText: string);
 begin
-  RequestsMemo.Lines.Add('TaurusTLS status: ' + AStatusText);
-  if (Pos('fatal', AStatusText) > 0)  then RequestsMemo.Lines.Add('**********************');
+  AddToLog(1,'TaurusTLS status: ' + AStatusText);
+  if (Pos('fatal', AStatusText) > 0)  then AddToLog(3,'**********************');
 end;
 
 
@@ -1851,9 +1865,9 @@ procedure TMainForm.TaurusTLSServerIOHandlerStatusInfo(ASender: TObject;
   AMsg: string);
 begin
   if (Pos('fatal', AMsg) > 0)
-    then RequestsMemo.Lines.Add('******************** fatal *************');
+    then AddToLog(3,'******************** fatal *************');
 
-  RequestsMemo.Lines.Add('TaurusTLS StatusInfo: ' + AMsg);
+  AddToLog(1,'TaurusTLS StatusInfo: ' + AMsg);
 end;
 
 
@@ -1863,7 +1877,7 @@ procedure TMainForm.TaurusTLSServerIOHandlerVerifyCallback(ASender: TObject;
   const ADepth: Integer; const AError: TIdC_LONG; const AMsg, ADescr: string;
   var VContinue: Boolean);
 begin
-  RequestsMemo.Lines.Add('TaurusTLS VerifyCallback called ');
+  AddToLog(3,'***** TaurusTLS VerifyCallback called SET VCONTINUE????');
 end;
 
 
@@ -1872,7 +1886,7 @@ procedure TMainForm.TaurusTLSServerIOHandlerVerifyError(ASender: TObject;
   ACertificate: TTaurusTLSX509; const AError: TIdC_LONG; const AMsg,
   ADescr: string; var VOk: Boolean);
 begin
-  RequestsMemo.Lines.Add('TaurusTLS VerifyError: ' + AError.ToString +
+  AddToLog(3,'TaurusTLS VerifyError: ' + AError.ToString +
 
    ' VOk set to True ***********');
 end;
