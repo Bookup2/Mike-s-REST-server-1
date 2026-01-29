@@ -82,6 +82,8 @@ type
     TaurusTLSServerIOHandler: TTaurusTLSServerIOHandler;
     CertificateFileNameLabel: TLabel;
     CertificateOpenDialog: TOpenDialog;
+    LogPrioritySpinBox: TSpinBox;
+    Label13: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure ButtonStartClick(Sender: TObject);
     procedure ButtonStopClick(Sender: TObject);
@@ -171,8 +173,6 @@ type
     fNumberOfRequestsServed: Cardinal;
     fNumberOfServerBusy: Cardinal;
 
-    procedure AddToLog(thePriority: Integer; theMessage: String);
-
     procedure StoreAnalysisInCache(theEngineNumber: Integer);
 
     procedure StartEngines;  // FIXEDIN build 3
@@ -212,6 +212,8 @@ type
 
     // fRegistrationDatabaseFileName: String;
     // fRegistrationDatabase: TRegistrationDatabase;
+
+    procedure AddToLog(thePriority: Integer; theMessage: String);
 
     function ServerStatusForBrowser: String;
 
@@ -261,7 +263,7 @@ uses
 
 const
 
-  kProgramVersionString = 'PocketGM build 11 32 bit evening Jan 10, 2026';
+  kProgramVersionString = 'PocketGM build 12 32 bit - Jan 13, 2026';
   kClientDatabaseFolder = 'Client Database';
   kCOWRegistrationDatabaseFolder = 'COW Registration Database';
    // 'Certificate\pocketgmserver.com-cert.pem';
@@ -426,6 +428,8 @@ begin
         if (theStoredRegistrationStatus = kRegistrationStatusExpiring)
           then
             begin
+              AddToLog(3,'***** Registration expiring for ' + theEmailAddress + theStoredExpirationDate.ToString);
+
               if (theStoredExpirationDate < Now)
                 then theReplyForTheClient := kRESTRegistrationServerNotValidExpired
                 else theReplyForTheClient := kRESTRegistrationServerValidExpiring + ' ' + Trunc(theStoredExpirationDate - Now).ToString;
@@ -443,9 +447,12 @@ begin
                                            theLastName,
                                            theProductKey,
                                            kRegistrationStatusExpiring,
-                                           theExpirationDate);
+
+                                         theExpirationDate);
 
   theReplyForTheClient := kRESTRegistrationServerValidExpiring + ' ' + Trunc(theExpirationDate - Now).ToString;
+
+  AddToLog(3, theReplyForTheClient);
 end;
 
 
@@ -906,10 +913,13 @@ begin
   libssl-3.dll
   }
 
-  fLogPriority := 3;
+  fLogPriority := 4;
+  LogPrioritySpinBox.Value := fLogPriority;
   fMaximumDisplayedLogMessages := 100;
 
   theSSLLibraryLoaded := TaurusTLs.LoadOpenSSLLibrary;
+
+  if not theSSLLibraryLoaded then ShowMessage('TaurusTLs.LoadOpenSSLLibrary failed.');
 
   // fSSLVersion := sslvTLSv1_2;  Old Indy code
   fSSLVersion := SSLv3;
@@ -1555,7 +1565,7 @@ begin
               // This sets the FEN to blank.
             gChessEngineControllers[K].StopAnalyzing;
 
-            AddToLog(3,'Engine ' + K.ToString + ' Cut off for too long since a request (' + gChessEngineControllers[K].GetTimeSinceLastRequest.ToString + ')');
+            AddToLog(1,'Engine ' + K.ToString + ' Cut off for too long since a request (' + gChessEngineControllers[K].GetTimeSinceLastRequest.ToString + ')');
 
             EngineStatusStringGrid.Cells[1, K] := 'No requests';
           end;
@@ -1591,7 +1601,7 @@ begin
                     // This sets the FEN to blank.
                   gChessEngineControllers[K].StopAnalyzing;
 
-                  AddToLog(3,'Engine ' + K.ToString + ' Cut off for node count');
+                  AddToLog(1,'Engine ' + K.ToString + ' Cut off for node count');
                 end
               else
                 begin
@@ -1607,7 +1617,7 @@ begin
                           // This sets the FEN to blank.
                         gChessEngineControllers[K].StopAnalyzing;
 
-                        AddToLog(3,'Engine ' + K.ToString + ' Cut off for seconds (' + AddCommasTo(gChessEngineControllers[K].GetTimeSpentAnalyzing.ToString) + ')');
+                        AddToLog(1,'Engine ' + K.ToString + ' Cut off for seconds (' + AddCommasTo(gChessEngineControllers[K].GetTimeSpentAnalyzing.ToString) + ')');
 
                         EngineStatusStringGrid.Cells[1, K] := 'Cut off';
                       end;
@@ -1818,8 +1828,8 @@ begin
   if not VAccepted
     then
       begin
-        AddToLog(3,'TaurusTLS SecurityLevel called with VAccepted FALSE *****');
-        AddToLog(3,'TaurusTLS SecurityLevel - app changed VAccepted to True.');
+        AddToLog(1,'TaurusTLS SecurityLevel called with VAccepted FALSE *****');
+        AddToLog(1,'TaurusTLS SecurityLevel - app changed VAccepted to True.');
       end;
 
 
@@ -1836,7 +1846,7 @@ end;
 
 procedure TMainForm.TaurusTLSServerIOHandlerSSLNegotiated(ASender: TTaurusTLSIOHandlerSocket);
 begin
-  AddToLog(3,'TaurusTLS SSL Negotiated: ');
+  AddToLog(1,'TaurusTLS SSL Negotiated: ');
 end;
 
 
@@ -1844,7 +1854,7 @@ end;
 procedure TMainForm.TaurusTLSServerIOHandlerStatus(ASender: TObject;
   const AStatus: TIdStatus; const AStatusText: string);
 begin
-  AddToLog(3,'TaurusTLS status: ' + AStatusText);
+  AddToLog(1,'TaurusTLS status: ' + AStatusText);
   if (Pos('fatal', AStatusText) > 0)  then AddToLog(3,'**********************');
 end;
 
@@ -1857,7 +1867,7 @@ begin
   if (Pos('fatal', AMsg) > 0)
     then AddToLog(3,'******************** fatal *************');
 
-  AddToLog(3,'TaurusTLS StatusInfo: ' + AMsg);
+  AddToLog(1,'TaurusTLS StatusInfo: ' + AMsg);
 end;
 
 
@@ -1867,7 +1877,7 @@ procedure TMainForm.TaurusTLSServerIOHandlerVerifyCallback(ASender: TObject;
   const ADepth: Integer; const AError: TIdC_LONG; const AMsg, ADescr: string;
   var VContinue: Boolean);
 begin
-  AddToLog(3,'TaurusTLS VerifyCallback called ');
+  AddToLog(3,'***** TaurusTLS VerifyCallback called SET VCONTINUE????');
 end;
 
 

@@ -263,7 +263,7 @@ uses
 
 const
 
-  kProgramVersionString = 'PocketGM build 12 32 bit - Jan 13, 2026';
+  kProgramVersionString = 'PocketGM build 13 32 bit - Jan 28, 2026';
   kClientDatabaseFolder = 'Client Database';
   kCOWRegistrationDatabaseFolder = 'COW Registration Database';
    // 'Certificate\pocketgmserver.com-cert.pem';
@@ -631,7 +631,7 @@ begin
       begin
         theReplyForTheClient := kRESTEngineServerBusy; // 'ServerBusy';
 
-        AddToLog(3,'*** Server busy ***');
+        AddToLog(4,'*** Server busy ***');
 
         Inc(fNumberOfServerBusy);
 
@@ -752,7 +752,7 @@ begin
   // gChessEngineControllers[1].SetLogFileName('Engine1LogFile.txt');
 
     // FIXEDIN build 3
-  AddToLog(3,FormatDateTime('yyyy-mm-dd hh:nn:ss', Now) + '  ' + gNumberOfEnginesRunning.ToString + ' engines started.');
+  AddToLog(4,FormatDateTime('yyyy-mm-dd hh:nn:ss', Now) + '  ' + gNumberOfEnginesRunning.ToString + ' engines started.');
 
   StartEnginesButton.Enabled := False;
   StopEnginesButton.Enabled := True;
@@ -913,7 +913,7 @@ begin
   libssl-3.dll
   }
 
-  fLogPriority := 3;
+  fLogPriority := 4;
   LogPrioritySpinBox.Value := fLogPriority;
   fMaximumDisplayedLogMessages := 100;
 
@@ -1414,7 +1414,7 @@ procedure TMainForm.IdHTTPServerInvalidSession(AContext: TIdContext;
   ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo;
   var VContinueProcessing: Boolean; const AInvalidSessionID: string);
 begin
-  AddToLog(3,'**** ServerInvalidSession - ' + AResponseInfo.ToString);
+  AddToLog(4,'**** ServerInvalidSession - ' + AResponseInfo.ToString);
 end;
 
 
@@ -1444,7 +1444,7 @@ procedure TMainForm.IdHTTPServerCommandError(AContext: TIdContext;
   ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo;
   AException: Exception);
 begin
-  AddToLog(3,'**** ServerCommandError - ' + AContext.ToString + AException.ToString);
+  AddToLog(4,'**** ServerCommandError - ' + AContext.ToString + AException.ToString);
 end;
 
 
@@ -1472,14 +1472,14 @@ end;
 
 procedure TMainForm.IdHTTPServerException(AContext: TIdContext; AException: Exception);
 begin
-  AddToLog(3,'**** ServerException - ' + AException.ToString);
+  AddToLog(5,'**** ServerException - ' + AException.ToString);
 end;
 
 
 
 procedure TMainForm.IdHTTPServerListenException(AThread: TIdListenerThread; AException: Exception);
 begin
-  AddToLog(3,'**** ServerListenException - ' + AException.ToString);
+  AddToLog(4,'**** ServerListenException - ' + AException.ToString);
 end;
 
 
@@ -1865,7 +1865,7 @@ procedure TMainForm.TaurusTLSServerIOHandlerStatusInfo(ASender: TObject;
   AMsg: string);
 begin
   if (Pos('fatal', AMsg) > 0)
-    then AddToLog(3,'******************** fatal *************');
+    then AddToLog(4,'******************** fatal *************');
 
   AddToLog(1,'TaurusTLS StatusInfo: ' + AMsg);
 end;
